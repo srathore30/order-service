@@ -4,8 +4,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import sfa.order_service.constant.OrderStatus;
-import sfa.order_service.constant.SalesLevelConstant;
+import sfa.order_service.enums.OrderStatus;
+import sfa.order_service.enums.SalesLevel;
+
+import java.util.Date;
 
 @Getter
 @Setter
@@ -13,8 +15,9 @@ import sfa.order_service.constant.SalesLevelConstant;
 @Table(name = "order_entity")
 public class OrderEntity extends BaseEntity{
     private int quantity;
-    private int price;
-    private SalesLevelConstant salesLevel;
+    private Double price;
+    private SalesLevel salesLevel;
     private OrderStatus status;
     private Long productId;
+    private Date orderCreatedDate;
 }
