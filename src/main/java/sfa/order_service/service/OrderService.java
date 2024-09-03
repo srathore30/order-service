@@ -11,16 +11,16 @@ import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.OrderResponse;
+import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
-import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.OrderEntity;
-import sfa.order_service.enums.SalesLevel;
+import sfa.order_service.enums.OrderStatus;
+import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,12 +29,12 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
-    Float finalPrice;
 
     public OrderResponse createOrder(OrderRequest request) {
+        String message = "create order";
         log.info("Creating order: {}", request);
         OrderEntity entity = orderRepository.save(dtoToEntity(request));
-        return entityToDto(entity);
+        return entityToDto(entity, message);
     }
 
     public OrderEntity dtoToEntity(OrderRequest request) {
@@ -45,28 +45,28 @@ public class OrderService {
         return orderEntity;
     }
 
-    public OrderResponse entityToDto(OrderEntity orderEntity) {
+    public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
-        orderResponse.setStatus(orderEntity.getStatus());
         orderResponse.setOrderId(orderEntity.getId());
-        ProductRes productById = productServiceClient.getProductById(orderEntity.getProductId());
-            Float gstPercentage = productById.getProductPriceRes().getGstPercentage();
-        if(gstPercentage == null){
-            gstPercentage = 0f;
+        if ("create order".equals(message)) {
+            orderResponse.setStatus(OrderStatus.CREATED);
+        } else {
+            orderResponse.setStatus(orderEntity.getStatus());
         }
-        if(orderEntity.getSalesLevel().equals(SalesLevel.RETAILER)){
-             finalPrice = productById.getProductPriceRes().getRetailerPrice();
-        }else if(orderEntity.getSalesLevel().equals(SalesLevel.WAREHOUSE)){
-             finalPrice = productById.getProductPriceRes().getWarehousePrice();
-        }else if(orderEntity.getSalesLevel().equals(SalesLevel.STOCKIST)){
-             finalPrice = productById.getProductPriceRes().getStockListPrice();
-        }else{
-            throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), ApiErrorCodes.NOT_FOUND.getErrorMessage());
-        }
-        orderResponse.setTotalPrice((double) (orderEntity.getQuantity() * finalPrice));
-
-        orderResponse.setGstAmount((double) (orderEntity.getQuantity() * finalPrice * gstPercentage));
-        orderResponse.setTotalPriceWithGst(orderEntity.getQuantity() * finalPrice + orderResponse.getGstAmount());
+        Double gstPercentage = productServiceClient.getProductPrice(orderEntity.getProductId(), "gst");
+        Double finalPrice = switch (orderEntity.getSalesLevel()) {
+            case RETAILER -> productServiceClient.getProductPrice(orderEntity.getProductId(), "retailer");
+            case WAREHOUSE -> productServiceClient.getProductPrice(orderEntity.getProductId(), "warehouse");
+            case STOCKIST -> productServiceClient.getProductPrice(orderEntity.getProductId(), "stocklist");
+            default ->
+                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        };
+        double totalPrice = orderEntity.getQuantity() * finalPrice;
+        double gstAmount = (totalPrice * gstPercentage) / 100;
+        double totalPriceWithGst = totalPrice + gstAmount;
+        orderResponse.setTotalPrice(totalPrice);
+        orderResponse.setGstAmount(gstAmount);
+        orderResponse.setTotalPriceWithGst(totalPriceWithGst);
         orderResponse.setOrderCreatedDate(new Date());
         return orderResponse;
     }
@@ -74,22 +74,22 @@ public class OrderService {
     public PaginatedResp<OrderResponse> getOrderById(Long orderId, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> byId = orderRepository.findById(orderId, pageable);
-        if (byId.isEmpty()) {
+        Page<OrderEntity> orderById = orderRepository.findById(orderId, pageable);
+        if (orderById.isEmpty()) {
             throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
         }
-        List<OrderResponse> collect = byId.getContent().stream().map(this::entityToDto).collect(Collectors.toList());
-        return PaginatedResp.<OrderResponse>builder().totalElements(byId.getTotalElements()).totalPages(byId.getTotalPages()).page(page).content(collect).build();
+        List<OrderResponse> collect = orderById.getContent().stream().map(orderEntity -> entityToDto(orderEntity, "")).collect(Collectors.toList());
+        return PaginatedResp.<OrderResponse>builder().totalElements(orderById.getTotalElements()).totalPages(orderById.getTotalPages()).page(page).content(collect).build();
     }
 
-    public OrderResponse updateOrder(Long orderId, OrderUpdateRequest request) {
-        Optional<OrderEntity> byId = orderRepository.findById(orderId);
-        if (byId.isEmpty()) {
-            throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
-        }
-        OrderEntity orderEntity = byId.get();
+    public OrderUpdateResponse updateOrder(Long orderId, OrderUpdateRequest request) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
         orderEntity.setStatus(request.getStatus());
-        return entityToDto(orderRepository.save(orderEntity));
+        OrderEntity updatedOrder = orderRepository.save(orderEntity);
+        OrderUpdateResponse orderResponse = new OrderUpdateResponse();
+        orderResponse.setOrderId(updatedOrder.getId());
+        orderResponse.setStatus(updatedOrder.getStatus());
+        orderResponse.setMessage(" Order status updated to delivered!!");
+        return orderResponse;
     }
-
 }
