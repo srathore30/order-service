@@ -26,3 +26,8 @@ server:
 application:
   config:
     trace: true
+product:
+  getProduct:
+    url: http://localhost:9093/product-service/products/
+  priceBreakDown:
+    url: http://localhost:9093/product-service/products/getPriceBreakDownDetails/
