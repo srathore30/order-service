@@ -26,3 +26,8 @@ server:
 application:
   config:
     trace: true
+
+products:
+  service:
+    url: http://localhost:9093/product-service
+

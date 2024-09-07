@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.OrderResponse;
+import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.service.OrderService;
 
@@ -29,7 +30,7 @@ public class OrderController {
         return new ResponseEntity<>(orderService.getOrderById(orderId,page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
     @PutMapping("/orders/{orderId}")
-    public ResponseEntity<OrderResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
+    public ResponseEntity<OrderUpdateResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
         return new ResponseEntity<>(orderService.updateOrder(orderId,orderRequest), HttpStatus.OK);
     }
 }
