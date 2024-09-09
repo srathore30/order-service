@@ -8,10 +8,14 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TopSellingProductRes {
+public class FinalProductPriceResponse {
     Long productId;
-    String name;
-    int quantitySold;
-    float revenue;
+    int quantity;
+    float unitPrice;
+    float discountApplied;
+    float subTotal;
     float gstAmount;
+    float totalPriceWithGst;
+    String message;
+
 }

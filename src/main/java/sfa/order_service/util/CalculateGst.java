@@ -4,10 +4,10 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class CalculateGst {
-    public static Float calculateGst(Float gst, Float price){
+    public static float calculateGst(float gst, float price){
         return (price * gst) / 100;
     }
-    public static Float calculateGstAmountFromTotal(int totalPrice, Float gstPercentage) {
+    public static float calculateGstAmountFromTotal(float totalPrice, float gstPercentage) {
         return totalPrice - (totalPrice / (1 + (gstPercentage / 100)));
     }
 }

@@ -13,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReportsResponse {
-    int totalSales;
-    int totalGstCollected;
+    float totalSales;
+    float totalGstCollected;
     int totalOrder;
     List<TopSellingProductRes> topSellingProductList;
 }

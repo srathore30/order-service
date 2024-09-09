@@ -10,8 +10,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductPriceRes {
-    Float warehousePrice;
-    Float stockListPrice;
-    Float retailerPrice;
-    Float gstPercentage;
+    float warehousePrice;
+    float stockListPrice;
+    float retailerPrice;
+    float gstPercentage;
 }

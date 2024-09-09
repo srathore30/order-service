@@ -6,6 +6,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
+import sfa.order_service.constant.DiscountCoupon;
 import sfa.order_service.constant.OrderStatus;
 import sfa.order_service.constant.SalesLevelConstant;
 
@@ -17,8 +18,9 @@ import java.util.Date;
 @Table(name = "order_entity")
 public class OrderEntity extends BaseEntity{
     private int quantity;
-    private int price;
+    private float price;
     private SalesLevelConstant salesLevel;
     private OrderStatus status;
     private Long productId;
+    private DiscountCoupon discountCoupon;
 }

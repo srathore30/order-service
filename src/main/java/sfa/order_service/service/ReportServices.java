@@ -34,8 +34,8 @@ public class ReportServices {
         if (orderEntityList.isEmpty()){
             throw new RuntimeException("no records found");
         }
-        int totalGst = 0;
-        int totalSales = 0;
+        float totalGst = 0F;
+        float totalSales = 0F;
         int totalOrder = 0;
         ReportsResponse reportsResponse = new ReportsResponse();
         List<TopSellingProductRes> topSellingProductRes = new ArrayList<>();
