@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/pro_order
+    url: jdbc:mysql://localhost:3306/vivekdb
     username: root
-    password: root
+    password: 14640548root
 
   jpa:
     hibernate:
@@ -22,10 +22,13 @@ server:
   port: 9092
   servlet:
     context-path: /order-service
-
+validate:
+  token:
+    url: http://localhost:9094/auth-service/auth/validateToken?token=
 application:
   config:
     trace: true
+
 product:
   getProduct:
     url: http://localhost:9093/product-service/products/

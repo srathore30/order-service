@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 import sfa.order_service.constant.SalesLevelConstant;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.ReportsResponse;
+import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.ReportServices;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @RestController
@@ -22,8 +24,9 @@ public class ReportController {
     private final ReportServices reportServices;
 
     @GetMapping("/sales")
-    public ResponseEntity<ReportsResponse> getSalesReport(@RequestParam Date startdate, @RequestParam Date endDate, @RequestParam SalesLevelConstant salesLevel) throws ParseException {
-        ReportsRequest reportsRequest = new ReportsRequest(startdate, endDate, salesLevel);
+    @UserAuthorization
+    public ResponseEntity<ReportsResponse> getSalesReport(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam SalesLevelConstant salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
         ReportsResponse reportsResponse = reportServices.getSalesReportBetweenDatesAndSalesLevel(reportsRequest);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
     }

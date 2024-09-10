@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    Page<OrderEntity> findById(Long orderId, Pageable pageable);
-   List<OrderEntity> findByProductIdAndStatus(Long productId);
+   List<OrderEntity> findByProductId(Long productId);
    @Query("SELECT o FROM OrderEntity o WHERE o.createdDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel")
    List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate,

@@ -25,10 +25,10 @@ public class ReportServices {
     private final OrderRepository orderRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${price.priceBreakDown.url}")
-    private final String priceBreakDownUrl;
-    @Value("${price.getProduct.url}")
-    private final String getProductUrl;
+    @Value("${product.priceBreakDown.url}")
+    private String priceBreakDownUrl;
+    @Value("${product.getProduct.url}")
+    private String getProductUrl;
     public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
         if (orderEntityList.isEmpty()){
@@ -48,7 +48,7 @@ public class ReportServices {
                 totalOrder += orderEntity.getQuantity();
                 if (productRes != null) {
                     int totalSaleByProduct = 0;
-                    List<OrderEntity> orderListByProductId = orderRepository.findByProductIdAndStatus(orderEntity.getProductId());
+                    List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
                     for(OrderEntity order : orderListByProductId){
                         totalSaleByProduct += order.getPrice();
                     }

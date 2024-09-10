@@ -30,10 +30,10 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${price.priceBreakDown.url}")
-    private final String priceBreakDownUrl;
-    @Value("${price.getProduct.url}")
-    private final String getProductUrl;
+    @Value("${product.priceBreakDown.url}")
+    private String priceBreakDownUrl;
+    @Value("${product.getProduct.url}")
+    private String getProductUrl;
 
     public OrderResponse createOrder(OrderRequest request) {
         log.info("Creating order: {}", request);
