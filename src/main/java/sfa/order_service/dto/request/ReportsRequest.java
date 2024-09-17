@@ -7,8 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
-import sfa.order_service.constant.DiscountCoupon;
-import sfa.order_service.constant.SalesLevelConstant;
+
+import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -27,6 +27,6 @@ public class ReportsRequest {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime endDate;
-    SalesLevelConstant salesLevelConstant;
+    SalesLevel salesLevelConstant;
 
 }

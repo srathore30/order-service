@@ -3,7 +3,7 @@ package sfa.order_service.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import sfa.order_service.constant.DiscountCoupon;
-import sfa.order_service.constant.SalesLevelConstant;
+import sfa.order_service.enums.SalesLevel;
 
 @Getter
 @Setter
@@ -13,6 +13,6 @@ import sfa.order_service.constant.SalesLevelConstant;
 public class FinalProductPriceRequest {
     Long productId;
     int quantity;
-    SalesLevelConstant salesLevelConstant;
+    SalesLevel salesLevelConstant;
     DiscountCoupon discountCoupon;
 }

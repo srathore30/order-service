@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import sfa.order_service.constant.OrderStatus;
-import sfa.order_service.constant.SalesLevelConstant;
+
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -22,6 +22,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    @Query("SELECT o FROM OrderEntity o WHERE o.createdDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel")
    List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate,
-                                                              @Param("salesLevel") SalesLevelConstant salesLevel);
+                                                              @Param("salesLevel") SalesLevel salesLevel);
 
 }

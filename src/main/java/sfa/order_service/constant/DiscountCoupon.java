@@ -1,5 +1,6 @@
 package sfa.order_service.constant;
 
+
 public enum DiscountCoupon {
 
     SPRING20("SPRING20", 20),
@@ -8,9 +9,9 @@ public enum DiscountCoupon {
     WINTER30("WINTER30", 30);
 
     private final String couponCode;
-    private final int discountAmount;
+    private final double discountAmount;
 
-    DiscountCoupon(String couponCode, int discountAmount) {
+    DiscountCoupon(String couponCode, double discountAmount) {
         this.couponCode = couponCode;
         this.discountAmount = discountAmount;
     }
@@ -19,7 +20,7 @@ public enum DiscountCoupon {
         return couponCode;
     }
 
-    public int getDiscountAmount() {
+    public double getDiscountAmount() {
         return discountAmount;
     }
 

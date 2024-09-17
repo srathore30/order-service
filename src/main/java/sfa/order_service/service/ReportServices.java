@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import sfa.order_service.constant.OrderStatus;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.ProductPriceRes;
 import sfa.order_service.dto.response.ProductRes;
@@ -23,37 +22,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportServices {
     private final OrderRepository orderRepository;
-    private final RestTemplate restTemplate;
+    private final ProductServiceClient productServiceClient;
 
-    @Value("${product.priceBreakDown.url}")
-    private String priceBreakDownUrl;
-    @Value("${product.getProduct.url}")
-    private String getProductUrl;
     public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
         if (orderEntityList.isEmpty()){
             throw new RuntimeException("no records found");
         }
-        float totalGst = 0F;
-        float totalSales = 0F;
+        double totalGst = 0D;
+        Double totalSales = 0D;
         int totalOrder = 0;
         ReportsResponse reportsResponse = new ReportsResponse();
         List<TopSellingProductRes> topSellingProductRes = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList){
-            ProductPriceRes productPriceRes = restTemplate.getForObject(priceBreakDownUrl + orderEntity.getProductId(), ProductPriceRes.class);
-            ProductRes productRes = restTemplate.getForObject(getProductUrl + orderEntity.getProductId(), ProductRes.class);
+            ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
+            ProductPriceRes productPriceRes = productRes.getProductPriceRes();
             if (productPriceRes != null) {
                 totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                 totalSales += orderEntity.getPrice();
                 totalOrder += orderEntity.getQuantity();
-                if (productRes != null) {
-                    int totalSaleByProduct = 0;
-                    List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
-                    for(OrderEntity order : orderListByProductId){
-                        totalSaleByProduct += order.getPrice();
-                    }
-                    topSellingProductRes.add(new TopSellingProductRes(orderEntity.getProductId(), productRes.getName(), orderListByProductId.size() - 1,  totalSaleByProduct, productPriceRes.getGstPercentage()));
+                Double totalSaleByProduct = 0D;
+                List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
+                for(OrderEntity order : orderListByProductId){
+                    totalSaleByProduct += order.getPrice();
                 }
+                topSellingProductRes.add(new TopSellingProductRes(orderEntity.getProductId(), productRes.getName(), orderListByProductId.size() - 1,  totalSaleByProduct, productPriceRes.getGstPercentage()));
             }
         }
         reportsResponse.setTotalSales(totalSales);
@@ -63,3 +56,8 @@ public class ReportServices {
         return reportsResponse;
     }
 }
+
+
+
+
+

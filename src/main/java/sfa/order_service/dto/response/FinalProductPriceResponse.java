@@ -11,11 +11,11 @@ import lombok.experimental.FieldDefaults;
 public class FinalProductPriceResponse {
     Long productId;
     int quantity;
-    float unitPrice;
-    float discountApplied;
-    float subTotal;
-    float gstAmount;
-    float totalPriceWithGst;
+    double unitPrice;
+    double discountApplied;
+    double subTotal;
+    double gstAmount;
+    double totalPriceWithGst;
     String message;
 
 }

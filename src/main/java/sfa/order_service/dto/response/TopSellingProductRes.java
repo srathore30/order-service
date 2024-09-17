@@ -12,6 +12,6 @@ public class TopSellingProductRes {
     Long productId;
     String name;
     int quantitySold;
-    float revenue;
-    float gstAmount;
+    Double revenue;
+    Double gstAmount;
 }

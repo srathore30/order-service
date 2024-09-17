@@ -10,6 +10,7 @@ import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.FinalProductPriceResponse;
 import sfa.order_service.dto.response.OrderResponse;
+import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.OrderService;
@@ -33,13 +34,15 @@ public class OrderController {
                                                                      @RequestParam(defaultValue = "10") int pageSize,
                                                                      @RequestParam(defaultValue = "createdDate") String sortBy,
                                                                      @RequestParam(defaultValue = "desc") String sortDirection) {
-        return new ResponseEntity<>(orderService.getOrderById(orderId,page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+        return new ResponseEntity<>(orderService.getOrderById(orderId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
+
     @PutMapping("/orders/{orderId}")
     @UserAuthorization
-    public ResponseEntity<OrderResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
-        return new ResponseEntity<>(orderService.updateOrder(orderId,orderRequest), HttpStatus.OK);
+    public ResponseEntity<OrderUpdateResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
+        return new ResponseEntity<>(orderService.updateOrder(orderId, orderRequest), HttpStatus.OK);
     }
+
     @PostMapping("/orders/pricing/calculate")
     @UserAuthorization
     public ResponseEntity<FinalProductPriceResponse> calculateFinalPrice(@RequestBody FinalProductPriceRequest finalProductPriceRequest) {
