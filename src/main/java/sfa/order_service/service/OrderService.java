@@ -2,22 +2,30 @@ package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
+import sfa.order_service.dto.request.FinalProductPriceRequest;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
+import sfa.order_service.dto.response.FinalProductPriceResponse;
 import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.dto.response.ProductPriceRes;
+import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.OrderStatus;
+import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
+import sfa.order_service.util.CalculateGst;
+import sfa.order_service.util.DiscountUtil;
 
 import java.util.Date;
 import java.util.List;
@@ -27,6 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderService {
+
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
 
@@ -48,22 +57,20 @@ public class OrderService {
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
-        if ("create order".equals(message)) {
-            orderResponse.setStatus(OrderStatus.CREATED);
-        } else {
-            orderResponse.setStatus(orderEntity.getStatus());
-        }
+        orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
+
         Double gstPercentage = productServiceClient.getProductPrice(orderEntity.getProductId(), "gst");
         Double finalPrice = switch (orderEntity.getSalesLevel()) {
             case RETAILER -> productServiceClient.getProductPrice(orderEntity.getProductId(), "retailer");
             case WAREHOUSE -> productServiceClient.getProductPrice(orderEntity.getProductId(), "warehouse");
             case STOCKIST -> productServiceClient.getProductPrice(orderEntity.getProductId(), "stocklist");
-            default ->
-                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+            default -> throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
         };
+
         double totalPrice = orderEntity.getQuantity() * finalPrice;
         double gstAmount = (totalPrice * gstPercentage) / 100;
         double totalPriceWithGst = totalPrice + gstAmount;
+
         orderResponse.setTotalPrice(totalPrice);
         orderResponse.setGstAmount(gstAmount);
         orderResponse.setTotalPriceWithGst(totalPriceWithGst);
@@ -89,7 +96,50 @@ public class OrderService {
         OrderUpdateResponse orderResponse = new OrderUpdateResponse();
         orderResponse.setOrderId(updatedOrder.getId());
         orderResponse.setStatus(updatedOrder.getStatus());
-        orderResponse.setMessage(" Order status updated to delivered!!");
+        orderResponse.setMessage("Order status updated to delivered!!");
         return orderResponse;
     }
-}
+
+    public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest){
+        ProductRes productRes = productServiceClient.getProduct(finalProductPriceRequest.getProductId());
+        FinalProductPriceResponse finalRes = new FinalProductPriceResponse();
+        assert productRes != null;
+        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.RETAILER){
+            finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
+            finalRes.setQuantity(finalProductPriceRequest.getQuantity());
+            finalRes.setProductId(productRes.getProductId());
+            finalRes.setMessage("Final price calculated successfully");
+            double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
+            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            finalRes.setDiscountApplied(discount);
+            finalRes.setSubTotal(discountedPRice);
+            finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
+            finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
+
+        }
+        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE){
+            finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
+            finalRes.setQuantity(finalProductPriceRequest.getQuantity());
+            finalRes.setProductId(productRes.getProductId());
+            finalRes.setMessage("Final price calculated successfully");
+            double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getWarehousePrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
+            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            finalRes.setDiscountApplied(discount);
+            finalRes.setSubTotal(discountedPRice);
+            finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
+            finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
+        }
+        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.STOCKIST){
+            finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
+            finalRes.setQuantity(finalProductPriceRequest.getQuantity());
+            finalRes.setProductId(productRes.getProductId());
+            finalRes.setMessage("Final price calculated successfully");
+            double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getStockListPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
+            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            finalRes.setDiscountApplied(discount);
+            finalRes.setSubTotal(discountedPRice);
+            finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
+            finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
+        }
+        return finalRes;
+    }}
