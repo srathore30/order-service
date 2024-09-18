@@ -1,4 +1,4 @@
-package sfa.order_service.util;
+package sfa.order_service.utill;
 
 public class DiscountUtil {
     public static Double calculateFinalPrice(Double originalPrice, Double discountAmount) {

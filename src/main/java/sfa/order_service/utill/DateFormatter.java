@@ -1,4 +1,4 @@
-package sfa.order_service.util;
+package sfa.order_service.utill;
 
 import lombok.experimental.UtilityClass;
 

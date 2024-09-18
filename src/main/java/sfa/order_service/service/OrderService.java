@@ -2,7 +2,6 @@ package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +15,6 @@ import sfa.order_service.dto.response.FinalProductPriceResponse;
 import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
-import sfa.order_service.dto.response.ProductPriceRes;
 import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.OrderStatus;
@@ -24,8 +22,8 @@ import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
-import sfa.order_service.util.CalculateGst;
-import sfa.order_service.util.DiscountUtil;
+import sfa.order_service.utill.CalculateGst;
+import sfa.order_service.utill.DiscountUtil;
 
 import java.util.Date;
 import java.util.List;
