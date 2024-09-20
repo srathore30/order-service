@@ -22,13 +22,13 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
-    @UserAuthorization
+//    @UserAuthorization
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.OK);
     }
 
     @GetMapping("/orders/{orderId}")
-    @UserAuthorization
+//    @UserAuthorization
     public ResponseEntity<PaginatedResp<OrderResponse>> getOrderById(@PathVariable Long orderId,
                                                                      @RequestParam(defaultValue = "0") int page,
                                                                      @RequestParam(defaultValue = "10") int pageSize,
@@ -38,13 +38,13 @@ public class OrderController {
     }
 
     @PutMapping("/orders/{orderId}")
-    @UserAuthorization
+//    @UserAuthorization
     public ResponseEntity<OrderUpdateResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
         return new ResponseEntity<>(orderService.updateOrder(orderId, orderRequest), HttpStatus.OK);
     }
 
     @PostMapping("/orders/pricing/calculate")
-    @UserAuthorization
+//    @UserAuthorization
     public ResponseEntity<FinalProductPriceResponse> calculateFinalPrice(@RequestBody FinalProductPriceRequest finalProductPriceRequest) {
         return new ResponseEntity<>(orderService.calculateFinalPrice(finalProductPriceRequest), HttpStatus.OK);
     }
