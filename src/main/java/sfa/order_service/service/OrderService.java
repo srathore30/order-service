@@ -11,11 +11,7 @@ import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.request.FinalProductPriceRequest;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
-import sfa.order_service.dto.response.FinalProductPriceResponse;
-import sfa.order_service.dto.response.OrderResponse;
-import sfa.order_service.dto.response.OrderUpdateResponse;
-import sfa.order_service.dto.response.PaginatedResp;
-import sfa.order_service.dto.response.ProductRes;
+import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
@@ -37,6 +33,20 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
 
+    public String getPriceType(SalesLevel salesLevel) {
+        return switch (salesLevel) {
+            case RETAILER -> "retailer";
+            case WAREHOUSE -> "warehouse";
+            case STOCKIST -> "stocklist";
+            default ->
+                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        };
+    }
+
+    public Double getProductPrice(Long productId, String priceType) {
+        return productServiceClient.getProductPrice(productId, priceType);
+    }
+
     public OrderResponse createOrder(OrderRequest request) {
         String message = "create order";
         log.info("Creating order: {}", request);
@@ -49,6 +59,11 @@ public class OrderService {
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
         orderEntity.setProductId(request.getProductId());
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
+        Double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
+        Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
+        Double finalPrice = totalPriceOfOrder + gstOnOrder;
+        orderEntity.setPrice(finalPrice);
         return orderEntity;
     }
 
@@ -56,22 +71,10 @@ public class OrderService {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
-
-        Double gstPercentage = productServiceClient.getProductPrice(orderEntity.getProductId(), "gst");
-        Double finalPrice = switch (orderEntity.getSalesLevel()) {
-            case RETAILER -> productServiceClient.getProductPrice(orderEntity.getProductId(), "retailer");
-            case WAREHOUSE -> productServiceClient.getProductPrice(orderEntity.getProductId(), "warehouse");
-            case STOCKIST -> productServiceClient.getProductPrice(orderEntity.getProductId(), "stocklist");
-            default -> throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
-        };
-
-        double totalPrice = orderEntity.getQuantity() * finalPrice;
-        double gstAmount = (totalPrice * gstPercentage) / 100;
-        double totalPriceWithGst = totalPrice + gstAmount;
-
-        orderResponse.setTotalPrice(totalPrice);
-        orderResponse.setGstAmount(gstAmount);
-        orderResponse.setTotalPriceWithGst(totalPriceWithGst);
+        Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
+        orderResponse.setGstAmount(gstOnOrder);
+        orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
+        orderResponse.setTotalPrice(orderEntity.getPrice() - gstOnOrder);
         orderResponse.setOrderCreatedDate(new Date());
         return orderResponse;
     }
@@ -98,46 +101,47 @@ public class OrderService {
         return orderResponse;
     }
 
-    public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest){
+    public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest) {
         ProductRes productRes = productServiceClient.getProduct(finalProductPriceRequest.getProductId());
         FinalProductPriceResponse finalRes = new FinalProductPriceResponse();
         assert productRes != null;
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.RETAILER){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.RETAILER) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
 
         }
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getWarehousePrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
         }
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.STOCKIST){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.STOCKIST) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getStockListPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
         }
         return finalRes;
-    }}
+    }
+}
