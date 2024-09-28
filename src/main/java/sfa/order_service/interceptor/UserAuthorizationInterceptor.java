@@ -1,15 +1,24 @@
 package sfa.order_service.interceptor;
 
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import sfa.order_service.AuthUtils.JwtHelper;
 import sfa.order_service.constant.UserRole;
 
+
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,11 +65,11 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
     }
     public boolean validateRole(UserRole[] allowedRoles, UserRole[] userRoles) {
         for (UserRole allowedRole : allowedRoles) {
-           for(UserRole haveRole : userRoles){
-               if(allowedRole == haveRole){
-                   return true;
-               }
-           }
+            for(UserRole haveRole : userRoles){
+                if(allowedRole == haveRole){
+                    return true;
+                }
+            }
         }
         return false;
     }

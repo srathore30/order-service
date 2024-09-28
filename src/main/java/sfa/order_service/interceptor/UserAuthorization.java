@@ -1,6 +1,5 @@
 package sfa.order_service.interceptor;
 
-
 import sfa.order_service.constant.UserRole;
 
 import java.lang.annotation.ElementType;
@@ -12,4 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserAuthorization {
     UserRole[] allowedRoles();
+
 }

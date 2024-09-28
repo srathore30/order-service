@@ -23,6 +23,24 @@ server:
   servlet:
     context-path: /order-service
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+validate:
+  token:
+    url: http://localhost:9094/auth-service/auth/validateToken?token=
 application:
   config:
     trace: true
+product:
+  getProduct:
+    url: http://localhost:9093/product-service/products/
+
+
+products:
+  service:
+    url: http://localhost:9093/product-service
+
