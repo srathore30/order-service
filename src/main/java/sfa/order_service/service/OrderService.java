@@ -64,6 +64,7 @@ public class OrderService {
         Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
         Double finalPrice = totalPriceOfOrder + gstOnOrder;
         orderEntity.setPrice(finalPrice);
+        orderEntity.setOrderCreatedDate(new Date());
         return orderEntity;
     }
 
@@ -75,7 +76,7 @@ public class OrderService {
         orderResponse.setGstAmount(gstOnOrder);
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
         orderResponse.setTotalPrice(orderEntity.getPrice() - gstOnOrder);
-        orderResponse.setOrderCreatedDate(new Date());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         return orderResponse;
     }
 
