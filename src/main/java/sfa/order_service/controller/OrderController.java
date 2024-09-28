@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.OrderService;
 
 @RestController
@@ -16,6 +18,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
+    @UserAuthorization(allowedRoles = {UserRole.Edit_Manager})
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.OK);
     }
