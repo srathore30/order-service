@@ -60,9 +60,9 @@ public class OrderService {
         orderEntity.setSalesLevel(request.getSalesLevel());
         orderEntity.setProductId(request.getProductId());
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
-        Double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
+        double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
         Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
-        Double finalPrice = totalPriceOfOrder + gstOnOrder;
+        Double finalPrice = totalPriceOfOrder + (totalPriceOfOrder*gstOnOrder)/100;
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
         return orderEntity;
@@ -75,7 +75,8 @@ public class OrderService {
         Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
         orderResponse.setGstAmount(gstOnOrder);
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
-        orderResponse.setTotalPrice(orderEntity.getPrice() - gstOnOrder);
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
+        orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         return orderResponse;
     }
