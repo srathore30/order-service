@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import sfa.order_service.constant.DiscountCoupon;
+import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.FinalProductPriceRequest;
+
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.FinalProductPriceResponse;
@@ -22,7 +25,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
-//    @UserAuthorization
+    @UserAuthorization(allowedRoles = {UserRole.Edit_Manager})
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.OK);
     }
