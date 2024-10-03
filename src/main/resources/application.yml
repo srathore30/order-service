@@ -44,3 +44,11 @@ products:
   service:
     url: http://localhost:9093/product-service
 
+  # CORS Configuration
+  spring:
+    mvc:
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST,PUT,DELETE
+        allowed-headers: "*"
+        allow-credentials: true
