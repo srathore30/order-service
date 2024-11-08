@@ -10,4 +10,5 @@ public class OrderRequest {
     private Long productId;
     private int quantity;
     private SalesLevel salesLevel;
+    private Long clientId;
 }

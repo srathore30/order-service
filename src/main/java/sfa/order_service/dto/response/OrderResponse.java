@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sfa.order_service.constant.DiscountCoupon;
 import sfa.order_service.enums.OrderStatus;
 
 import java.util.Date;
@@ -20,4 +19,5 @@ public class OrderResponse {
     private Double gstAmount;
     private Double totalPriceWithGst;
     private Date orderCreatedDate;
+    private Long clientId;
 }

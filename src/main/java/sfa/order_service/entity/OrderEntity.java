@@ -2,8 +2,6 @@ package sfa.order_service.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.enums.OrderStatus;
@@ -22,4 +20,5 @@ public class OrderEntity extends BaseEntity {
     private OrderStatus status;
     private Long productId;
     private Date orderCreatedDate;
+    private Long clientId;
 }

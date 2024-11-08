@@ -13,11 +13,13 @@ import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.entity.TransactionEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
+import sfa.order_service.repo.TransactionRepository;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
 
@@ -32,7 +34,6 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
-
     public String getPriceType(SalesLevel salesLevel) {
         return switch (salesLevel) {
             case RETAILER -> "retailer";
@@ -65,6 +66,13 @@ public class OrderService {
         Double finalPrice = totalPriceOfOrder + (totalPriceOfOrder*gstOnOrder)/100;
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
+        orderEntity.setClientId(request.getClientId());
+//        Long clientId = request.getClientId();
+//        List<TransactionEntity> byClientId = transactionRepository.findByClientId(clientId);
+//        Double topUpAmount = byClientId.get(0).getTopUpAmount();
+//        if (topUpAmount < finalPrice) {
+//            throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
+//        }
         return orderEntity;
     }
 
@@ -78,6 +86,7 @@ public class OrderService {
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
+        orderResponse.setClientId(orderEntity.getClientId());
         return orderResponse;
     }
 
