@@ -11,4 +11,5 @@ public class OrderRequest {
     private int quantity;
     private SalesLevel salesLevel;
     private Long clientId;
+    private Long memberId;
 }

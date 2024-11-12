@@ -8,14 +8,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
-import sfa.order_service.dto.request.FinalProductPriceRequest;
-import sfa.order_service.dto.request.OrderRequest;
-import sfa.order_service.dto.request.OrderUpdateRequest;
+import sfa.order_service.controller.TransactionController;
+import sfa.order_service.dto.request.*;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
-import sfa.order_service.entity.TransactionEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
+import sfa.order_service.enums.TransactionType;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
@@ -34,6 +33,10 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
+    private final ExternalRestService externalRestService;
+    private final TransactionRepository transactionRepository;
+    private final TransactionController transactionController;
+
     public String getPriceType(SalesLevel salesLevel) {
         return switch (salesLevel) {
             case RETAILER -> "retailer";
@@ -56,24 +59,54 @@ public class OrderService {
     }
 
     public OrderEntity dtoToEntity(OrderRequest request) {
-        OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setQuantity(request.getQuantity());
-        orderEntity.setSalesLevel(request.getSalesLevel());
-        orderEntity.setProductId(request.getProductId());
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
         double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
         Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
-        Double finalPrice = totalPriceOfOrder + (totalPriceOfOrder*gstOnOrder)/100;
+        Double finalPrice = totalPriceOfOrder + (totalPriceOfOrder * gstOnOrder) / 100;
+        log.info("Get client details for order creation");
+        ClientResponse client = externalRestService.getClient(request.getClientId());
+        log.info("check if client exists or not");
+        if (client == null) {
+            throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
+        }
+        log.info("check if client has sufficient balance or not");
+        if(client.getTopUpBalance()<finalPrice){
+            throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
+        }
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setClientId(request.getClientId());
+        orderEntity.setQuantity(request.getQuantity());
+        orderEntity.setSalesLevel(request.getSalesLevel());
+        orderEntity.setProductId(request.getProductId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setClientId(request.getClientId());
-//        Long clientId = request.getClientId();
-//        List<TransactionEntity> byClientId = transactionRepository.findByClientId(clientId);
-//        Double topUpAmount = byClientId.get(0).getTopUpAmount();
-//        if (topUpAmount < finalPrice) {
-//            throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
-//        }
+        log.info("Get member details for order creation");
+        MemberResponse member = externalRestService.getMember(request.getMemberId());
+        log.info("check if member exists or not");
+        if (member == null) {
+            throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
+        }
+        orderEntity.setMemberId(request.getMemberId());
+        log.info("Updating client balance after order creation");
+        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
+        clientUpdateRequest.setId(request.getClientId());
+        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance()-finalPrice);
+        clientUpdateRequest.setClientCode(client.getClientCode());
+        externalRestService.updateClientAsync(request.getClientId(), clientUpdateRequest);
+        log.info("Make request for transaction  table after order creation");
+        TransactionRequest transactionRequest=new TransactionRequest();
+        transactionRequest.setClientId(request.getClientId());
+        transactionRequest.setTransactionAmount(finalPrice);
+        transactionRequest.setTransactionType(TransactionType.DEBIT);
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
         return orderEntity;
+    }
+    public String rechargeClientBalance(ClientUpdateRequest request) {
+        log.info("Recharge client balance");
+        externalRestService.updateClientAsync(request.getId(), request);
+        return "Recharge successful";
     }
 
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
@@ -87,6 +120,12 @@ public class OrderService {
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientId());
+        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        orderResponse.setMemberId(orderEntity.getMemberId());
+        orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
+        ClientResponse client = externalRestService.getClient(orderEntity.getClientId());
+        orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
+        orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         return orderResponse;
     }
 

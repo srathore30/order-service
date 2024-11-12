@@ -18,22 +18,24 @@ public class TransactionService {
 
     public TransactionEntity dtoToEntity(TransactionRequest request) {
         TransactionEntity entity = new TransactionEntity();
-        entity.setTopUpAmount(request.getTopUpAmount());
+        entity.setTransactionAmount(request.getTransactionAmount());
         entity.setClientId(request.getClientId());
+        entity.setTransactionType(request.getTransactionType());
         return entity;
     }
 
     public TransactionResponse entityToDto(TransactionEntity transactionEntity) {
         TransactionResponse response = new TransactionResponse();
-        response.setTopUpAmount(transactionEntity.getTopUpAmount());
+        response.setTopUpAmount(transactionEntity.getTransactionAmount());
         response.setClientId(transactionEntity.getClientId());
+        response.setTransactionType(transactionEntity.getTransactionType());
         return response;
     }
 
     public TransactionEntity updateDtoToEntity(Long id, TransactionRequest request) {
         TransactionEntity entity = transactionRepository.findById(id).get();
         entity.setClientId(request.getClientId());
-        entity.setTopUpAmount(request.getTopUpAmount());
+        entity.setTransactionAmount(request.getTransactionAmount());
         return entity;
     }
 
@@ -50,7 +52,6 @@ public class TransactionService {
         TransactionEntity entity = updateDtoToEntity(id, request);
         transactionRepository.save(entity);
         return entityToDto(entity);
-
     }
 
     public void deleteTransaction(Long id) {

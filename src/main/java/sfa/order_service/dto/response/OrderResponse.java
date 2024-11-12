@@ -20,4 +20,8 @@ public class OrderResponse {
     private Double totalPriceWithGst;
     private Date orderCreatedDate;
     private Long clientId;
+    private Long memberId;
+    private String clientName;
+    private Double clientBalanceAmount;
+    private String memberName;
 }

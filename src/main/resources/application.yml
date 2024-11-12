@@ -38,11 +38,19 @@ application:
 product:
   getProduct:
     url: http://localhost:9093/product-service/products/
-
-
 products:
   service:
     url: http://localhost:9093/product-service
+
+clients:
+  service:
+    url: http://localhost:8080/getClientById
+  updateClient:
+    url: http://localhost:8080/updateClient
+
+members:
+  service:
+    url: http://localhost:8080/getMemberById
 
   # CORS Configuration
   spring:
