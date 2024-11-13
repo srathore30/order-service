@@ -21,6 +21,7 @@ public class TransactionService {
         entity.setTransactionAmount(request.getTransactionAmount());
         entity.setClientId(request.getClientId());
         entity.setTransactionType(request.getTransactionType());
+        entity.setOrderId(request.getOrderId());
         return entity;
     }
 
@@ -29,6 +30,7 @@ public class TransactionService {
         response.setTopUpAmount(transactionEntity.getTransactionAmount());
         response.setClientId(transactionEntity.getClientId());
         response.setTransactionType(transactionEntity.getTransactionType());
+        response.setOrderId(transactionEntity.getOrderId());
         return response;
     }
 

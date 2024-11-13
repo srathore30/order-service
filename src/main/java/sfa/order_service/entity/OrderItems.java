@@ -14,6 +14,6 @@ public class OrderItems extends BaseEntity {
     private Long productId;
     private int quantity;
     private Double price;
-    private Double discountApplied;;
+    private Double discountApplied;
     private Double totalAmount;
 }

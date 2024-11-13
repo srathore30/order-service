@@ -11,6 +11,7 @@ import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
@@ -20,5 +21,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel);
+   List<OrderEntity> findByClientId(Long clientId);
 
 }

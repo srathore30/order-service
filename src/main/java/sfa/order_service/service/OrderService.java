@@ -55,14 +55,26 @@ public class OrderService {
         String message = "create order";
         log.info("Creating order: {}", request);
         OrderEntity entity = orderRepository.save(dtoToEntity(request));
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setClientId(request.getClientId());
+        transactionRequest.setTransactionAmount(finalPrice(request));
+        transactionRequest.setTransactionType(TransactionType.DEBIT);
+        transactionRequest.setOrderId(entity.getId());
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
         return entityToDto(entity, message);
     }
 
-    public OrderEntity dtoToEntity(OrderRequest request) {
+    public Double finalPrice(OrderRequest request) {
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
         double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
         Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
-        Double finalPrice = totalPriceOfOrder + (totalPriceOfOrder * gstOnOrder) / 100;
+        return totalPriceOfOrder + (totalPriceOfOrder * gstOnOrder) / 100;
+    }
+
+    public OrderEntity dtoToEntity(OrderRequest request) {
+        log.info("calculate final price for order");
+        Double finalPrice = finalPrice(request);
         log.info("Get client details for order creation");
         ClientResponse client = externalRestService.getClient(request.getClientId());
         log.info("check if client exists or not");
@@ -70,7 +82,7 @@ public class OrderService {
             throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
         }
         log.info("check if client has sufficient balance or not");
-        if(client.getTopUpBalance()<finalPrice){
+        if (client.getTopUpBalance() < finalPrice) {
             throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
         }
         OrderEntity orderEntity = new OrderEntity();
@@ -80,7 +92,6 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
-        orderEntity.setClientId(request.getClientId());
         log.info("Get member details for order creation");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
         log.info("check if member exists or not");
@@ -91,21 +102,67 @@ public class OrderService {
         log.info("Updating client balance after order creation");
         ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
         clientUpdateRequest.setId(request.getClientId());
-        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance()-finalPrice);
+        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
         clientUpdateRequest.setClientCode(client.getClientCode());
-        externalRestService.updateClientAsync(request.getClientId(), clientUpdateRequest);
+        clientUpdateRequest.setCity(client.getCity());
+        clientUpdateRequest.setRegion(client.getRegion());
+        clientUpdateRequest.setEmail(client.getEmail());
+        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientUpdateRequest.setClientLastName(client.getClientLastName());
+        clientUpdateRequest.setMobile(client.getMobile());
+        clientUpdateRequest.setAddress(client.getAddress());
+        clientUpdateRequest.setClinicName(client.getClinicName());
+        clientUpdateRequest.setCategory(client.getCategory());
+        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
+        clientUpdateRequest.setState(client.getState());
+        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
+        clientUpdateRequest.setGender(client.getGender());
+        clientUpdateRequest.setDob(client.getDob());
+        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
+        clientUpdateRequest.setHospitalName(client.getHospitalName());
+        clientUpdateRequest.setDom(client.getDom());
+        clientUpdateRequest.setDivision(client.getDivision());
+        externalRestService.updateClientAsync(clientUpdateRequest);
         log.info("Make request for transaction  table after order creation");
-        TransactionRequest transactionRequest=new TransactionRequest();
-        transactionRequest.setClientId(request.getClientId());
-        transactionRequest.setTransactionAmount(finalPrice);
-        transactionRequest.setTransactionType(TransactionType.DEBIT);
-        log.info("create transaction after order creation");
-        transactionController.createTransaction(transactionRequest);
         return orderEntity;
     }
+
+
     public String rechargeClientBalance(ClientUpdateRequest request) {
         log.info("Recharge client balance");
-        externalRestService.updateClientAsync(request.getId(), request);
+        ClientResponse client = externalRestService.getClient(request.getId());
+        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
+        clientUpdateRequest.setId(request.getId());
+        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() + request.getTopUpBalance());
+        clientUpdateRequest.setClientCode(request.getClientCode());
+        clientUpdateRequest.setCity(client.getCity());
+        clientUpdateRequest.setRegion(client.getRegion());
+        clientUpdateRequest.setEmail(client.getEmail());
+        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientUpdateRequest.setClientLastName(client.getClientLastName());
+        clientUpdateRequest.setMobile(client.getMobile());
+        clientUpdateRequest.setAddress(client.getAddress());
+        clientUpdateRequest.setClinicName(client.getClinicName());
+        clientUpdateRequest.setCategory(client.getCategory());
+        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
+        clientUpdateRequest.setState(client.getState());
+        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
+        clientUpdateRequest.setGender(client.getGender());
+        clientUpdateRequest.setDob(client.getDob());
+        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
+        clientUpdateRequest.setHospitalName(client.getHospitalName());
+        clientUpdateRequest.setDom(client.getDom());
+        clientUpdateRequest.setDivision(client.getDivision());
+        externalRestService.updateClientAsync(clientUpdateRequest);
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setClientId(request.getId());
+        transactionRequest.setTransactionAmount(request.getTopUpBalance());
+        transactionRequest.setTransactionType(TransactionType.CREDIT);
+        log.info("get orderId by Client-Id from order table");
+        Long orderId = orderRepository.findByClientId(request.getId()).get(0).getId();
+        transactionRequest.setOrderId(orderId);
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
         return "Recharge successful";
     }
 

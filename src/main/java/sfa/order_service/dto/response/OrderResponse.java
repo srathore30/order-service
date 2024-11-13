@@ -1,5 +1,7 @@
 package sfa.order_service.dto.response;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class OrderResponse {
     private Long orderId;
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Double totalPrice;
     private Double gstAmount;

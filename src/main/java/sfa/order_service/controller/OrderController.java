@@ -23,7 +23,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/orders")
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+//    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.OK);
     }
@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     @PutMapping("/orders/{orderId}")
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+//    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<OrderUpdateResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
         return new ResponseEntity<>(orderService.updateOrder(orderId, orderRequest), HttpStatus.OK);
     }
@@ -49,8 +49,8 @@ public class OrderController {
     public ResponseEntity<FinalProductPriceResponse> calculateFinalPrice(@RequestBody FinalProductPriceRequest finalProductPriceRequest) {
         return new ResponseEntity<>(orderService.calculateFinalPrice(finalProductPriceRequest), HttpStatus.OK);
     }
-    @PostMapping("rechargeClientBalance")
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @PutMapping("rechargeClientBalance")
+//    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<String> rechargeClientBalance(@RequestBody ClientUpdateRequest request) {
        return new ResponseEntity<>(orderService.rechargeClientBalance(request), HttpStatus.OK);
     }

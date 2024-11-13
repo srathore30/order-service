@@ -31,8 +31,8 @@ public class ExternalRestService {
     }
 
     @Async
-    public void updateClientAsync(Long id, ClientUpdateRequest request) {
-        String url = updateClientUrl + "/"+id;
+    public void updateClientAsync( ClientUpdateRequest request) {
+        String url = updateClientUrl + "/"+request.getId();
        restTemplate.put(url, request);
     }
 

@@ -10,4 +10,5 @@ public class TransactionResponse {
     private Double topUpAmount;
     private Long clientId;
     private TransactionType transactionType;
+    private Long orderId;
 }

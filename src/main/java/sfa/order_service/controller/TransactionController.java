@@ -19,7 +19,7 @@ public class TransactionController {
 
     @Async
     @PostMapping
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+//    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody TransactionRequest request) {
         TransactionResponse transaction = transactionService.createTransaction(request);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
@@ -33,7 +33,7 @@ public class TransactionController {
     }
 
     @PutMapping("updateTransaction/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+//    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<TransactionResponse> updateTransaction(@PathVariable Long id, @RequestBody TransactionRequest request) {
         TransactionResponse transaction = transactionService.updateTransaction(id, request);
         return new ResponseEntity<>(transaction, HttpStatus.OK);
