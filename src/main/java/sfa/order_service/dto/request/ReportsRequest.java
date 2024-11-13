@@ -7,11 +7,9 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
-
 import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Setter

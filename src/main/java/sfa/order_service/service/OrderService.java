@@ -8,20 +8,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
-import sfa.order_service.dto.request.FinalProductPriceRequest;
-import sfa.order_service.dto.request.OrderRequest;
-import sfa.order_service.dto.request.OrderUpdateRequest;
-import sfa.order_service.dto.response.FinalProductPriceResponse;
-import sfa.order_service.dto.response.OrderResponse;
-import sfa.order_service.dto.response.OrderUpdateResponse;
-import sfa.order_service.dto.response.PaginatedResp;
-import sfa.order_service.dto.response.ProductRes;
+import sfa.order_service.controller.TransactionController;
+import sfa.order_service.dto.request.*;
+import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
+import sfa.order_service.enums.TransactionType;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
+import sfa.order_service.repo.TransactionRepository;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
 
@@ -36,43 +33,156 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
+    private final ExternalRestService externalRestService;
+    private final TransactionRepository transactionRepository;
+    private final TransactionController transactionController;
+
+    public String getPriceType(SalesLevel salesLevel) {
+        return switch (salesLevel) {
+            case RETAILER -> "retailer";
+            case WAREHOUSE -> "warehouse";
+            case STOCKIST -> "stocklist";
+            default ->
+                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        };
+    }
+
+    public Double getProductPrice(Long productId, String priceType) {
+        return productServiceClient.getProductPrice(productId, priceType);
+    }
 
     public OrderResponse createOrder(OrderRequest request) {
         String message = "create order";
         log.info("Creating order: {}", request);
         OrderEntity entity = orderRepository.save(dtoToEntity(request));
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setClientId(request.getClientId());
+        transactionRequest.setTransactionAmount(finalPrice(request));
+        transactionRequest.setTransactionType(TransactionType.DEBIT);
+        transactionRequest.setOrderId(entity.getId());
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
         return entityToDto(entity, message);
     }
 
+    public Double finalPrice(OrderRequest request) {
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
+        double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
+        Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
+        return totalPriceOfOrder + (totalPriceOfOrder * gstOnOrder) / 100;
+    }
+
     public OrderEntity dtoToEntity(OrderRequest request) {
+        log.info("calculate final price for order");
+        Double finalPrice = finalPrice(request);
+        log.info("Get client details for order creation");
+        ClientResponse client = externalRestService.getClient(request.getClientId());
+        log.info("check if client exists or not");
+        if (client == null) {
+            throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
+        }
+        log.info("check if client has sufficient balance or not");
+        if (client.getTopUpBalance() < finalPrice) {
+            throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
+        }
         OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setClientId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
         orderEntity.setProductId(request.getProductId());
+        orderEntity.setPrice(finalPrice);
+        orderEntity.setOrderCreatedDate(new Date());
+        log.info("Get member details for order creation");
+        MemberResponse member = externalRestService.getMember(request.getMemberId());
+        log.info("check if member exists or not");
+        if (member == null) {
+            throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
+        }
+        orderEntity.setMemberId(request.getMemberId());
+        log.info("Updating client balance after order creation");
+        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
+        clientUpdateRequest.setId(request.getClientId());
+        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+        clientUpdateRequest.setClientCode(client.getClientCode());
+        clientUpdateRequest.setCity(client.getCity());
+        clientUpdateRequest.setRegion(client.getRegion());
+        clientUpdateRequest.setEmail(client.getEmail());
+        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientUpdateRequest.setClientLastName(client.getClientLastName());
+        clientUpdateRequest.setMobile(client.getMobile());
+        clientUpdateRequest.setAddress(client.getAddress());
+        clientUpdateRequest.setClinicName(client.getClinicName());
+        clientUpdateRequest.setCategory(client.getCategory());
+        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
+        clientUpdateRequest.setState(client.getState());
+        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
+        clientUpdateRequest.setGender(client.getGender());
+        clientUpdateRequest.setDob(client.getDob());
+        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
+        clientUpdateRequest.setHospitalName(client.getHospitalName());
+        clientUpdateRequest.setDom(client.getDom());
+        clientUpdateRequest.setDivision(client.getDivision());
+        externalRestService.updateClientAsync(clientUpdateRequest);
+        log.info("Make request for transaction  table after order creation");
         return orderEntity;
+    }
+
+
+    public String rechargeClientBalance(ClientUpdateRequest request) {
+        log.info("Recharge client balance");
+        ClientResponse client = externalRestService.getClient(request.getId());
+        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
+        clientUpdateRequest.setId(request.getId());
+        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() + request.getTopUpBalance());
+        clientUpdateRequest.setClientCode(request.getClientCode());
+        clientUpdateRequest.setCity(client.getCity());
+        clientUpdateRequest.setRegion(client.getRegion());
+        clientUpdateRequest.setEmail(client.getEmail());
+        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientUpdateRequest.setClientLastName(client.getClientLastName());
+        clientUpdateRequest.setMobile(client.getMobile());
+        clientUpdateRequest.setAddress(client.getAddress());
+        clientUpdateRequest.setClinicName(client.getClinicName());
+        clientUpdateRequest.setCategory(client.getCategory());
+        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
+        clientUpdateRequest.setState(client.getState());
+        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
+        clientUpdateRequest.setGender(client.getGender());
+        clientUpdateRequest.setDob(client.getDob());
+        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
+        clientUpdateRequest.setHospitalName(client.getHospitalName());
+        clientUpdateRequest.setDom(client.getDom());
+        clientUpdateRequest.setDivision(client.getDivision());
+        externalRestService.updateClientAsync(clientUpdateRequest);
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setClientId(request.getId());
+        transactionRequest.setTransactionAmount(request.getTopUpBalance());
+        transactionRequest.setTransactionType(TransactionType.CREDIT);
+        log.info("get orderId by Client-Id from order table");
+        Long orderId = orderRepository.findByClientId(request.getId()).get(0).getId();
+        transactionRequest.setOrderId(orderId);
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
+        return "Recharge successful";
     }
 
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
-
-        Double gstPercentage = productServiceClient.getProductPrice(orderEntity.getProductId(), "gst");
-        Double finalPrice = switch (orderEntity.getSalesLevel()) {
-            case RETAILER -> productServiceClient.getProductPrice(orderEntity.getProductId(), "retailer");
-            case WAREHOUSE -> productServiceClient.getProductPrice(orderEntity.getProductId(), "warehouse");
-            case STOCKIST -> productServiceClient.getProductPrice(orderEntity.getProductId(), "stocklist");
-            default -> throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
-        };
-
-        double totalPrice = orderEntity.getQuantity() * finalPrice;
-        double gstAmount = (totalPrice * gstPercentage) / 100;
-        double totalPriceWithGst = totalPrice + gstAmount;
-
-        orderResponse.setTotalPrice(totalPrice);
-        orderResponse.setGstAmount(gstAmount);
-        orderResponse.setTotalPriceWithGst(totalPriceWithGst);
-        orderResponse.setOrderCreatedDate(new Date());
+        Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
+        orderResponse.setGstAmount(gstOnOrder);
+        orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
+        orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
+        orderResponse.setClientId(orderEntity.getClientId());
+        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        orderResponse.setMemberId(orderEntity.getMemberId());
+        orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
+        ClientResponse client = externalRestService.getClient(orderEntity.getClientId());
+        orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
+        orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         return orderResponse;
     }
 
@@ -98,46 +208,47 @@ public class OrderService {
         return orderResponse;
     }
 
-    public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest){
+    public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest) {
         ProductRes productRes = productServiceClient.getProduct(finalProductPriceRequest.getProductId());
         FinalProductPriceResponse finalRes = new FinalProductPriceResponse();
         assert productRes != null;
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.RETAILER){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.RETAILER) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
 
         }
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getWarehousePrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
         }
-        if(finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.STOCKIST){
+        if (finalProductPriceRequest.getSalesLevelConstant() == SalesLevel.STOCKIST) {
             finalRes.setUnitPrice(productRes.getProductPriceRes().getRetailerPrice());
             finalRes.setQuantity(finalProductPriceRequest.getQuantity());
             finalRes.setProductId(productRes.getProductId());
             finalRes.setMessage("Final price calculated successfully");
             double discount = DiscountUtil.calculateFinalPrice(finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getStockListPrice(), finalProductPriceRequest.getDiscountCoupon().getDiscountAmount());
-            double discountedPRice  = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
+            double discountedPRice = finalProductPriceRequest.getQuantity() * productRes.getProductPriceRes().getRetailerPrice() - discount;
             finalRes.setDiscountApplied(discount);
             finalRes.setSubTotal(discountedPRice);
             finalRes.setGstAmount(CalculateGst.calculateGstAmountFromTotal(discountedPRice, productRes.getProductPriceRes().getGstPercentage()));
             finalRes.setTotalPriceWithGst(finalRes.getGstAmount() + discountedPRice);
         }
         return finalRes;
-    }}
+    }
+}

@@ -3,6 +3,11 @@ spring:
     url: jdbc:mysql://api.prism-sfa-dev.net:3306/sfa_db
     username: PrismSfa
     password: TestUser123!
+    hikari:
+      connection-timeout: 60000          # 1 minute
+      max-lifetime: 1800000              # 30 minutes
+      idle-timeout: 300000               # 5 minutes
+      maximum-pool-size: 10              # Adjust based on application needs
 
   jpa:
     hibernate:
@@ -22,6 +27,13 @@ server:
   port: 9092
   servlet:
     context-path: /order-service
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 validate:
   token:
     url: http://localhost:9094/auth-service/auth/validateToken?token=
@@ -31,9 +43,25 @@ application:
 product:
   getProduct:
     url: http://localhost:9093/product-service/products/
-
-
 products:
   service:
     url: http://localhost:9093/product-service
 
+clients:
+  service:
+    url: http://localhost:8080/getClientById
+  updateClient:
+    url: http://localhost:8080/updateClient
+
+members:
+  service:
+    url: http://localhost:8080/getMemberById
+
+  # CORS Configuration
+  spring:
+    mvc:
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST,PUT,DELETE
+        allowed-headers: "*"
+        allow-credentials: true
