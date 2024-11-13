@@ -1,9 +1,7 @@
-package sfa.order_service.entity;
+package sfa.order_service.dto.response;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.constant.DiscountCoupon;
@@ -11,9 +9,8 @@ import sfa.order_service.enums.SalesLevel;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "order_items")
-public class OrderItems extends BaseEntity {
+public class OrderItemResponse {
+    private Long id;
     private Long orderId;
     private Long productId;
     private int quantity;
