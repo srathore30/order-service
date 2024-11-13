@@ -13,7 +13,8 @@ public enum ApiErrorCodes implements Error {
     TRANSACTION_NOT_FOUND(1007,"Transaction not found" ),
     INSUFFICIENT_BALANCE(1008,"Insufficient balance" ),
     MEMBER_NOT_FOUND(1009,"Member not found" ),
-    CLIENT_NOT_FOUND(1010,"Client not found" );
+    CLIENT_NOT_FOUND(1010,"Client not found" ),
+    INVALID_SALES_LEVEL(1011,"Invalid sales level" );
 
     private int errorCode;
     private String errorMessage;
