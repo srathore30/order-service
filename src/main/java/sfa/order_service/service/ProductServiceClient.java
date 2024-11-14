@@ -2,8 +2,13 @@ package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.dto.response.ProductRes;
 
 @Service
@@ -15,13 +20,27 @@ public class ProductServiceClient {
     @Value("${product.getProduct.url}")
     private String productUrl;
 
-    public Double getProductPrice(Long productId, String priceType) {
-        String url = productServiceUrl + "/products/getByIdAndPriceType/" + productId + "?priceType=" + priceType;
-        return restTemplate.getForObject(url, Double.class);
+    private HttpHeaders createHeaders() {
+        String token = TokenContext.getToken();
+        HttpHeaders headers = new HttpHeaders();
+        if (token != null) {
+            headers.set("Authorization", "Bearer " + token);
+        }
+        return headers;
     }
 
-    public ProductRes getProduct(Long productId){
-        String url = productUrl + productId;
-        return restTemplate.getForObject(url, ProductRes.class);
+    public Double getProductPrice(Long productId, String priceType) {
+        String url = productServiceUrl + "/products/getByIdAndPriceType/" + productId + "?priceType=" + priceType;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        ResponseEntity<Double> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Double.class);
+        return response.getBody();
     }
+
+    public ProductRes getProduct(Long productId) {
+        String url = productUrl + productId;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());  // Create request entity with headers
+        ResponseEntity<ProductRes> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ProductRes.class);
+        return response.getBody();
+    }
+
 }

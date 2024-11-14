@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import sfa.order_service.AuthUtils.JwtHelper;
+import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.constant.UserRole;
 
 import java.lang.reflect.Method;
@@ -38,6 +39,7 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return false;
                 }
+                TokenContext.setToken(token);
                 if(!validateToken(token)){
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return false;
@@ -80,5 +82,10 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
             logger.log(Level.SEVERE, "Exception occurred in UserAuthorizationInterceptor due to invalid role or token ", e);
         }
         return null;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        TokenContext.clear(); 
     }
 }
