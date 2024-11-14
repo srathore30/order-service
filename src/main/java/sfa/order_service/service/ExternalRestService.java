@@ -1,6 +1,7 @@
 package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,7 @@ import sfa.order_service.dto.response.MemberResponse;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ExternalRestService {
 
     private final RestTemplate restTemplate;
@@ -25,37 +27,40 @@ public class ExternalRestService {
     private String memberServiceUrl;
     @Value("${clients.updateClient.url}")
     private String updateClientUrl;
-
-    // Helper method to create HTTP headers with the token
     private HttpHeaders createHeaders() {
-        String token = TokenContext.getToken();  // Get token from the context
+        log.info("Helper method to create HTTP headers with the token");
+        log.info("Token: {}", TokenContext.getToken());
+        String token = TokenContext.getToken();
         HttpHeaders headers = new HttpHeaders();
         if (token != null) {
-            headers.set("Authorization", "Bearer " + token);  // Add token to headers
+            log.info("Add token to headers");
+            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }
 
-    // Fetch client details with authorization header
     public ClientResponse getClient(Long clientId) {
+        log.info("Get client with id: {}", clientId);
         String url = clientServiceUrl + "/" + clientId;
+        log.info("URL: {}", url);
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        log.info("Fetch client details with authorization header");
         ResponseEntity<ClientResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ClientResponse.class);
         return response.getBody();
     }
 
-    // Fetch member details with authorization header
     public MemberResponse getMember(Long memberId) {
         String url = memberServiceUrl + "/" + memberId;
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        log.info("Fetch member details with authorization header");
         ResponseEntity<MemberResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, MemberResponse.class);
         return response.getBody();
     }
 
-    // Async method to update client with authorization header
     @Async
     public void updateClientAsync(ClientUpdateRequest request) {
         String url = updateClientUrl + "/" + request.getId();
+        log.info("Async method to update client with authorization header");
         HttpEntity<ClientUpdateRequest> requestEntity = new HttpEntity<>(request, createHeaders());
         restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
     }

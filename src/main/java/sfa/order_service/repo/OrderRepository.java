@@ -11,7 +11,6 @@ import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {

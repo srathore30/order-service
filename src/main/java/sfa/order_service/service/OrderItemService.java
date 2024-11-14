@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.request.OrderItemRequest;
-import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.OrderItemResponse;
 import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.OrderItems;

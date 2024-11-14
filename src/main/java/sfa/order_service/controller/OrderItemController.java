@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sfa.order_service.dto.request.OrderItemRequest;
-import sfa.order_service.dto.request.OrderUpdateRequest;
 import sfa.order_service.dto.response.OrderItemResponse;
 import sfa.order_service.service.OrderItemService;
 
