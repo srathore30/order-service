@@ -158,9 +158,6 @@ public class OrderService {
         transactionRequest.setClientId(request.getId());
         transactionRequest.setTransactionAmount(request.getTopUpBalance());
         transactionRequest.setTransactionType(TransactionType.CREDIT);
-        log.info("get orderId by Client-Id from order table");
-        Long orderId = orderRepository.findByClientId(request.getId()).get(0).getId();
-        transactionRequest.setOrderId(orderId);
         log.info("create transaction after order creation");
         transactionController.createTransaction(transactionRequest);
         return "Recharge successful";
