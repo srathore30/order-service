@@ -14,7 +14,9 @@ public enum ApiErrorCodes implements Error {
     INSUFFICIENT_BALANCE(1008,"Insufficient balance" ),
     MEMBER_NOT_FOUND(1009,"Member not found" ),
     CLIENT_NOT_FOUND(1010,"Client not found" ),
-    INVALID_SALES_LEVEL(1011,"Invalid sales level" );
+    INVALID_SALES_LEVEL(1011,"Invalid sales level" ),
+    OUTLET_NOT_FOUND(1012,"Outlet not found" ),
+    BEET_NOT_FOUND(1013,"Beet not found" );
 
     private int errorCode;
     private String errorMessage;

@@ -27,6 +27,10 @@ public class ExternalRestService {
     private String memberServiceUrl;
     @Value("${clients.updateClient.url}")
     private String updateClientUrl;
+    @Value("${outlets.getOutlet.url}")
+    private String getOutletUrlById;
+    @Value("${beets.getBeet.url}")
+    private String getBeetByIdUrl;
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
         log.info("Token: {}", TokenContext.getToken());
@@ -63,5 +67,21 @@ public class ExternalRestService {
         log.info("Async method to update client with authorization header");
         HttpEntity<ClientUpdateRequest> requestEntity = new HttpEntity<>(request, createHeaders());
         restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
+    }
+    @Async
+    public String getOutletById(Long outletId) {
+        String url = getOutletUrlById + "/" + outletId;
+        log.info("Async method to get outlet with authorization header");
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+        return response.getBody();
+    }
+
+    public String getBeetById(Long beetId) {
+        String url = getBeetByIdUrl + "/" + beetId;
+        log.info("Async method to get beets with authorization header");
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+        return response.getBody();
     }
 }

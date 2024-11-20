@@ -15,4 +15,6 @@ public class OrderRequest {
     private SalesLevel salesLevel;
     private Long clientId;
     private Long memberId;
+    private Long outletId;
+    private Long beetId;
 }

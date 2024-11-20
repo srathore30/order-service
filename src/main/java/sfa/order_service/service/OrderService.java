@@ -38,6 +38,7 @@ public class OrderService {
     private final TransactionController transactionController;
 
     public String getPriceType(SalesLevel salesLevel) {
+        log.info("Get price type for sales level: {}", salesLevel);
         return switch (salesLevel) {
             case RETAILER -> "retailer";
             case WAREHOUSE -> "warehouse";
@@ -48,6 +49,7 @@ public class OrderService {
     }
 
     public Double getProductPrice(Long productId, String priceType) {
+        log.info("Get product price with product id: {} and price type: {}", productId, priceType);
         return productServiceClient.getProductPrice(productId, priceType);
     }
 
@@ -55,6 +57,7 @@ public class OrderService {
         String message = "create order";
         log.info("Creating order: {}", request);
         OrderEntity entity = orderRepository.save(dtoToEntity(request));
+        log.info("create transaction before order creation");
         TransactionRequest transactionRequest = new TransactionRequest();
         transactionRequest.setClientId(request.getClientId());
         transactionRequest.setTransactionAmount(finalPrice(request));
@@ -66,6 +69,7 @@ public class OrderService {
     }
 
     public Double finalPrice(OrderRequest request) {
+        log.info("Calculate final price for order");
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(request.getProductId(), getPriceType(request.getSalesLevel()));
         double totalPriceOfOrder = priceOfOrderWithRespectedSalesLevel * request.getQuantity();
         Double gstOnOrder = getProductPrice(request.getProductId(), "gst");
@@ -85,6 +89,16 @@ public class OrderService {
         if (client.getTopUpBalance() < finalPrice) {
             throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
         }
+        log.info("Get outlet details for order creation");
+        String outletById = externalRestService.getOutletById(request.getOutletId());
+        if (outletById.isEmpty()) {
+            throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
+        }
+        log.info("Get beets details for order creation");
+        String beetById = externalRestService.getBeetById(request.getBeetId());
+        if (beetById.isEmpty()) {
+            throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
+        }
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setClientId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
@@ -92,6 +106,8 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
+        orderEntity.setOutletId(request.getOutletId());
+        orderEntity.setBeetId(request.getBeetId());
         log.info("Get member details for order creation");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
         log.info("check if member exists or not");
@@ -126,7 +142,6 @@ public class OrderService {
         log.info("Make request for transaction  table after order creation");
         return orderEntity;
     }
-
 
     public String rechargeClientBalance(ClientUpdateRequest request) {
         log.info("Recharge client balance");
@@ -195,8 +210,10 @@ public class OrderService {
     }
 
     public OrderUpdateResponse updateOrder(Long orderId, OrderUpdateRequest request) {
+        log.info("update order status");
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
         orderEntity.setStatus(request.getStatus());
+        log.info("Order status updated to {}", request.getStatus());
         OrderEntity updatedOrder = orderRepository.save(orderEntity);
         OrderUpdateResponse orderResponse = new OrderUpdateResponse();
         orderResponse.setOrderId(updatedOrder.getId());

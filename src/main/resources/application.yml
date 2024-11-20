@@ -56,7 +56,12 @@ clients:
 members:
   service:
     url: http://localhost:8080/getMemberById
-
+outlets:
+  getOutlet:
+    url: http://localhost:8080/getOutletById
+beets:
+  getBeet:
+    url: http://localhost:8080/getBeetById
   # CORS Configuration
   spring:
     mvc:
