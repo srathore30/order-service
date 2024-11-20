@@ -34,7 +34,6 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
     private final ExternalRestService externalRestService;
-    private final TransactionRepository transactionRepository;
     private final TransactionController transactionController;
 
     public String getPriceType(SalesLevel salesLevel) {
@@ -79,9 +78,9 @@ public class OrderService {
     public OrderEntity dtoToEntity(OrderRequest request) {
         log.info("calculate final price for order");
         Double finalPrice = finalPrice(request);
-        log.info("Get client details for order creation");
-        ClientResponse client = externalRestService.getClient(request.getClientId());
-        log.info("check if client exists or not");
+        log.info("Get FMCG-client details for order creation");
+        ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
+        log.info("check if FMCG-client exists or not");
         if (client == null) {
             throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
         }
@@ -115,60 +114,40 @@ public class OrderService {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
         orderEntity.setMemberId(request.getMemberId());
-        log.info("Updating client balance after order creation");
-        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
-        clientUpdateRequest.setId(request.getClientId());
-        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
-        clientUpdateRequest.setClientCode(client.getClientCode());
-        clientUpdateRequest.setCity(client.getCity());
-        clientUpdateRequest.setRegion(client.getRegion());
-        clientUpdateRequest.setEmail(client.getEmail());
-        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
-        clientUpdateRequest.setClientLastName(client.getClientLastName());
-        clientUpdateRequest.setMobile(client.getMobile());
-        clientUpdateRequest.setAddress(client.getAddress());
-        clientUpdateRequest.setClinicName(client.getClinicName());
-        clientUpdateRequest.setCategory(client.getCategory());
-        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
-        clientUpdateRequest.setState(client.getState());
-        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
-        clientUpdateRequest.setGender(client.getGender());
-        clientUpdateRequest.setDob(client.getDob());
-        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
-        clientUpdateRequest.setHospitalName(client.getHospitalName());
-        clientUpdateRequest.setDom(client.getDom());
-        clientUpdateRequest.setDivision(client.getDivision());
-        externalRestService.updateClientAsync(clientUpdateRequest);
+        log.info("Updating FMCG-client balance after order creation");
+        ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+        clientFMCGUpdateRequest.setId(request.getClientId());
+        clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+        clientFMCGUpdateRequest.setClientCode(client.getClientCode());
+        clientFMCGUpdateRequest.setCity(client.getCity());
+        clientFMCGUpdateRequest.setRegion(client.getRegion());
+        clientFMCGUpdateRequest.setEmail(client.getEmail());
+        clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+        clientFMCGUpdateRequest.setMobile(client.getMobile());
+        clientFMCGUpdateRequest.setAddress(client.getAddress());
+        clientFMCGUpdateRequest.setState(client.getState());
+        externalRestService.updateClientAsync(clientFMCGUpdateRequest);
         log.info("Make request for transaction  table after order creation");
         return orderEntity;
     }
 
-    public String rechargeClientBalance(ClientUpdateRequest request) {
-        log.info("Recharge client balance");
-        ClientResponse client = externalRestService.getClient(request.getId());
-        ClientUpdateRequest clientUpdateRequest = new ClientUpdateRequest();
-        clientUpdateRequest.setId(request.getId());
-        clientUpdateRequest.setTopUpBalance(client.getTopUpBalance() + request.getTopUpBalance());
-        clientUpdateRequest.setClientCode(request.getClientCode());
-        clientUpdateRequest.setCity(client.getCity());
-        clientUpdateRequest.setRegion(client.getRegion());
-        clientUpdateRequest.setEmail(client.getEmail());
-        clientUpdateRequest.setClientFirstName(client.getClientFirstName());
-        clientUpdateRequest.setClientLastName(client.getClientLastName());
-        clientUpdateRequest.setMobile(client.getMobile());
-        clientUpdateRequest.setAddress(client.getAddress());
-        clientUpdateRequest.setClinicName(client.getClinicName());
-        clientUpdateRequest.setCategory(client.getCategory());
-        clientUpdateRequest.setTimeAvailability(client.getTimeAvailability());
-        clientUpdateRequest.setState(client.getState());
-        clientUpdateRequest.setPracticeSince(client.getPracticeSince());
-        clientUpdateRequest.setGender(client.getGender());
-        clientUpdateRequest.setDob(client.getDob());
-        clientUpdateRequest.setDaysAvailability(client.getDaysAvailability());
-        clientUpdateRequest.setHospitalName(client.getHospitalName());
-        clientUpdateRequest.setDom(client.getDom());
-        clientUpdateRequest.setDivision(client.getDivision());
-        externalRestService.updateClientAsync(clientUpdateRequest);
+    public String rechargeClientBalance(ClientFMCGUpdateRequest request) {
+        log.info("Recharge FMCG-client balance");
+        ClientFMCGResponse client = externalRestService.getClient(request.getId());
+        ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+        clientFMCGUpdateRequest.setId(request.getId());
+        clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() + request.getTopUpBalance());
+        clientFMCGUpdateRequest.setClientCode(request.getClientCode());
+        clientFMCGUpdateRequest.setCity(client.getCity());
+        clientFMCGUpdateRequest.setRegion(client.getRegion());
+        clientFMCGUpdateRequest.setEmail(client.getEmail());
+        clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+        clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+        clientFMCGUpdateRequest.setMobile(client.getMobile());
+        clientFMCGUpdateRequest.setAddress(client.getAddress());
+        clientFMCGUpdateRequest.setState(client.getState());
+        externalRestService.updateClientAsync(clientFMCGUpdateRequest);
         TransactionRequest transactionRequest = new TransactionRequest();
         transactionRequest.setClientId(request.getId());
         transactionRequest.setTransactionAmount(request.getTopUpBalance());
@@ -192,7 +171,7 @@ public class OrderService {
         MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
-        ClientResponse client = externalRestService.getClient(orderEntity.getClientId());
+        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         return orderResponse;

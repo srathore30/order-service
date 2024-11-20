@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
-import sfa.order_service.dto.request.ClientUpdateRequest;
+import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
 import sfa.order_service.dto.request.FinalProductPriceRequest;
 import sfa.order_service.dto.request.OrderRequest;
 import sfa.order_service.dto.request.OrderUpdateRequest;
@@ -51,7 +51,7 @@ public class OrderController {
     }
     @PutMapping("rechargeClientBalance")
     @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
-    public ResponseEntity<String> rechargeClientBalance(@RequestBody ClientUpdateRequest request) {
+    public ResponseEntity<String> rechargeClientBalance(@RequestBody ClientFMCGUpdateRequest request) {
        return new ResponseEntity<>(orderService.rechargeClientBalance(request), HttpStatus.OK);
     }
 

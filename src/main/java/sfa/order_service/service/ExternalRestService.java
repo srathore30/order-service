@@ -11,8 +11,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import sfa.order_service.Configs.TokenContext;
-import sfa.order_service.dto.request.ClientUpdateRequest;
-import sfa.order_service.dto.response.ClientResponse;
+import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
+import sfa.order_service.dto.response.ClientFMCGResponse;
 import sfa.order_service.dto.response.MemberResponse;
 
 @RequiredArgsConstructor
@@ -43,13 +43,13 @@ public class ExternalRestService {
         return headers;
     }
 
-    public ClientResponse getClient(Long clientId) {
+    public ClientFMCGResponse getClient(Long clientId) {
         log.info("Get client with id: {}", clientId);
         String url = clientServiceUrl + "/" + clientId;
         log.info("URL: {}", url);
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
         log.info("Fetch client details with authorization header");
-        ResponseEntity<ClientResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ClientResponse.class);
+        ResponseEntity<ClientFMCGResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ClientFMCGResponse.class);
         return response.getBody();
     }
 
@@ -62,10 +62,10 @@ public class ExternalRestService {
     }
 
     @Async
-    public void updateClientAsync(ClientUpdateRequest request) {
+    public void updateClientAsync(ClientFMCGUpdateRequest request) {
         String url = updateClientUrl + "/" + request.getId();
         log.info("Async method to update client with authorization header");
-        HttpEntity<ClientUpdateRequest> requestEntity = new HttpEntity<>(request, createHeaders());
+        HttpEntity<ClientFMCGUpdateRequest> requestEntity = new HttpEntity<>(request, createHeaders());
         restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
     }
     @Async
