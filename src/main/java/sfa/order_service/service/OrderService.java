@@ -22,8 +22,7 @@ import sfa.order_service.repo.TransactionRepository;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -104,6 +103,8 @@ public class OrderService {
         orderEntity.setSalesLevel(request.getSalesLevel());
         orderEntity.setProductId(request.getProductId());
         orderEntity.setPrice(finalPrice);
+        orderEntity.setOrderMedium(request.getOrderMedium());
+        orderEntity.setOrderCallStatus(request.getOrderCallStatus());
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setOutletId(request.getOutletId());
         orderEntity.setBeetId(request.getBeetId());
@@ -163,6 +164,8 @@ public class OrderService {
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
         Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
         orderResponse.setGstAmount(gstOnOrder);
+        orderResponse.setOrderMedium(orderEntity.getOrderMedium());
+        orderResponse.setOrderCallStatus(orderEntity.getOrderCallStatus());
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
@@ -244,4 +247,5 @@ public class OrderService {
         }
         return finalRes;
     }
+
 }

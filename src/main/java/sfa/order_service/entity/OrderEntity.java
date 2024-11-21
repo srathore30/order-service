@@ -6,6 +6,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import sfa.order_service.constant.OrderCallStatus;
+import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 
@@ -24,6 +26,10 @@ public class OrderEntity extends BaseEntity {
     private OrderStatus status;
     private Long productId;
     private Date orderCreatedDate;
+    @Enumerated(EnumType.STRING)
+    private OrderMedium orderMedium;
+    @Enumerated(EnumType.STRING)
+    private OrderCallStatus orderCallStatus;
     private Long clientId;
     private Long memberId;
     private Long outletId;

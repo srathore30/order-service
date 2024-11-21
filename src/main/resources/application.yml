@@ -54,14 +54,24 @@ clients:
     url: http://localhost:8080/updateClient
 
 members:
+  memberIds:
+    url: http://localhost:8080/getAllMemberIdsByReportingManager
   service:
     url: http://localhost:8080/getMemberById
+
 outlets:
+  getAllOutlet:
+    url: http://localhost:8080/getAllOutletByIds
   getOutlet:
     url: http://localhost:8080/getOutletById
+
 beets:
+  getAllBeets:
+    url: http://localhost:8080/getAllBeetByIds
   getBeet:
     url: http://localhost:8080/getBeetById
+
+
   # CORS Configuration
   spring:
     mvc:

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sfa.order_service.constant.OrderCallStatus;
+import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
 
 import java.util.Date;
@@ -20,6 +22,8 @@ public class OrderResponse {
     private OrderStatus status;
     private Double totalPrice;
     private Double gstAmount;
+    private OrderMedium orderMedium;
+    private OrderCallStatus orderCallStatus;
     private Double totalPriceWithGst;
     private Date orderCreatedDate;
     private Long clientId;

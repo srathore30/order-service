@@ -1,18 +1,18 @@
 package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.dto.request.ReportsRequest;
-import sfa.order_service.dto.response.ProductPriceRes;
-import sfa.order_service.dto.response.ProductRes;
-import sfa.order_service.dto.response.ReportsResponse;
-import sfa.order_service.dto.response.TopSellingProductRes;
+import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +51,84 @@ public class ReportServices {
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
     }
+
+    public PaginatedResp<BeetReportResponse> getBeetOrderReportByMemberIdWithDateFilter(Long memberId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+        Map<Long, Double> beetOrderMap = new HashMap<>();
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndMemberId(startDate, endDate, memberId,pageable);
+        List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
+        for(OrderEntity order : orderEntityPage.getContent()){
+            beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+        }
+        Set<Long> beetIds = beetOrderMap.keySet();
+        List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
+        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()){
+            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
+                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+                    BeetReportResponse beetReportResponse = new BeetReportResponse();
+                    beetReportResponse.setTotalSales(entry.getValue());
+                    beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+                    beetReportResponsesList.add(beetReportResponse);
+                    break;
+                }
+            }
+        }
+        beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalSales).reversed());
+        return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
+    }
+    public PaginatedResp<BeetReportResponse> getBeetOrderReportByReportingManagerIdWithDateFilter(Long reportingManagerId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+        Map<Long, Double> beetOrderMap = new HashMap<>();
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
+        Page<OrderEntity> orderEntityPage = orderRepository.findOrdersByDateRangeAndMembers(startDate, endDate, memberIds,pageable);
+        List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
+        for(OrderEntity order : orderEntityPage.getContent()){
+            beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+        }
+        Set<Long> beetIds = beetOrderMap.keySet();
+        List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
+        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()){
+            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
+                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+                    BeetReportResponse beetReportResponse = new BeetReportResponse();
+                    beetReportResponse.setTotalSales(entry.getValue());
+                    beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+                    beetReportResponsesList.add(beetReportResponse);
+                    break;
+                }
+            }
+        }
+        beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalSales).reversed());
+        return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
+    }
+    public PaginatedResp<OutletReportResponse> getOutletOrderReportByBeetIdWithDateFilter(Long beetId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+        Map<Long, Double> outletOrderMap = new HashMap<>();
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndBeetId(startDate, endDate, beetId, pageable);
+        List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
+        for(OrderEntity order : orderEntityPage.getContent()){
+            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
+        }
+        Set<Long> outletIds = outletOrderMap.keySet();
+        List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
+            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
+                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+                    OutletReportResponse outletReportResponse = new OutletReportResponse();
+                    outletReportResponse.setTotalSales(entry.getValue());
+                    outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
+                    outletReportResponsesList.add(outletReportResponse);
+                    break;
+                }
+            }
+        }
+        outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalSales).reversed());
+        return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
+    }
+
 }
 
 

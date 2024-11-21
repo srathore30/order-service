@@ -4,6 +4,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
+import sfa.order_service.constant.OrderCallStatus;
+import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.SalesLevel;
 
 @Getter
@@ -17,4 +19,6 @@ public class OrderRequest {
     private Long memberId;
     private Long outletId;
     private Long beetId;
+    private OrderMedium orderMedium;
+    private OrderCallStatus orderCallStatus;
 }
