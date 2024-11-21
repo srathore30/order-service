@@ -20,7 +20,7 @@ public class OrderItemController {
     private final OrderItemService orderItemService;
 
     @PostMapping
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<OrderItemResponse> createOrderItem(@RequestBody OrderItemRequest request) {
         return new ResponseEntity<>(orderItemService.createOrderItem(request), HttpStatus.OK);
     }
