@@ -26,4 +26,6 @@ public class OrderEntity extends BaseEntity {
     private Date orderCreatedDate;
     private Long clientId;
     private Long memberId;
+    private Long outletId;
+    private Long beetId;
 }

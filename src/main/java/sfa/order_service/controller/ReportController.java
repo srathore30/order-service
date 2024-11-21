@@ -24,7 +24,7 @@ public class ReportController {
     private final ReportServices reportServices;
 
     @GetMapping("/sales")
-    @UserAuthorization(allowedRoles = {UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<ReportsResponse> getSalesReport(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
         ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
         ReportsResponse reportsResponse = reportServices.getSalesReportBetweenDatesAndSalesLevel(reportsRequest);

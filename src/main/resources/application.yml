@@ -49,14 +49,19 @@ products:
 
 clients:
   service:
-    url: http://localhost:8080/getClientById
+    url: http://localhost:8080/getClientFMCGById
   updateClient:
     url: http://localhost:8080/updateClient
 
 members:
   service:
     url: http://localhost:8080/getMemberById
-
+outlets:
+  getOutlet:
+    url: http://localhost:8080/getOutletById
+beets:
+  getBeet:
+    url: http://localhost:8080/getBeetById
   # CORS Configuration
   spring:
     mvc:
