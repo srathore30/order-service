@@ -11,4 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class OutletReportResponse {
     Double totalSales;
     OutletRespForOrderDto outletRespForOrderDto;
+    Integer totalOrder;
 }

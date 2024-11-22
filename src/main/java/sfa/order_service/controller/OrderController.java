@@ -55,4 +55,16 @@ public class OrderController {
        return new ResponseEntity<>(orderService.rechargeClientBalance(request), HttpStatus.OK);
     }
 
+    @GetMapping("/getAllOrder/{memberId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByMemberId(@PathVariable Long memberId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        return new ResponseEntity<>(orderService.getAllOrderByMemberId(memberId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllOrder/{clientFmcgId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgId(@PathVariable Long clientFmcgId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        return new ResponseEntity<>(orderService.getAllOrderByClientFmcgId(clientFmcgId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+
 }

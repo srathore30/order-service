@@ -30,7 +30,7 @@ public class OrderEntity extends BaseEntity {
     private OrderMedium orderMedium;
     @Enumerated(EnumType.STRING)
     private OrderCallStatus orderCallStatus;
-    private Long clientId;
+    private Long clientFmcgId;
     private Long memberId;
     private Long outletId;
     private Long beetId;
