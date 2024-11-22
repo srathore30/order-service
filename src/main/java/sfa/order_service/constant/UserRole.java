@@ -7,4 +7,5 @@ public enum UserRole {
     Manager,
     View_Manager,
     ClientFMCG,
+    Client
 }
