@@ -98,7 +98,7 @@ public class OrderService {
             throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
         }
         OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setClientId(request.getClientId());
+        orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
         orderEntity.setProductId(request.getProductId());
@@ -170,11 +170,11 @@ public class OrderService {
         Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
-        orderResponse.setClientId(orderEntity.getClientId());
+        orderResponse.setClientId(orderEntity.getClientFmcgId());
         MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
-        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientId());
+        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         return orderResponse;
@@ -248,4 +248,22 @@ public class OrderService {
         return finalRes;
     }
 
+
+    public PaginatedResp<OrderResponse> getAllOrderByClientFmcgId(Long clientFmcgId, int page, int pageSize, String sortBy, String sortDirection){
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        log.info("inside of getAllOrderByClientFmcgId");
+        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgId(clientFmcgId, pageable);
+        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
+    }
+
+    public PaginatedResp<OrderResponse> getAllOrderByMemberId(Long memberId, int page, int pageSize, String sortBy, String sortDirection){
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        log.info("inside of getAllOrderByMemberId");
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberId(memberId, pageable);
+        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
+    }
 }

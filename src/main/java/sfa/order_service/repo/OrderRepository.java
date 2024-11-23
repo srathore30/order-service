@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sfa.order_service.constant.OrderCallStatus;
+import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.SalesLevel;
 
@@ -25,7 +26,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel);
-   List<OrderEntity> findByClientId(Long clientId);
 
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.memberId = :memberId")
    Page<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberId(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("memberId") Long memberId, Pageable pageable);
@@ -35,5 +35,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate " + "AND o.memberId IN :memberIds")
    Page<OrderEntity> findOrdersByDateRangeAndMembers(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("memberIds") Set<Long> memberIds, Pageable pageable);
+   Page<OrderEntity> findByMemberIdAndOrderCallStatus(Long memberId, OrderCallStatus orderCallStatus, Pageable pageable);
+   Page<OrderEntity> findByMemberIdAndOrderMedium(Long memberId, OrderMedium orderMedium, Pageable pageable);
+   Page<OrderEntity> findByClientFmcgIdAndOrderCallStatus(Long clientFmcgId, OrderCallStatus orderCallStatus, Pageable pageable);
+   Page<OrderEntity> findByClientFmcgIdAndOrderMedium(Long clientFmcgId, OrderMedium orderMedium, Pageable pageable);
+   Page<OrderEntity> findByMemberId(Long memberId, Pageable pageable);
+   Page<OrderEntity> findByClientFmcgId(Long clientFmcgId, Pageable pageable);
 
 }
