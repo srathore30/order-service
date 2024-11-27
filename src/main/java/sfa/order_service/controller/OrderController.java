@@ -66,5 +66,9 @@ public class OrderController {
     public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgId(@PathVariable Long clientFmcgId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
         return new ResponseEntity<>(orderService.getAllOrderByClientFmcgId(clientFmcgId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
-
+    @GetMapping("getAllOrderByClientFmcgIdAndSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgIdAndSalesLevel(@RequestParam Long clientFmcgId,@RequestParam String salesLevel,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getAllOrderByClientFmcgIdAndSalesLevel(clientFmcgId,salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
 }
