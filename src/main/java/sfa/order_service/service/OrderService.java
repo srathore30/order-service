@@ -249,7 +249,7 @@ public class OrderService {
     }
 
 
-    public PaginatedResp<OrderResponse> getAllOrderByClientFmcgId(Long clientFmcgId, int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<OrderResponse> getAllOrderByClientFmcgId(Long clientFmcgId, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByClientFmcgId");
@@ -258,7 +258,7 @@ public class OrderService {
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }
 
-    public PaginatedResp<OrderResponse> getAllOrderByMemberId(Long memberId, int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<OrderResponse> getAllOrderByMemberId(Long memberId, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByMemberId");
@@ -272,6 +272,17 @@ public class OrderService {
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByClientFmcgIdAndSalesLevel");
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndSalesLevel(clientFmcgId, SalesLevel.valueOf(salesLevel), pageable);
+        log.info("Paged data returned successfully");
+        List<OrderResponse> collect = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        return PaginatedResp.<OrderResponse>builder().totalElements(orderEntityPage.getTotalElements()).totalPages(orderEntityPage.getTotalPages()).page(page).content(collect).build();
+    }
+
+    public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, int page, int pageSize, String sortBy, String sortDirection) {
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        log.info("inside of getAllOrderByMemberId");
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(memberId);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMembersIdList(memberIds, pageable);
         List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }

@@ -61,6 +61,12 @@ public class OrderController {
         return new ResponseEntity<>(orderService.getAllOrderByMemberId(memberId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 
+    @GetMapping("/getAllOrderByReportingManagerMembers/{reportingManagerId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByReportingManagerMembers(@PathVariable Long reportingManagerId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        return new ResponseEntity<>(orderService.getAllOrderByReportingManagerMembers(reportingManagerId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+
     @GetMapping("/getAllOrder/{clientFmcgId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgId(@PathVariable Long clientFmcgId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
