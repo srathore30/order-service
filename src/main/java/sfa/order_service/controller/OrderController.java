@@ -5,16 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
-import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
-import sfa.order_service.dto.request.FinalProductPriceRequest;
-import sfa.order_service.dto.request.OrderRequest;
-import sfa.order_service.dto.request.OrderUpdateRequest;
+import sfa.order_service.dto.request.*;
 import sfa.order_service.dto.response.FinalProductPriceResponse;
 import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.OrderService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +23,8 @@ public class OrderController {
 
     @PostMapping("/orders")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
-        return new ResponseEntity<>(orderService.createOrder(orderRequest), HttpStatus.OK);
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest, @RequestParam String salesType) {
+        return new ResponseEntity<>(orderService.createOrder(orderRequest, salesType), HttpStatus.OK);
     }
 
     @GetMapping("/orders/{orderId}")
@@ -76,5 +75,19 @@ public class OrderController {
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgIdAndSalesLevel(@RequestParam Long clientFmcgId,@RequestParam String salesLevel,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
         return new ResponseEntity<>(orderService.getAllOrderByClientFmcgIdAndSalesLevel(clientFmcgId,salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+
+    @PostMapping("/createOrderInBulk")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<List<OrderResponse>> createOrderInBulk(@RequestBody OrderBulkReq orderBulkReq, @RequestParam String salesType){
+        List<OrderResponse> orderResponseList = orderService.createOrderInBulk(orderBulkReq, salesType);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @PutMapping("/updateOrderInBulk")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<List<OrderUpdateResponse>> updateOrderInBulk(@RequestBody OrderBulkUpdateRequest orderUpdateRequest){
+        List<OrderUpdateResponse> orderResponseList = orderService.updateOrderInBulk(orderUpdateRequest);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 }

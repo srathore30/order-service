@@ -11,4 +11,5 @@ import sfa.order_service.enums.OrderStatus;
 public class OrderUpdateRequest {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    Long orderId;
 }
