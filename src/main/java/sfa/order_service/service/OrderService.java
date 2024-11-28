@@ -1,5 +1,6 @@
 package sfa.order_service.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -51,20 +52,89 @@ public class OrderService {
         return productServiceClient.getProductPrice(productId, priceType);
     }
 
-    public OrderResponse createOrder(OrderRequest request) {
-        String message = "create order";
-        log.info("Creating order: {}", request);
-        OrderEntity entity = orderRepository.save(dtoToEntity(request));
-        log.info("create transaction before order creation");
-        TransactionRequest transactionRequest = new TransactionRequest();
-        transactionRequest.setClientId(request.getClientId());
-        transactionRequest.setTransactionAmount(finalPrice(request));
-        transactionRequest.setTransactionType(TransactionType.DEBIT);
-        transactionRequest.setOrderId(entity.getId());
-        log.info("create transaction after order creation");
-        transactionController.createTransaction(transactionRequest);
-        return entityToDto(entity, message);
+    @Transactional
+    public OrderResponse createOrder(OrderRequest request, String salesType) {
+        if (salesType.equalsIgnoreCase("primary")){
+            String message = "create order";
+            log.info("Creating order: {}", request);
+            OrderEntity entity = new OrderEntity();
+            entity.setMemberId(request.getMemberId());
+            entity.setClientFmcgId(request.getClientId());
+            entity.setSalesLevel(request.getSalesLevel());
+            entity.setProductId(request.getProductId());
+            entity.setQuantity(request.getQuantity());
+            Double finalPrice = finalPrice(request);
+            entity.setPrice(finalPrice);
+            orderRepository.save(entity);
+            log.info("create transaction before order creation");
+            TransactionRequest transactionRequest = new TransactionRequest();
+            transactionRequest.setClientId(request.getClientId());
+            transactionRequest.setTransactionAmount(finalPrice(request));
+            transactionRequest.setTransactionType(TransactionType.DEBIT);
+            transactionRequest.setOrderId(entity.getId());
+            log.info("create transaction after order creation");
+            transactionController.createTransaction(transactionRequest);
+            return entityToDto(entity, message);
+        }else{
+            String message = "create order";
+            log.info("Creating order: {}", request);
+            OrderEntity entity = orderRepository.save(dtoToEntity(request));
+            log.info("create transaction before order creation");
+            TransactionRequest transactionRequest = new TransactionRequest();
+            transactionRequest.setClientId(request.getClientId());
+            transactionRequest.setTransactionAmount(finalPrice(request));
+            transactionRequest.setTransactionType(TransactionType.DEBIT);
+            transactionRequest.setOrderId(entity.getId());
+            log.info("create transaction after order creation");
+            transactionController.createTransaction(transactionRequest);
+            return entityToDto(entity, message);
+        }
     }
+
+    @Transactional
+    public List<OrderResponse> createOrderInBulk(OrderBulkReq request, String salesType) {
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        log.info("Creating order in bulk");
+        for(OrderRequest orderRequest : request.getOrderRequestList()) {
+            if (salesType.equalsIgnoreCase("primary")) {
+                String message = "create order";
+                log.info("Creating order: {}", request);
+                OrderEntity entity = new OrderEntity();
+                entity.setMemberId(orderRequest.getMemberId());
+                entity.setClientFmcgId(orderRequest.getClientId());
+                entity.setSalesLevel(orderRequest.getSalesLevel());
+                entity.setProductId(orderRequest.getProductId());
+                entity.setQuantity(orderRequest.getQuantity());
+                Double finalPrice = finalPrice(orderRequest);
+                entity.setPrice(finalPrice);
+                orderRepository.save(entity);
+                orderResponseList.add(entityToDto(entity, message));
+                log.info("create transaction before order creation");
+                TransactionRequest transactionRequest = new TransactionRequest();
+                transactionRequest.setClientId(orderRequest.getClientId());
+                transactionRequest.setTransactionAmount(finalPrice(orderRequest));
+                transactionRequest.setTransactionType(TransactionType.DEBIT);
+                transactionRequest.setOrderId(entity.getId());
+                log.info("create transaction after order creation");
+                transactionController.createTransaction(transactionRequest);
+            } else {
+                String message = "create order";
+                log.info("Creating order: {}", request);
+                OrderEntity entity = orderRepository.save(dtoToEntity(orderRequest));
+                orderResponseList.add(entityToDto(entity, message));
+                log.info("create transaction before order creation");
+                TransactionRequest transactionRequest = new TransactionRequest();
+                transactionRequest.setClientId(orderRequest.getClientId());
+                transactionRequest.setTransactionAmount(finalPrice(orderRequest));
+                transactionRequest.setTransactionType(TransactionType.DEBIT);
+                transactionRequest.setOrderId(entity.getId());
+                log.info("create transaction after order creation");
+                transactionController.createTransaction(transactionRequest);
+            }
+        }
+        return orderResponseList;
+    }
+
 
     public Double finalPrice(OrderRequest request) {
         log.info("Calculate final price for order");
@@ -202,6 +272,22 @@ public class OrderService {
         orderResponse.setStatus(updatedOrder.getStatus());
         orderResponse.setMessage("Order status updated to delivered!!");
         return orderResponse;
+    }
+    public List<OrderUpdateResponse> updateOrderInBulk(OrderBulkUpdateRequest orderBulkUpdateRequest) {
+        List<OrderUpdateResponse> orderUpdateResponseList = new ArrayList<>();
+        for(OrderUpdateRequest orderUpdateRequest : orderBulkUpdateRequest.getOrderUpdateRequests()) {
+            log.info("update order status");
+            OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
+            orderEntity.setStatus(orderUpdateRequest.getStatus());
+            log.info("Order status updated to {}", orderUpdateRequest.getStatus());
+            OrderEntity updatedOrder = orderRepository.save(orderEntity);
+            OrderUpdateResponse orderResponse = new OrderUpdateResponse();
+            orderResponse.setOrderId(updatedOrder.getId());
+            orderResponse.setStatus(updatedOrder.getStatus());
+            orderResponse.setMessage("Order status updated to delivered!!");
+            orderUpdateResponseList.add(orderResponse);
+        }
+            return orderUpdateResponseList;
     }
 
     public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest) {

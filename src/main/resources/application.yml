@@ -49,9 +49,9 @@ products:
 
 clients:
   service:
-    url: http://localhost:8080/getClientFMCGById
+    url: http://localhost:8080/client-fmcg/getClientFMCGById
   updateClient:
-    url: http://localhost:8080/updateClient
+    url: http://localhost:8080/client-fmcg/updateClient
 
 members:
   memberIds:
