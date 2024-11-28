@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
-@RequestMapping("/v1/reports")
+@RequestMapping("reports")
 @RequiredArgsConstructor
 public class ReportController {
     private final ReportServices reportServices;
