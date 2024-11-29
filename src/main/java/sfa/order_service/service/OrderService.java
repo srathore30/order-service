@@ -74,6 +74,20 @@ public class OrderService {
             transactionRequest.setOrderId(entity.getId());
             log.info("create transaction after order creation");
             transactionController.createTransaction(transactionRequest);
+            ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
+            ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+            clientFMCGUpdateRequest.setId(request.getClientId());
+            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+            clientFMCGUpdateRequest.setClientCode(client.getClientCode());
+            clientFMCGUpdateRequest.setCity(client.getCity());
+            clientFMCGUpdateRequest.setRegion(client.getRegion());
+            clientFMCGUpdateRequest.setEmail(client.getEmail());
+            clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+            clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+            clientFMCGUpdateRequest.setMobile(client.getMobile());
+            clientFMCGUpdateRequest.setAddress(client.getAddress());
+            clientFMCGUpdateRequest.setState(client.getState());
+            externalRestService.updateClientAsync(clientFMCGUpdateRequest);
             return entityToDto(entity, message);
         }else{
             String message = "create order";
