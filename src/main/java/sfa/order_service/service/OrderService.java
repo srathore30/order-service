@@ -106,7 +106,7 @@ public class OrderService {
     }
 
     @Transactional
-    public List<OrderResponse> createOrderInBulk(OrderBulkReq request, String salesType) {
+    public List<OrderResponse>  createOrderInBulk(OrderBulkReq request, String salesType) {
         List<OrderResponse> orderResponseList = new ArrayList<>();
         log.info("Creating order in bulk");
         for(OrderRequest orderRequest : request.getOrderRequestList()) {
@@ -122,7 +122,6 @@ public class OrderService {
                 Double finalPrice = finalPrice(orderRequest);
                 entity.setPrice(finalPrice);
                 orderRepository.save(entity);
-                orderResponseList.add(entityToDto(entity, message));
                 log.info("create transaction before order creation");
                 TransactionRequest transactionRequest = new TransactionRequest();
                 transactionRequest.setClientId(orderRequest.getClientId());
@@ -131,6 +130,21 @@ public class OrderService {
                 transactionRequest.setOrderId(entity.getId());
                 log.info("create transaction after order creation");
                 transactionController.createTransaction(transactionRequest);
+                ClientFMCGResponse client = externalRestService.getClient(orderRequest.getClientId());
+                ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+                clientFMCGUpdateRequest.setId(orderRequest.getClientId());
+                clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+                clientFMCGUpdateRequest.setClientCode(client.getClientCode());
+                clientFMCGUpdateRequest.setCity(client.getCity());
+                clientFMCGUpdateRequest.setRegion(client.getRegion());
+                clientFMCGUpdateRequest.setEmail(client.getEmail());
+                clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+                clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+                clientFMCGUpdateRequest.setMobile(client.getMobile());
+                clientFMCGUpdateRequest.setAddress(client.getAddress());
+                clientFMCGUpdateRequest.setState(client.getState());
+                externalRestService.updateClientAsync(clientFMCGUpdateRequest);
+                orderResponseList.add(entityToDto(entity, message));
             } else {
                 String message = "create order";
                 log.info("Creating order: {}", request);
@@ -245,6 +259,7 @@ public class OrderService {
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
         Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
         orderResponse.setGstAmount(gstOnOrder);
