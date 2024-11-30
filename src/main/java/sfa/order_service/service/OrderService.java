@@ -54,55 +54,18 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request, String salesType) {
-        if (salesType.equalsIgnoreCase("primary")){
-            String message = "create order";
-            log.info("Creating order: {}", request);
-            OrderEntity entity = new OrderEntity();
-            entity.setMemberId(request.getMemberId());
-            entity.setClientFmcgId(request.getClientId());
-            entity.setSalesLevel(request.getSalesLevel());
-            entity.setProductId(request.getProductId());
-            entity.setQuantity(request.getQuantity());
-            Double finalPrice = finalPrice(request);
-            entity.setPrice(finalPrice);
-            orderRepository.save(entity);
-            log.info("create transaction before order creation");
-            TransactionRequest transactionRequest = new TransactionRequest();
-            transactionRequest.setClientId(request.getClientId());
-            transactionRequest.setTransactionAmount(finalPrice(request));
-            transactionRequest.setTransactionType(TransactionType.DEBIT);
-            transactionRequest.setOrderId(entity.getId());
-            log.info("create transaction after order creation");
-            transactionController.createTransaction(transactionRequest);
-            ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
-            ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
-            clientFMCGUpdateRequest.setId(request.getClientId());
-            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
-            clientFMCGUpdateRequest.setClientCode(client.getClientCode());
-            clientFMCGUpdateRequest.setCity(client.getCity());
-            clientFMCGUpdateRequest.setRegion(client.getRegion());
-            clientFMCGUpdateRequest.setEmail(client.getEmail());
-            clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
-            clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
-            clientFMCGUpdateRequest.setMobile(client.getMobile());
-            clientFMCGUpdateRequest.setAddress(client.getAddress());
-            clientFMCGUpdateRequest.setState(client.getState());
-            externalRestService.updateClientAsync(clientFMCGUpdateRequest);
-            return entityToDto(entity, message);
-        }else{
-            String message = "create order";
-            log.info("Creating order: {}", request);
-            OrderEntity entity = orderRepository.save(dtoToEntity(request));
-            log.info("create transaction before order creation");
-            TransactionRequest transactionRequest = new TransactionRequest();
-            transactionRequest.setClientId(request.getClientId());
-            transactionRequest.setTransactionAmount(finalPrice(request));
-            transactionRequest.setTransactionType(TransactionType.DEBIT);
-            transactionRequest.setOrderId(entity.getId());
-            log.info("create transaction after order creation");
-            transactionController.createTransaction(transactionRequest);
-            return entityToDto(entity, message);
-        }
+        String message = "create order";
+        log.info("Creating order: {}", request);
+        OrderEntity entity = orderRepository.save(dtoToEntity(request, salesType));
+        log.info("create transaction before order creation");
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setClientId(request.getClientId());
+        transactionRequest.setTransactionAmount(finalPrice(request));
+        transactionRequest.setTransactionType(TransactionType.DEBIT);
+        transactionRequest.setOrderId(entity.getId());
+        log.info("create transaction after order creation");
+        transactionController.createTransaction(transactionRequest);
+        return entityToDto(entity, message);
     }
 
     @Transactional
@@ -110,55 +73,18 @@ public class OrderService {
         List<OrderResponse> orderResponseList = new ArrayList<>();
         log.info("Creating order in bulk");
         for(OrderRequest orderRequest : request.getOrderRequestList()) {
-            if (salesType.equalsIgnoreCase("primary")) {
-                String message = "create order";
-                log.info("Creating order: {}", request);
-                OrderEntity entity = new OrderEntity();
-                entity.setMemberId(orderRequest.getMemberId());
-                entity.setClientFmcgId(orderRequest.getClientId());
-                entity.setSalesLevel(orderRequest.getSalesLevel());
-                entity.setProductId(orderRequest.getProductId());
-                entity.setQuantity(orderRequest.getQuantity());
-                Double finalPrice = finalPrice(orderRequest);
-                entity.setPrice(finalPrice);
-                orderRepository.save(entity);
-                log.info("create transaction before order creation");
-                TransactionRequest transactionRequest = new TransactionRequest();
-                transactionRequest.setClientId(orderRequest.getClientId());
-                transactionRequest.setTransactionAmount(finalPrice(orderRequest));
-                transactionRequest.setTransactionType(TransactionType.DEBIT);
-                transactionRequest.setOrderId(entity.getId());
-                log.info("create transaction after order creation");
-                transactionController.createTransaction(transactionRequest);
-                ClientFMCGResponse client = externalRestService.getClient(orderRequest.getClientId());
-                ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
-                clientFMCGUpdateRequest.setId(orderRequest.getClientId());
-                clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
-                clientFMCGUpdateRequest.setClientCode(client.getClientCode());
-                clientFMCGUpdateRequest.setCity(client.getCity());
-                clientFMCGUpdateRequest.setRegion(client.getRegion());
-                clientFMCGUpdateRequest.setEmail(client.getEmail());
-                clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
-                clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
-                clientFMCGUpdateRequest.setMobile(client.getMobile());
-                clientFMCGUpdateRequest.setAddress(client.getAddress());
-                clientFMCGUpdateRequest.setState(client.getState());
-                externalRestService.updateClientAsync(clientFMCGUpdateRequest);
-                orderResponseList.add(entityToDto(entity, message));
-            } else {
-                String message = "create order";
-                log.info("Creating order: {}", request);
-                OrderEntity entity = orderRepository.save(dtoToEntity(orderRequest));
-                orderResponseList.add(entityToDto(entity, message));
-                log.info("create transaction before order creation");
-                TransactionRequest transactionRequest = new TransactionRequest();
-                transactionRequest.setClientId(orderRequest.getClientId());
-                transactionRequest.setTransactionAmount(finalPrice(orderRequest));
-                transactionRequest.setTransactionType(TransactionType.DEBIT);
-                transactionRequest.setOrderId(entity.getId());
-                log.info("create transaction after order creation");
-                transactionController.createTransaction(transactionRequest);
-            }
+            String message = "create order";
+            log.info("Creating order: {}", request);
+            OrderEntity entity = orderRepository.save(dtoToEntity(orderRequest, salesType));
+            log.info("create transaction before order creation");
+            TransactionRequest transactionRequest = new TransactionRequest();
+            transactionRequest.setClientId(orderRequest.getClientId());
+            transactionRequest.setTransactionAmount(finalPrice(orderRequest));
+            transactionRequest.setTransactionType(TransactionType.DEBIT);
+            transactionRequest.setOrderId(entity.getId());
+            log.info("create transaction after order creation");
+            transactionController.createTransaction(transactionRequest);
+            orderResponseList.add(entityToDto(entity, message));
         }
         return orderResponseList;
     }
@@ -172,7 +98,7 @@ public class OrderService {
         return totalPriceOfOrder + (totalPriceOfOrder * gstOnOrder) / 100;
     }
 
-    public OrderEntity dtoToEntity(OrderRequest request) {
+    public OrderEntity dtoToEntity(OrderRequest request, String salesType) {
         log.info("calculate final price for order");
         Double finalPrice = finalPrice(request);
         log.info("Get FMCG-client details for order creation");
@@ -185,34 +111,36 @@ public class OrderService {
         if (client.getTopUpBalance() < finalPrice) {
             throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
         }
-        log.info("Get outlet details for order creation");
-        String outletById = externalRestService.getOutletById(request.getOutletId());
-        if (outletById.isEmpty()) {
-            throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
-        }
-        log.info("Get beets details for order creation");
-        String beetById = externalRestService.getBeetById(request.getBeetId());
-        if (beetById.isEmpty()) {
-            throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
-        }
-        OrderEntity orderEntity = new OrderEntity();
-        orderEntity.setClientFmcgId(request.getClientId());
-        orderEntity.setQuantity(request.getQuantity());
-        orderEntity.setSalesLevel(request.getSalesLevel());
-        orderEntity.setProductId(request.getProductId());
-        orderEntity.setPrice(finalPrice);
-        orderEntity.setOrderMedium(request.getOrderMedium());
-        orderEntity.setOrderCallStatus(request.getOrderCallStatus());
-        orderEntity.setOrderCreatedDate(new Date());
-        orderEntity.setOutletId(request.getOutletId());
-        orderEntity.setBeetId(request.getBeetId());
         log.info("Get member details for order creation");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
         log.info("check if member exists or not");
         if (member == null) {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setClientFmcgId(request.getClientId());
+        orderEntity.setQuantity(request.getQuantity());
+        orderEntity.setSalesLevel(request.getSalesLevel());
+        orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
+        orderEntity.setPrice(finalPrice);
+        if(salesType.equalsIgnoreCase("secondary")){
+            orderEntity.setOrderMedium(request.getOrderMedium());
+            orderEntity.setOrderCallStatus(request.getOrderCallStatus());
+            orderEntity.setOrderCreatedDate(new Date());
+            orderEntity.setOutletId(request.getOutletId());
+            orderEntity.setBeetId(request.getBeetId());
+            log.info("Get outlet details for order creation");
+            String outletById = externalRestService.getOutletById(request.getOutletId());
+            if (outletById.isEmpty()) {
+                throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
+            }
+            log.info("Get beets details for order creation");
+            String beetById = externalRestService.getBeetById(request.getBeetId());
+            if (beetById.isEmpty()) {
+                throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
+            }
+        }
         log.info("Updating FMCG-client balance after order creation");
         ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
         clientFMCGUpdateRequest.setId(request.getClientId());
