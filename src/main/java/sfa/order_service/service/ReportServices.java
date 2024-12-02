@@ -12,6 +12,7 @@ import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
 
@@ -27,7 +28,7 @@ public class ReportServices {
     public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
         if (orderEntityList.isEmpty()){
-            throw new RuntimeException("no records found");
+            return new ReportsResponse(0D, 0D, 0, Collections.emptyList());
         }
         double totalGst = 0D;
         Double totalSales = 0D;

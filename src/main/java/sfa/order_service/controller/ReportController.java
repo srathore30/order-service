@@ -24,14 +24,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
-@RequestMapping("reports")
+@RequestMapping("/reports")
 @RequiredArgsConstructor
 public class ReportController {
     private final ReportServices reportServices;
 
     @GetMapping("/sales")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
-    public ResponseEntity<ReportsResponse> getSalesReport(@RequestParam LocalDateTime startDate, @RequestParam LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+    public ResponseEntity<ReportsResponse> getSalesReport(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
         ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
         ReportsResponse reportsResponse = reportServices.getSalesReportBetweenDatesAndSalesLevel(reportsRequest);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
