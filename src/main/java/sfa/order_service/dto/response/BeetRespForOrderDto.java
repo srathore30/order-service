@@ -10,4 +10,6 @@ public class BeetRespForOrderDto {
     private String beet;
     private String address;
     private Long postalCode;
+    private String state;
+    private String city;
 }
