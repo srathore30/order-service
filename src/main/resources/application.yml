@@ -64,13 +64,24 @@ outlets:
     url: http://localhost:8080/getAllOutletByIds
   getOutlet:
     url: http://localhost:8080/getOutletById
+  getOutForReport:
+    url: http://localhost:8080/getOutletForReportById
 
 beets:
   getAllBeets:
     url: http://localhost:8080/getAllBeetByIds
   getBeet:
     url: http://localhost:8080/getBeetById
+  getBeetForReport:
+    url: http://localhost:8080/getBeetByIdForReport
 
+name:
+  state:
+    url: http://localhost:8080/states/getStateNameById
+  city:
+    url: http://localhost:8080/getCityNameById
+  region:
+    url: http://localhost:8080/getRegionNameById
 
   # CORS Configuration
   spring:

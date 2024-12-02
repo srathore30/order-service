@@ -14,4 +14,11 @@ public class TopSellingProductRes {
     int quantitySold;
     Double revenue;
     Double gstAmount;
+
+    String state;
+    String region;
+    String city;
+    BeetRespForOrderDto beetRespForOrderDto;
+    OutletRespForOrderDto outletRespForOrderDto;
+    ClientFMCGResponse clientFMCGResponse;
 }

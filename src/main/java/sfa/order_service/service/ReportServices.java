@@ -7,11 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
@@ -24,6 +26,7 @@ import java.util.*;
 public class ReportServices {
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
+    private final ExternalRestService externalRestService;
 
     public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
@@ -35,19 +38,70 @@ public class ReportServices {
         int totalOrder = 0;
         ReportsResponse reportsResponse = new ReportsResponse();
         List<TopSellingProductRes> topSellingProductRes = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
-            ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
-            ProductPriceRes productPriceRes = productRes.getProductPriceRes();
-            if (productPriceRes != null) {
-                totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
-                totalSales += orderEntity.getPrice();
-                totalOrder += orderEntity.getQuantity();
-                Double totalSaleByProduct = 0D;
-                List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
-                for(OrderEntity order : orderListByProductId){
-                    totalSaleByProduct += order.getPrice();
+        if (reportsRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE){
+            for (OrderEntity orderEntity : orderEntityList){
+                ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
+                ProductPriceRes productPriceRes = productRes.getProductPriceRes();
+                if (productPriceRes != null) {
+                    ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
+                    String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
+                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
+                    totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
+                    totalSales += orderEntity.getPrice();
+                    totalOrder += orderEntity.getQuantity();
+                    Double totalSaleByProduct = 0D;
+                    List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
+                    for(OrderEntity order : orderListByProductId){
+                        totalSaleByProduct += order.getPrice();
+                    }
+                    TopSellingProductRes resp = new TopSellingProductRes();
+                    resp.setName(productRes.getName());
+                    resp.setCity(cityName);
+                    resp.setState(stateName);
+                    resp.setRegion(regionName);
+                    resp.setGstAmount(productPriceRes.getGstPercentage());
+                    resp.setProductId(orderEntity.getProductId());
+                    resp.setQuantitySold(orderListByProductId.size());
+                    resp.setRevenue(totalSaleByProduct);
+                    resp.setClientFMCGResponse(clientFMCGResponse);
+                    topSellingProductRes.add(resp);
                 }
-                topSellingProductRes.add(new TopSellingProductRes(orderEntity.getProductId(), productRes.getName(), orderListByProductId.size() - 1,  totalSaleByProduct, productPriceRes.getGstPercentage()));
+            }
+        }
+        else if(reportsRequest.getSalesLevelConstant() == SalesLevel.STOCKIST || reportsRequest.getSalesLevelConstant() == SalesLevel.RETAILER){
+            for (OrderEntity orderEntity : orderEntityList){
+                ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
+                ProductPriceRes productPriceRes = productRes.getProductPriceRes();
+                if (productPriceRes != null) {
+                    ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
+                    String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
+                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
+                    BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(orderEntity.getBeetId());
+                    OutletRespForOrderDto outletRespForOrderDto = productServiceClient.getOutletForReport(orderEntity.getOutletId());
+                    totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
+                    totalSales += orderEntity.getPrice();
+                    totalOrder += orderEntity.getQuantity();
+                    Double totalSaleByProduct = 0D;
+                    List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
+                    for(OrderEntity order : orderListByProductId){
+                        totalSaleByProduct += order.getPrice();
+                    }
+                    TopSellingProductRes resp = new TopSellingProductRes();
+                    resp.setName(productRes.getName());
+                    resp.setCity(cityName);
+                    resp.setState(stateName);
+                    resp.setRegion(regionName);
+                    resp.setGstAmount(productPriceRes.getGstPercentage());
+                    resp.setProductId(orderEntity.getProductId());
+                    resp.setQuantitySold(orderListByProductId.size());
+                    resp.setRevenue(totalSaleByProduct);
+                    resp.setClientFMCGResponse(clientFMCGResponse);
+                    resp.setBeetRespForOrderDto(beetRespForOrderDto);
+                    resp.setOutletRespForOrderDto(outletRespForOrderDto);
+                    topSellingProductRes.add(resp);
+                }
             }
         }
         reportsResponse.setTotalSales(totalSales);

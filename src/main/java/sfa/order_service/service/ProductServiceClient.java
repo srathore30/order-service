@@ -31,8 +31,18 @@ public class ProductServiceClient {
     private String memberIdsUrl;
     @Value("${beets.getAllBeets.url}")
     private String beetUrl;
+    @Value("${beets.getBeetForReport.url}")
+    private String beetReportUrl;
     @Value("${outlets.getAllOutlet.url}")
     private String outletUrl;
+    @Value("${outlets.getOutForReport.url}")
+    private String outletReportUrl;
+    @Value("${name.state.url}")
+    private String stateUrl;
+    @Value("${name.city.url}")
+    private String cityUrl;
+    @Value("${name.region.url}")
+    private String regionUrl;
 
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
@@ -78,5 +88,30 @@ public class ProductServiceClient {
         String url = memberIdsUrl + "/" + reportingManager;
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
         return restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<Set<Long>>() {}).getBody();
+    }
+    public BeetRespForOrderDto getBeetForReport(Long beetId) {
+        String url = beetReportUrl + "/" + beetId;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, BeetRespForOrderDto.class).getBody();
+    }
+    public OutletRespForOrderDto getOutletForReport(Long outletId) {
+        String url = outletReportUrl + "/" + outletId;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, OutletRespForOrderDto.class).getBody();
+    }
+    public String getStateNameById(Long id) {
+        String url = stateUrl + "/" + id;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+    }
+    public String getCityNameById(Long id) {
+        String url = cityUrl + "/" + id;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+    }
+    public String getRegionNameById(Long id) {
+        String url = regionUrl + "/" + id;
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
     }
 }

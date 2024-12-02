@@ -16,7 +16,8 @@ public enum ApiErrorCodes implements Error {
     CLIENT_NOT_FOUND(1010,"Client not found" ),
     INVALID_SALES_LEVEL(1011,"Invalid sales level" ),
     OUTLET_NOT_FOUND(1012,"Outlet not found" ),
-    BEET_NOT_FOUND(1013,"Beet not found" );
+    BEET_NOT_FOUND(1013,"Beet not found" ),
+    NO_SALES(1014, "No sales");
 
     private int errorCode;
     private String errorMessage;
