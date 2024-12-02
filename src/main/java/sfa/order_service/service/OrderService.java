@@ -154,6 +154,7 @@ public class OrderService {
         clientFMCGUpdateRequest.setMobile(client.getMobile());
         clientFMCGUpdateRequest.setAddress(client.getAddress());
         clientFMCGUpdateRequest.setState(client.getState());
+        clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
         externalRestService.updateClientAsync(clientFMCGUpdateRequest);
         log.info("Make request for transaction  table after order creation");
         return orderEntity;
