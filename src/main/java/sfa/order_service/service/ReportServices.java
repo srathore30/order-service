@@ -45,7 +45,7 @@ public class ReportServices {
                 if (productPriceRes != null) {
                     ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
                     String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
                     String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
                     totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                     totalSales += orderEntity.getPrice();
@@ -76,7 +76,7 @@ public class ReportServices {
                 if (productPriceRes != null) {
                     ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
                     String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
                     String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
                     BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(orderEntity.getBeetId());
                     OutletRespForOrderDto outletRespForOrderDto = productServiceClient.getOutletForReport(orderEntity.getOutletId());
