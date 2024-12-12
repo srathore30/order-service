@@ -22,6 +22,7 @@ import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.repo.TransactionRepository;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
+import sfa.order_service.utill.UniqueIdGenerator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,10 +54,30 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponse getOrderDetailBySalesTypeById(Long orderId, String salesType){
+        Optional<OrderEntity> optionalOrderEntity = orderRepository.findById(orderId);
+        if (optionalOrderEntity.isEmpty()) {
+            throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
+        }
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse = entityToDto(optionalOrderEntity.get(), "Message");
+        orderResponse.setMemberResponse(externalRestService.getMember(optionalOrderEntity.get().getMemberId()));
+        if(salesType.equalsIgnoreCase("primary")){
+            orderResponse.setClientFMCGResponse(externalRestService.getClient(optionalOrderEntity.get().getClientFmcgId()));
+        }else {
+            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(optionalOrderEntity.get().getOutletId()));
+            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(optionalOrderEntity.get().getBeetId()));
+        }
+        return orderResponse;
+    }
+
+    @Transactional
     public OrderResponse createOrder(OrderRequest request, String salesType) {
         String message = "create order";
         log.info("Creating order: {}", request);
-        OrderEntity entity = orderRepository.save(dtoToEntity(request, salesType));
+        OrderEntity orderEntity = dtoToEntity(request, salesType);
+        orderEntity.setInvoiceNumber(UniqueIdGenerator.generateUniqueId());
+        OrderEntity entity = orderRepository.save(orderEntity);
         log.info("create transaction before order creation");
         TransactionRequest transactionRequest = new TransactionRequest();
         transactionRequest.setClientId(request.getClientId());
@@ -71,11 +92,14 @@ public class OrderService {
     @Transactional
     public List<OrderResponse>  createOrderInBulk(OrderBulkReq request, String salesType) {
         List<OrderResponse> orderResponseList = new ArrayList<>();
+        String invoiceNumber = UniqueIdGenerator.generateUniqueId();
         log.info("Creating order in bulk");
         for(OrderRequest orderRequest : request.getOrderRequestList()) {
             String message = "create order";
             log.info("Creating order: {}", request);
-            OrderEntity entity = orderRepository.save(dtoToEntity(orderRequest, salesType));
+            OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
+            orderEntity.setInvoiceNumber(invoiceNumber);
+            OrderEntity entity = orderRepository.save(orderEntity);
             log.info("create transaction before order creation");
             TransactionRequest transactionRequest = new TransactionRequest();
             transactionRequest.setClientId(orderRequest.getClientId());
@@ -89,6 +113,10 @@ public class OrderService {
         return orderResponseList;
     }
 
+    public List<OrderResponse> getAllOrderByInvoiceNumber(String invoiceNumber){
+        List<OrderEntity> orderEntityList = orderRepository.findByInvoiceNumber(invoiceNumber);
+        return orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+    }
 
     public Double finalPrice(OrderRequest request) {
         log.info("Calculate final price for order");
@@ -188,6 +216,9 @@ public class OrderService {
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
+        orderResponse.setQuantity(orderEntity.getQuantity());
+        orderResponse.setProductId(orderEntity.getProductId());
+        orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
         Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
@@ -321,12 +352,12 @@ public class OrderService {
         return PaginatedResp.<OrderResponse>builder().totalElements(orderEntityPage.getTotalElements()).totalPages(orderEntityPage.getTotalPages()).page(page).content(collect).build();
     }
 
-    public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, int page, int pageSize, String sortBy, String sortDirection) {
+    public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, SalesLevel salesLevel,int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByMemberId");
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(memberId);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMembersIdList(memberIds, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMembersIdList(memberIds, salesLevel, pageable);
         List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }

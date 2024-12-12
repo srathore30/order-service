@@ -52,9 +52,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    Page<OrderEntity> findByMemberId(Long memberId, Pageable pageable);
    Page<OrderEntity> findByClientFmcgId(Long clientFmcgId, Pageable pageable);
    Page<OrderEntity> findByClientFmcgIdAndSalesLevel(Long clientFmcgId, SalesLevel salesLevel, Pageable pageable);
-   @Query("SELECT o FROM OrderEntity o WHERE o.memberId IN :memberIds")
-   Page<OrderEntity> findByMembersIdList(@Param("memberIds") Set<Long> memberIds, Pageable pageable);
+   @Query("SELECT o FROM OrderEntity o WHERE o.salesLevel = :salesLevel AND o.memberId IN :memberIds")
+   Page<OrderEntity> findByMembersIdList(@Param("memberIds") Set<Long> memberIds,@Param("salesLevel") SalesLevel salesLevel, Pageable pageable);
 
+   List<OrderEntity> findByInvoiceNumber(String invoiceNumber);
    long countByOutletIdAndMemberIdAndOrderMedium(Long outLetId, Long memberId, OrderMedium orderMedium);
    long countByOutletIdAndMemberIdAndOrderCallStatus(Long outLetId, Long memberId, OrderCallStatus orderCallStatus);
    long countByBeetIdAndMemberIdAndOrderCallStatus(Long beetId, Long memberId, OrderCallStatus orderCallStatus);
