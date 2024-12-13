@@ -111,7 +111,6 @@ public class ReportServices {
         return reportsResponse;
     }
 
-
     //Member Report
     public PaginatedResp<BeetReportResponse> getBeetOrderReportByMemberIdWithDateFilter(Long memberId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
         Map<Long, Double> beetOrderMap = new HashMap<>();
@@ -121,7 +120,9 @@ public class ReportServices {
 
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for(OrderEntity order : orderEntityPage.getContent()){
-            beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+            if (order.getSalesLevel() != SalesLevel.WAREHOUSE) {
+                beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+            }
         }
         Set<Long> beetIds = beetOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
@@ -148,7 +149,9 @@ public class ReportServices {
         Page<OrderEntity> orderEntityPage = orderRepository.findOrdersByDateRangeAndMembers(startDate, endDate, memberIds,pageable);
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for(OrderEntity order : orderEntityPage.getContent()){
-            beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+            if(order.getSalesLevel() != SalesLevel.WAREHOUSE) {
+                beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
+            }
         }
         Set<Long> beetIds = beetOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
@@ -174,7 +177,9 @@ public class ReportServices {
         Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndBeetId(startDate, endDate, beetId, pageable);
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for(OrderEntity order : orderEntityPage.getContent()){
-            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
+            if(order.getSalesLevel() != SalesLevel.WAREHOUSE) {
+                outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
+            }
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
@@ -200,7 +205,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatus(memberId, orderCallStatus, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatusAndSalesLevelNot(memberId, orderCallStatus, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -229,7 +234,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMedium(memberId, orderMedium, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMediumAndSalesLevelNot(memberId, orderMedium, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -258,7 +263,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatus(memberId, orderCallStatus, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatusAndSalesLevelNot(memberId, orderCallStatus, SalesLevel.WAREHOUSE,pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -287,7 +292,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMedium(memberId, orderMedium, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMediumAndSalesLevelNot(memberId, orderMedium, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -318,7 +323,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatus(clientFmcgId, orderCallStatus, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatusAndSalesLevelNot(clientFmcgId, orderCallStatus, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -347,7 +352,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMedium(clientFmcgId, orderMedium, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMediumAndSalesLevelNot(clientFmcgId, orderMedium, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -376,7 +381,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatus(clientFmcgId, orderCallStatus, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatusAndSalesLevelNot(clientFmcgId, orderCallStatus, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -405,7 +410,7 @@ public class ReportServices {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMedium(clientFmcgId, orderMedium, pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMediumAndSalesLevelNot(clientFmcgId, orderMedium, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {

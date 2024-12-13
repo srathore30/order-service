@@ -45,10 +45,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate " + "AND o.memberId IN :memberIds " + "AND o.beetId = :beetId")
    List<OrderEntity> findOrdersByDateRangeAndMembersAndBeetId(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("memberIds") Set<Long> memberIds, @Param("beetId") Long beetId);
-   Page<OrderEntity> findByMemberIdAndOrderCallStatus(Long memberId, OrderCallStatus orderCallStatus, Pageable pageable);
-   Page<OrderEntity> findByMemberIdAndOrderMedium(Long memberId, OrderMedium orderMedium, Pageable pageable);
-   Page<OrderEntity> findByClientFmcgIdAndOrderCallStatus(Long clientFmcgId, OrderCallStatus orderCallStatus, Pageable pageable);
-   Page<OrderEntity> findByClientFmcgIdAndOrderMedium(Long clientFmcgId, OrderMedium orderMedium, Pageable pageable);
+   Page<OrderEntity> findByMemberIdAndOrderCallStatusAndSalesLevelNot(Long memberId, OrderCallStatus orderCallStatus, SalesLevel salesLevel,Pageable pageable);
+   Page<OrderEntity> findByMemberIdAndOrderMediumAndSalesLevelNot(Long memberId, OrderMedium orderMedium,SalesLevel salesLevel ,Pageable pageable);
+   Page<OrderEntity> findByClientFmcgIdAndOrderCallStatusAndSalesLevelNot(Long clientFmcgId, OrderCallStatus orderCallStatus, SalesLevel salesLevel, Pageable pageable);
+   Page<OrderEntity> findByClientFmcgIdAndOrderMediumAndSalesLevelNot(Long clientFmcgId, OrderMedium orderMedium, SalesLevel salesLevel, Pageable pageable);
    Page<OrderEntity> findByMemberId(Long memberId, Pageable pageable);
    Page<OrderEntity> findByClientFmcgId(Long clientFmcgId, Pageable pageable);
    Page<OrderEntity> findByClientFmcgIdAndSalesLevel(Long clientFmcgId, SalesLevel salesLevel, Pageable pageable);

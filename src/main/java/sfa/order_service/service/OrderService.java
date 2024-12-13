@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
+import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.controller.TransactionController;
 import sfa.order_service.dto.request.*;
 import sfa.order_service.dto.response.*;
@@ -149,12 +150,12 @@ public class OrderService {
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
+        orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
         if(salesType.equalsIgnoreCase("secondary")){
             orderEntity.setOrderMedium(request.getOrderMedium());
-            orderEntity.setOrderCallStatus(request.getOrderCallStatus());
             orderEntity.setOrderCreatedDate(new Date());
             orderEntity.setOutletId(request.getOutletId());
             orderEntity.setBeetId(request.getBeetId());
