@@ -154,9 +154,9 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
+        orderEntity.setOrderCreatedDate(new Date());
         if(salesType.equalsIgnoreCase("secondary")){
             orderEntity.setOrderMedium(request.getOrderMedium());
-            orderEntity.setOrderCreatedDate(new Date());
             orderEntity.setOutletId(request.getOutletId());
             orderEntity.setBeetId(request.getBeetId());
             log.info("Get outlet details for order creation");
