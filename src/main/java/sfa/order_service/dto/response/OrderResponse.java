@@ -22,6 +22,7 @@ public class OrderResponse {
     private OrderStatus status;
     private Double totalPrice;
     private Long productId;
+    private ProductRes productRes;
     private Integer quantity;
     private Double gstAmount;
     private String invoiceNumber;

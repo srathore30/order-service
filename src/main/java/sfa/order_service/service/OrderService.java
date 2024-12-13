@@ -217,6 +217,7 @@ public class OrderService {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
         orderResponse.setQuantity(orderEntity.getQuantity());
+        orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
