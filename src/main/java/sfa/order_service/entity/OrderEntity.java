@@ -1,9 +1,6 @@
 package sfa.order_service.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.constant.OrderCallStatus;
@@ -26,6 +23,7 @@ public class OrderEntity extends BaseEntity {
     private OrderStatus status;
     private String invoiceNumber;
     private Long productId;
+    @Temporal(TemporalType.DATE)
     private Date orderCreatedDate;
     @Enumerated(EnumType.STRING)
     private OrderMedium orderMedium;
