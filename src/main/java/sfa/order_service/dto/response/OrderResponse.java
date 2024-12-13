@@ -21,7 +21,11 @@ public class OrderResponse {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Double totalPrice;
+    private Long productId;
+    private ProductRes productRes;
+    private Integer quantity;
     private Double gstAmount;
+    private String invoiceNumber;
     private OrderMedium orderMedium;
     private OrderCallStatus orderCallStatus;
     private Double totalPriceWithGst;
@@ -31,4 +35,8 @@ public class OrderResponse {
     private String clientName;
     private Double clientBalanceAmount;
     private String memberName;
+    private BeetRespForOrderDto beetRespForOrderDto;
+    private OutletRespForOrderDto outletRespForOrderDto;
+    private ClientFMCGResponse clientFMCGResponse;
+    private MemberResponse memberResponse;
 }

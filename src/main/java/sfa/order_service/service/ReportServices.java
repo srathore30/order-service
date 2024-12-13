@@ -45,7 +45,7 @@ public class ReportServices {
                 if (productPriceRes != null) {
                     ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
                     String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
                     String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
                     totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                     totalSales += orderEntity.getPrice();
@@ -76,7 +76,7 @@ public class ReportServices {
                 if (productPriceRes != null) {
                     ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
                     String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getStateNameById(clientFMCGResponse.getCity());
+                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
                     String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
                     BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(orderEntity.getBeetId());
                     OutletRespForOrderDto outletRespForOrderDto = productServiceClient.getOutletForReport(orderEntity.getOutletId());
@@ -118,6 +118,7 @@ public class ReportServices {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndMemberId(startDate, endDate, memberId,pageable);
+
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for(OrderEntity order : orderEntityPage.getContent()){
             beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
@@ -130,6 +131,7 @@ public class ReportServices {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+                    beetReportResponse.setTotalOrder((long) orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndBeetId(startDate, endDate, memberId, entry.getKey()).size());
                     beetReportResponsesList.add(beetReportResponse);
                     break;
                 }
@@ -156,6 +158,7 @@ public class ReportServices {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+                    beetReportResponse.setTotalOrder((long) orderRepository.findOrdersByDateRangeAndMembersAndBeetId(startDate, endDate, memberIds, entry.getKey()).size());
                     beetReportResponsesList.add(beetReportResponse);
                     break;
                 }
@@ -180,6 +183,7 @@ public class ReportServices {
                 if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
                     outletReportResponse.setTotalSales(entry.getValue());
+                    outletReportResponse.setTotalOrder((long) orderRepository.findAllByOrderCreatedDateBetweenAndOutletId(startDate, endDate, entry.getKey()).size());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
                     break;
@@ -193,23 +197,24 @@ public class ReportServices {
 
     public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatus(memberId, orderCallStatus, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0) + 1);
+            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
                 if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
-                    outletReportResponse.setTotalOrder(entry.getValue());
+                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndMemberIdAndOrderCallStatus(entry.getKey(), memberId,orderCallStatus));
+                    outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
                     break;
@@ -221,23 +226,24 @@ public class ReportServices {
     }
     public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMedium(memberId, orderMedium, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0) + 1);
+            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
                 if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
-                    outletReportResponse.setTotalOrder(entry.getValue());
+                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndMemberIdAndOrderMedium(entry.getKey(), memberId, orderMedium));
+                    outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
                     break;
@@ -249,23 +255,24 @@ public class ReportServices {
     }
     public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatus(memberId, orderCallStatus, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0) + 1);
+            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
                 if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
-                    beetReportResponse.setTotalOrder(entry.getValue());
+                    beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndMemberIdAndOrderCallStatus(entry.getKey(), memberId, orderCallStatus));
+                    beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
                     beetReportResponsesList.add(beetReportResponse);
                     break;
@@ -277,23 +284,24 @@ public class ReportServices {
     }
     public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderMedium(memberId, orderMedium, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0) + 1);
+            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
                 if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
-                    beetReportResponse.setTotalOrder(entry.getValue());
+                    beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndMemberIdAndOrderMedium(entry.getKey(), memberId, orderMedium));
+                    beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
                     beetReportResponsesList.add(beetReportResponse);
                     break;
@@ -307,23 +315,24 @@ public class ReportServices {
     //Client Fmcg reports
     public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus,int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatus(clientFmcgId, orderCallStatus, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0) + 1);
+            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
                 if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
-                    outletReportResponse.setTotalOrder(entry.getValue());
+                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndClientFmcgIdAndOrderCallStatus(entry.getKey(), clientFmcgId, orderCallStatus));
+                    outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
                     break;
@@ -335,23 +344,24 @@ public class ReportServices {
     }
     public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMedium(clientFmcgId, orderMedium, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0) + 1);
+            outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
                 if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
-                    outletReportResponse.setTotalOrder(entry.getValue());
+                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndClientFmcgIdAndOrderMedium(entry.getKey(), clientFmcgId, orderMedium));
+                    outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
                     break;
@@ -363,23 +373,24 @@ public class ReportServices {
     }
     public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus,int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderCallStatus(clientFmcgId, orderCallStatus, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0) + 1);
+            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
                 if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
-                    beetReportResponse.setTotalOrder(entry.getValue());
+                    beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndClientFmcgIdAndOrderCallStatus(entry.getKey(), clientFmcgId, orderCallStatus));
+                    beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
                     beetReportResponsesList.add(beetReportResponse);
                     break;
@@ -391,23 +402,24 @@ public class ReportServices {
     }
     public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
-        Map<Long, Integer> outletOrderMap = new HashMap<>();
+        Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndOrderMedium(clientFmcgId, orderMedium, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
-            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0) + 1);
+            outletOrderMap.put(order.getBeetId(), outletOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Integer> entry : outletOrderMap.entrySet()){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
             for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
                 if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
-                    beetReportResponse.setTotalOrder(entry.getValue());
+                    beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndClientFmcgIdAndOrderMedium(entry.getKey(), clientFmcgId, orderMedium));
+                    beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
                     beetReportResponsesList.add(beetReportResponse);
                     break;

@@ -10,6 +10,7 @@ import sfa.order_service.dto.response.FinalProductPriceResponse;
 import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.OrderUpdateResponse;
 import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.OrderService;
 
@@ -62,8 +63,8 @@ public class OrderController {
 
     @GetMapping("/getAllOrderByReportingManagerMembers/{reportingManagerId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
-    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByReportingManagerMembers(@PathVariable Long reportingManagerId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
-        return new ResponseEntity<>(orderService.getAllOrderByReportingManagerMembers(reportingManagerId, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByReportingManagerMembers(@PathVariable Long reportingManagerId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+        return new ResponseEntity<>(orderService.getAllOrderByReportingManagerMembers(reportingManagerId, salesLevel,page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 
     @GetMapping("/getAllOrder/client-fmcg/{clientFmcgId}")
@@ -90,4 +91,19 @@ public class OrderController {
         List<OrderUpdateResponse> orderResponseList = orderService.updateOrderInBulk(orderUpdateRequest);
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
+
+    @GetMapping("/getOrderDetailBySalesLevelById/{orderId}/{salesType}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<OrderResponse> getOrderDetailBySalesLevelById(@PathVariable Long orderId, @PathVariable String salesType){
+        OrderResponse response = orderService.getOrderDetailBySalesTypeById(orderId, salesType);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllOrderByInvoiceNumber/{invoiceNumber}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<List<OrderResponse>> getAllOrderByInvoiceNumber(@PathVariable String invoiceNumber){
+        List<OrderResponse> response = orderService.getAllOrderByInvoiceNumber(invoiceNumber);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }
