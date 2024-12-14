@@ -39,4 +39,5 @@ public class OrderResponse {
     private OutletRespForOrderDto outletRespForOrderDto;
     private ClientFMCGResponse clientFMCGResponse;
     private MemberResponse memberResponse;
+    private String remarks;
 }
