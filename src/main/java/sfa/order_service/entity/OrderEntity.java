@@ -33,4 +33,5 @@ public class OrderEntity extends BaseEntity {
     private Long memberId;
     private Long outletId;
     private Long beetId;
+    private String remarks;
 }

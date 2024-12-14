@@ -21,4 +21,5 @@ public class OrderRequest {
     private Long beetId;
     private OrderMedium orderMedium;
     private OrderCallStatus orderCallStatus;
+    private String remarks;
 }

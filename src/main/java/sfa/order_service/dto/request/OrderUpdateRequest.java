@@ -12,4 +12,5 @@ public class OrderUpdateRequest {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     Long orderId;
+    String remarks;
 }

@@ -14,4 +14,5 @@ public class OrderUpdateResponse {
     private Long orderId;
     private OrderStatus status;
     private String message;
+    private String remarks;
 }

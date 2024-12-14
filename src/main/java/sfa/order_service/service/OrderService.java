@@ -155,6 +155,7 @@ public class OrderService {
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setOrderCreatedDate(new Date());
+        orderEntity.setRemarks(request.getRemarks());
         if(salesType.equalsIgnoreCase("secondary")){
             orderEntity.setOrderMedium(request.getOrderMedium());
             orderEntity.setOutletId(request.getOutletId());
@@ -236,6 +237,7 @@ public class OrderService {
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
+        orderResponse.setRemarks(orderEntity.getRemarks());
         MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
@@ -260,12 +262,14 @@ public class OrderService {
         log.info("update order status");
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
         orderEntity.setStatus(request.getStatus());
+        orderEntity.setRemarks(request.getRemarks());
         log.info("Order status updated to {}", request.getStatus());
         OrderEntity updatedOrder = orderRepository.save(orderEntity);
         OrderUpdateResponse orderResponse = new OrderUpdateResponse();
         orderResponse.setOrderId(updatedOrder.getId());
         orderResponse.setStatus(updatedOrder.getStatus());
         orderResponse.setMessage("Order status updated to delivered!!");
+        orderResponse.setRemarks(updatedOrder.getRemarks());
         return orderResponse;
     }
     public List<OrderUpdateResponse> updateOrderInBulk(OrderBulkUpdateRequest orderBulkUpdateRequest) {
@@ -274,12 +278,14 @@ public class OrderService {
             log.info("update order status");
             OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
             orderEntity.setStatus(orderUpdateRequest.getStatus());
+            orderEntity.setRemarks(orderUpdateRequest.getRemarks());
             log.info("Order status updated to {}", orderUpdateRequest.getStatus());
             OrderEntity updatedOrder = orderRepository.save(orderEntity);
             OrderUpdateResponse orderResponse = new OrderUpdateResponse();
             orderResponse.setOrderId(updatedOrder.getId());
             orderResponse.setStatus(updatedOrder.getStatus());
             orderResponse.setMessage("Order status updated to delivered!!");
+            orderResponse.setRemarks(updatedOrder.getRemarks());
             orderUpdateResponseList.add(orderResponse);
         }
             return orderUpdateResponseList;
