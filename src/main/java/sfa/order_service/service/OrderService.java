@@ -174,7 +174,11 @@ public class OrderService {
         log.info("Updating FMCG-client balance after order creation");
         ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
         clientFMCGUpdateRequest.setId(request.getClientId());
-        clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+        if(request.getSalesLevel() == SalesLevel.WAREHOUSE){
+            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
+        }else{
+            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
+        }
         clientFMCGUpdateRequest.setClientCode(client.getClientCode());
         clientFMCGUpdateRequest.setCity(client.getCity());
         clientFMCGUpdateRequest.setRegion(client.getRegion());
