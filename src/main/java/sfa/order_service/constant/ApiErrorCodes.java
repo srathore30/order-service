@@ -17,7 +17,9 @@ public enum ApiErrorCodes implements Error {
     INVALID_SALES_LEVEL(1011,"Invalid sales level" ),
     OUTLET_NOT_FOUND(1012,"Outlet not found" ),
     BEET_NOT_FOUND(1013,"Beet not found" ),
-    NO_SALES(1014, "No sales");
+    NO_SALES(1014, "No sales"),
+    RETURN_NOT_FOUND(1015, "return not found"),
+    RETURN_ALREADY_CREATED(10045, "return already created for this order");
 
     private int errorCode;
     private String errorMessage;

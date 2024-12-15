@@ -366,7 +366,7 @@ public class OrderService {
 
     public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoice(Long clientFmcgId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.unsorted());
         Page<String> invoiceNumbersPage = orderRepository.findDistinctInvoiceNumbers(clientFmcgId, salesLevel, pageable);
         List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
         for(String invoiceNumber : invoiceNumbersPage) {

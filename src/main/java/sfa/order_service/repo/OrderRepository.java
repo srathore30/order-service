@@ -20,12 +20,17 @@ import java.util.Set;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    Page<OrderEntity> findById(Long orderId, Pageable pageable);
-   @Query("SELECT DISTINCT o.invoiceNumber " +
-           "FROM OrderEntity o " +
-           "WHERE o.clientFmcgId = :clientFmcgId AND o.salesLevel = :salesLevel")
-   Page<String> findDistinctInvoiceNumbers(@Param("clientFmcgId") Long clientFmcgId,
-                                           @Param("salesLevel") SalesLevel salesLevel,
-                                           Pageable pageable);
+   @Query("SELECT o.invoiceNumber FROM OrderEntity o " +
+           "WHERE o.clientFmcgId = :clientFmcgId AND o.salesLevel = :salesLevel " +
+           "GROUP BY o.invoiceNumber")
+   Page<String> findDistinctInvoiceNumbers(
+           @Param("clientFmcgId") Long clientFmcgId,
+           @Param("salesLevel") SalesLevel salesLevel,
+           Pageable pageable
+   );
+
+
+
    @Query("SELECT o FROM OrderEntity o WHERE o.invoiceNumber = :invoiceNumber")
    List<OrderEntity> findOrdersByInvoiceNumber(@Param("invoiceNumber") String invoiceNumber);
 
