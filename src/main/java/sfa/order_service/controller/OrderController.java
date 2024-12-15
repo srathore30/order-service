@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.*;
-import sfa.order_service.dto.response.FinalProductPriceResponse;
-import sfa.order_service.dto.response.OrderResponse;
-import sfa.order_service.dto.response.OrderUpdateResponse;
-import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.dto.response.*;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.OrderService;
@@ -76,6 +73,11 @@ public class OrderController {
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<PaginatedResp<OrderResponse>> getAllOrderByClientFmcgIdAndSalesLevel(@RequestParam Long clientFmcgId,@RequestParam String salesLevel,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
         return new ResponseEntity<>(orderService.getAllOrderByClientFmcgIdAndSalesLevel(clientFmcgId,salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+    @GetMapping("/getOrdersGroupedByInvoiceWithSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoice(@RequestParam Long clientFmcgId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoice(clientFmcgId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 
     @PostMapping("/createOrderInBulk")
