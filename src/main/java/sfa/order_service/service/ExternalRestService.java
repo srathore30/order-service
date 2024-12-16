@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import sfa.order_service.dto.request.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,8 @@ public class ExternalRestService {
     private String getOutletUrlById;
     @Value("${beets.getBeet.url}")
     private String getBeetByIdUrl;
+    @Value("${inventory.update.url}")
+    private String inventoryUpdateUrl;
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
         log.info("Token: {}", TokenContext.getToken());
@@ -52,6 +55,18 @@ public class ExternalRestService {
         ResponseEntity<ClientFMCGResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ClientFMCGResponse.class);
         return response.getBody();
     }
+    @Async
+    public void updateInventory(Long clientId, Long productId, InventoryUpdateRequest inventoryUpdateRequest) {
+        log.info("Updating inventory with client ID: {}", clientId);
+        String url = inventoryUpdateUrl + "/" + productId + "/" + clientId;
+        log.info("URL: {}", url);
+
+        HttpEntity<InventoryUpdateRequest> requestEntity = new HttpEntity<>(inventoryUpdateRequest, createHeaders());
+
+        log.info("Sending inventory update request with body");
+        restTemplate.exchange(url, HttpMethod.PUT, requestEntity, ClientFMCGResponse.class);
+    }
+
 
     public MemberResponse getMember(Long memberId) {
         String url = memberServiceUrl + "/" + memberId;
