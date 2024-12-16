@@ -1,5 +1,6 @@
 package sfa.order_service.service;
 
+import jakarta.transaction.Transactional;
 import jakarta.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.Status;
+import sfa.order_service.dto.request.InventoryUpdateRequest;
 import sfa.order_service.dto.request.SalesReturnReq;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
@@ -35,6 +37,7 @@ public class SalesReturnServices {
     private final ExternalRestService externalRestService;
     private final OrderRepository orderRepository;
     public SalesReturnRes createReturn(SalesReturnReq salesReturnReq){
+        log.info("Creating sales return");
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findByOrderEntityId(salesReturnReq.getOrderId());
         if(salesReturnOptional.isEmpty()){
             SalesReturn salesReturn = mapToEntity(salesReturnReq);
@@ -45,6 +48,7 @@ public class SalesReturnServices {
     }
 
     public SalesReturnRes getReturnByOrderId(Long orderId){
+        log.info("fetching sales return with id " + orderId);
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findByOrderEntityId(orderId);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());
@@ -53,6 +57,7 @@ public class SalesReturnServices {
     }
 
     public SalesReturnRes getReturnById(Long id){
+        log.info("fetching sales return with id " + id);
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findById(id);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());
@@ -60,6 +65,7 @@ public class SalesReturnServices {
         return mapToDto(salesReturnOptional.get());
     }
     public SalesReturnRes updateReturnById(Long id, SalesReturnReq  salesReturnReq){
+        log.info("updateing sales return");
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findById(id);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());
@@ -76,13 +82,24 @@ public class SalesReturnServices {
         salesReturnOptional.get().setStatus(Status.Inactive);
         salesReturnRepo.save(salesReturnOptional.get());
     }
+    @Transactional
     public void updateReturnStatus(Long id, ReturnStatus returnStatus){
+        log.info("updateing sales return status");
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findById(id);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());
         }
         salesReturnOptional.get().setReturnStatus(returnStatus);
         salesReturnRepo.save(salesReturnOptional.get());
+        if(returnStatus == ReturnStatus.Returned){
+            log.info("updateing sales return inventory");
+            InventoryUpdateRequest inventoryUpdateRequest = new InventoryUpdateRequest();
+            inventoryUpdateRequest.setClientId(salesReturnOptional.get().getClientFmcgId());
+            inventoryUpdateRequest.setProductId(salesReturnOptional.get().getOrderEntity().getProductId());
+            inventoryUpdateRequest.setSalesLevel(salesReturnOptional.get().getOrderEntity().getSalesLevel());
+            inventoryUpdateRequest.setQuantitySold(Long.valueOf(salesReturnOptional.get().getQuantity()));
+            externalRestService.updateInventory(salesReturnOptional.get().getClientFmcgId(), salesReturnOptional.get().getOrderEntity().getProductId(), inventoryUpdateRequest);
+        }
     }
     public PaginatedResp<SalesReturnRes> getAllReturnByClientFmcgAndSalesLevelAndReturnStatus(Long clientFmcgId, Long memberId, ReturnStatus returnStatus,int page, int pageSize, String sortBy, String sortDirection){
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();

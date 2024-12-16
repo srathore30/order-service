@@ -75,6 +75,10 @@ beets:
   getBeetForReport:
     url: http://localhost:8080/getBeetByIdForReport
 
+inventory:
+  update:
+    url: http://localhost:9095/inventory-service/inventory/update
+
 name:
   state:
     url: http://localhost:8080/states/getStateNameById
