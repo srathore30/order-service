@@ -174,11 +174,7 @@ public class OrderService {
         log.info("Updating FMCG-client balance after order creation");
         ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
         clientFMCGUpdateRequest.setId(request.getClientId());
-        if(request.getSalesLevel() == SalesLevel.WAREHOUSE){
-            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - finalPrice);
-        }else{
-            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
-        }
+        clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
         clientFMCGUpdateRequest.setClientCode(client.getClientCode());
         clientFMCGUpdateRequest.setCity(client.getCity());
         clientFMCGUpdateRequest.setRegion(client.getRegion());
@@ -261,16 +257,48 @@ public class OrderService {
     public OrderUpdateResponse updateOrder(Long orderId, OrderUpdateRequest request) {
         log.info("update order status");
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
-        orderEntity.setStatus(request.getStatus());
-        orderEntity.setRemarks(request.getRemarks());
-        log.info("Order status updated to {}", request.getStatus());
-        OrderEntity updatedOrder = orderRepository.save(orderEntity);
-        OrderUpdateResponse orderResponse = new OrderUpdateResponse();
-        orderResponse.setOrderId(updatedOrder.getId());
-        orderResponse.setStatus(updatedOrder.getStatus());
-        orderResponse.setMessage("Order status updated to delivered!!");
-        orderResponse.setRemarks(updatedOrder.getRemarks());
-        return orderResponse;
+        if(request.getStatus() == OrderStatus.DELIVERED && orderEntity.getStatus() != OrderStatus.DELIVERED){
+            ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
+            ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+            clientFMCGUpdateRequest.setId(orderEntity.getClientFmcgId());
+            if(orderEntity.getSalesLevel() == SalesLevel.WAREHOUSE){
+                clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - orderEntity.getPrice());
+            }
+            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
+            clientFMCGUpdateRequest.setClientCode(client.getClientCode());
+            clientFMCGUpdateRequest.setCity(client.getCity());
+            clientFMCGUpdateRequest.setRegion(client.getRegion());
+            clientFMCGUpdateRequest.setEmail(client.getEmail());
+            clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+            clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+            clientFMCGUpdateRequest.setMobile(client.getMobile());
+            clientFMCGUpdateRequest.setAddress(client.getAddress());
+            clientFMCGUpdateRequest.setState(client.getState());
+            clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
+            externalRestService.updateClientAsync(clientFMCGUpdateRequest);
+            orderEntity.setStatus(OrderStatus.DELIVERED);
+            orderEntity.setRemarks(request.getRemarks());
+            log.info("Order status updated to {}", request.getStatus());
+            OrderEntity updatedOrder = orderRepository.save(orderEntity);
+            OrderUpdateResponse orderResponse = new OrderUpdateResponse();
+            orderResponse.setOrderId(updatedOrder.getId());
+            orderResponse.setStatus(updatedOrder.getStatus());
+            orderResponse.setMessage("Order status updated to delivered!!");
+            orderResponse.setRemarks(updatedOrder.getRemarks());
+            return orderResponse;
+        }else{
+            orderEntity.setStatus(request.getStatus());
+            orderEntity.setRemarks(request.getRemarks());
+            log.info("Order status updated to {}", request.getStatus());
+            OrderEntity updatedOrder = orderRepository.save(orderEntity);
+            OrderUpdateResponse orderResponse = new OrderUpdateResponse();
+            orderResponse.setOrderId(updatedOrder.getId());
+            orderResponse.setStatus(updatedOrder.getStatus());
+            orderResponse.setMessage("Order status updated to delivered!!");
+            orderResponse.setRemarks(updatedOrder.getRemarks());
+            return orderResponse;
+        }
+
     }
     public List<OrderUpdateResponse> updateOrderInBulk(OrderBulkUpdateRequest orderBulkUpdateRequest) {
         List<OrderUpdateResponse> orderUpdateResponseList = new ArrayList<>();
@@ -365,7 +393,6 @@ public class OrderService {
     }
 
     public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoice(Long clientFmcgId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
-        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, Sort.unsorted());
         Page<String> invoiceNumbersPage = orderRepository.findDistinctInvoiceNumbers(clientFmcgId, salesLevel, pageable);
         List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
@@ -377,6 +404,21 @@ public class OrderService {
         }
         return new PaginatedResp<>(invoiceNumbersPage.getTotalElements(), invoiceNumbersPage.getTotalPages(), page, groupedResponses);
     }
+    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.unsorted());
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
+        Page<String> invoiceNumbersPage = orderRepository.findDistinctInvoiceNumbersByReportingManagerId(salesLevel, memberIds, pageable);
+        List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
+        for(String invoiceNumber : invoiceNumbersPage) {
+            List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(invoiceNumber);
+            List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+            OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(invoiceNumber, orderResponseList);
+            groupedResponses.add(orders);
+        }
+        return new PaginatedResp<>(invoiceNumbersPage.getTotalElements(), invoiceNumbersPage.getTotalPages(), page, groupedResponses);
+    }
+
+
 
     public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, SalesLevel salesLevel,int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();

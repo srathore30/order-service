@@ -80,6 +80,12 @@ public class OrderController {
         return new ResponseEntity<>(orderService.getOrdersGroupedByInvoice(clientFmcgId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 
+    @GetMapping("/getOrdersGroupedByInvoiceByReportingManagerId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoiceByReportingManagerId(@RequestParam Long reportingManagerId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoiceByReportingManagerId(reportingManagerId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+
     @PostMapping("/createOrderInBulk")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<List<OrderResponse>> createOrderInBulk(@RequestBody OrderBulkReq orderBulkReq, @RequestParam String salesType){
