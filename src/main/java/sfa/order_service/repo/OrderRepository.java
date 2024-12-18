@@ -29,6 +29,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
            Pageable pageable
    );
 
+   @Query("SELECT o.invoiceNumber FROM OrderEntity o " +
+           "WHERE o.salesLevel = :salesLevel " +
+           "AND o.memberId IN :memberIds " +
+           "GROUP BY o.invoiceNumber")
+   Page<String> findDistinctInvoiceNumbersByReportingManagerId(
+           @Param("salesLevel") SalesLevel salesLevel,
+           @Param("memberIds") Set<Long> memberIds,
+           Pageable pageable
+   );
+
 
 
    @Query("SELECT o FROM OrderEntity o WHERE o.invoiceNumber = :invoiceNumber")
