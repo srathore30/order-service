@@ -15,4 +15,5 @@ public class OrderUpdateResponse {
     private OrderStatus status;
     private String message;
     private String remarks;
+    private String quantity;
 }

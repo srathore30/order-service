@@ -9,6 +9,7 @@ import sfa.order_service.dto.request.SalesReturnReq;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.dto.response.SalesReturnRes;
 import sfa.order_service.entity.ReturnStatus;
+import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.SalesReturnServices;
 
@@ -57,15 +58,27 @@ public class SalesReturnController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping
+    @GetMapping("/getAllSalesReturnsByClientFmcgAndSalesLevelAndReturnStatus/{clientFmcgId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
     public ResponseEntity<PaginatedResp<SalesReturnRes>> getAllSalesReturnsByClientFmcgAndSalesLevel(
-            @RequestParam Long clientFmcgId, @RequestParam Long memberId,
+            @RequestParam Long clientFmcgId,
             @RequestParam ReturnStatus returnStatus,
+            @RequestParam SalesLevel salesLevel,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(defaultValue = "returnDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
 
         return new ResponseEntity<>(salesReturnServices.getAllReturnByClientFmcgAndSalesLevelAndReturnStatus(
-                clientFmcgId, memberId, returnStatus, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+                clientFmcgId, salesLevel, returnStatus, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
+    @GetMapping("/getAllReturnClientFmcgAndSalesLevel/{clientFmcgId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<PaginatedResp<SalesReturnRes>> getAllClientFmcgAndSalesLevel(
+            @PathVariable Long clientFmcgId,
+            @RequestParam SalesLevel salesLevel,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "returnDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        return new ResponseEntity<>(salesReturnServices.getAllReturnByClientFmcgAndSalesLevel(
+                clientFmcgId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 }

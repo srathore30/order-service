@@ -13,4 +13,5 @@ public class OrderUpdateRequest {
     private OrderStatus status;
     Long orderId;
     String remarks;
+    Integer quantity;
 }

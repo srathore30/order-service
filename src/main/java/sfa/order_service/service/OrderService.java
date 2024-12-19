@@ -277,22 +277,26 @@ public class OrderService {
             clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
             externalRestService.updateClientAsync(clientFMCGUpdateRequest);
             orderEntity.setStatus(OrderStatus.DELIVERED);
+            orderEntity.setQuantity(request.getQuantity());
             orderEntity.setRemarks(request.getRemarks());
             log.info("Order status updated to {}", request.getStatus());
             OrderEntity updatedOrder = orderRepository.save(orderEntity);
             OrderUpdateResponse orderResponse = new OrderUpdateResponse();
             orderResponse.setOrderId(updatedOrder.getId());
             orderResponse.setStatus(updatedOrder.getStatus());
+            orderResponse.setQuantity(String.valueOf(updatedOrder.getQuantity()));
             orderResponse.setMessage("Order status updated to delivered!!");
             orderResponse.setRemarks(updatedOrder.getRemarks());
             return orderResponse;
         }else{
             orderEntity.setStatus(request.getStatus());
+            orderEntity.setQuantity(request.getQuantity());
             orderEntity.setRemarks(request.getRemarks());
             log.info("Order status updated to {}", request.getStatus());
             OrderEntity updatedOrder = orderRepository.save(orderEntity);
             OrderUpdateResponse orderResponse = new OrderUpdateResponse();
             orderResponse.setOrderId(updatedOrder.getId());
+            orderResponse.setQuantity(String.valueOf(updatedOrder.getQuantity()));
             orderResponse.setStatus(updatedOrder.getStatus());
             orderResponse.setMessage("Order status updated to delivered!!");
             orderResponse.setRemarks(updatedOrder.getRemarks());
