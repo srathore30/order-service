@@ -101,10 +101,18 @@ public class SalesReturnServices {
             externalRestService.updateInventory(salesReturnOptional.get().getClientFmcgId(), salesReturnOptional.get().getOrderEntity().getProductId(), inventoryUpdateRequest);
         }
     }
-    public PaginatedResp<SalesReturnRes> getAllReturnByClientFmcgAndSalesLevelAndReturnStatus(Long clientFmcgId, Long memberId, ReturnStatus returnStatus,int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<SalesReturnRes> getAllReturnByClientFmcgAndSalesLevelAndReturnStatus(Long clientFmcgId, SalesLevel salesLevel, ReturnStatus returnStatus,int page, int pageSize, String sortBy, String sortDirection){
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<SalesReturn> salesReturnPage = salesReturnRepo.findByClientFmcgIdAndMemberIdAndReturnStatus(clientFmcgId, memberId, returnStatus, pageable);
+        Page<SalesReturn> salesReturnPage = salesReturnRepo.findByClientFmcgIdAndSalesLevelAndReturnStatus(clientFmcgId, salesLevel, returnStatus, pageable);
+        List<SalesReturnRes> salesReturnResList = salesReturnPage.getContent().stream().filter(salesReturn -> salesReturn.getStatus() == Status.Active).map(this::mapToDto).toList();
+        return new PaginatedResp<>(salesReturnPage.getTotalElements(), salesReturnPage.getTotalPages(), page, salesReturnResList);
+    }
+
+    public PaginatedResp<SalesReturnRes> getAllReturnByClientFmcgAndSalesLevel(Long clientFmcgId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection){
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Page<SalesReturn> salesReturnPage = salesReturnRepo.findByClientFmcgIdAndSalesLevel(clientFmcgId, salesLevel, pageable);
         List<SalesReturnRes> salesReturnResList = salesReturnPage.getContent().stream().filter(salesReturn -> salesReturn.getStatus() == Status.Active).map(this::mapToDto).toList();
         return new PaginatedResp<>(salesReturnPage.getTotalElements(), salesReturnPage.getTotalPages(), page, salesReturnResList);
     }
@@ -114,6 +122,7 @@ public class SalesReturnServices {
         salesReturnRes.setOrderResponse(mapToOrderDto(salesReturn.getOrderEntity(), ""));
         salesReturnRes.setReturnStatus(salesReturn.getReturnStatus());
         salesReturnRes.setId(salesReturn.getId());
+        salesReturnRes.setSalesLevel(salesReturn.getOrderEntity().getSalesLevel());
         salesReturnRes.setQuantity(salesReturn.getQuantity());
         salesReturnRes.setReason(salesReturn.getReason());
         return salesReturnRes;
@@ -125,6 +134,7 @@ public class SalesReturnServices {
         salesReturn.setOrderEntity(orderEntity);
         salesReturn.setReturnStatus(ReturnStatus.Created);
         salesReturn.setStatus(Status.Active);
+        salesReturn.setSalesLevel(orderEntity.getSalesLevel());
         salesReturn.setReturnDate(new Date());
         salesReturn.setClientFmcgId(orderEntity.getClientFmcgId());
         salesReturn.setMemberId(orderEntity.getMemberId());
