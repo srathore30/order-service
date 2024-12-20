@@ -1,5 +1,6 @@
 package sfa.order_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,4 +35,7 @@ public class OrderEntity extends BaseEntity {
     private Long outletId;
     private Long beetId;
     private String remarks;
+    @ManyToOne
+    @JsonBackReference
+    OrderInvoice orderInvoice;
 }

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sfa.order_service.enums.OrderStatus;
 
+import java.awt.*;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,5 +17,8 @@ public class OrderUpdateResponse {
     private OrderStatus status;
     private String message;
     private String remarks;
+
     private String quantity;
+    private Double totalPrice;
+    private Double totalPriceWithGst;
 }
