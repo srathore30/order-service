@@ -40,6 +40,11 @@ public class OrderController {
     public ResponseEntity<OrderUpdateResponse> updateOrder(@PathVariable Long orderId, @RequestBody OrderUpdateRequest orderRequest) {
         return new ResponseEntity<>(orderService.updateOrder(orderId, orderRequest), HttpStatus.OK);
     }
+    @PutMapping("/orders/updateQuantity")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    public ResponseEntity<OrderUpdateResponse> updateQuantity(@RequestBody OrderUpdateRequest orderRequest) {
+        return new ResponseEntity<>(orderService.updateOrderQuantity(orderRequest), HttpStatus.OK);
+    }
 
     @PostMapping("/orders/pricing/calculate")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
