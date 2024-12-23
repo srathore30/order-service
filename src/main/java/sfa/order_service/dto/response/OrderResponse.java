@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sfa.order_service.constant.BundleType;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
@@ -18,6 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class OrderResponse {
     private Long orderId;
+    private BundleType bundleType;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Double totalPrice;

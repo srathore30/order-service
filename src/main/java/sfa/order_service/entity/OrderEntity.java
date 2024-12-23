@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import sfa.order_service.constant.BundleType;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
@@ -32,6 +33,8 @@ public class OrderEntity extends BaseEntity {
     private OrderCallStatus orderCallStatus;
     private Long clientFmcgId;
     private Long memberId;
+    @Enumerated(EnumType.STRING)
+    private BundleType bundleType;
     private Long outletId;
     private Long beetId;
     private String remarks;
