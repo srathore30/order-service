@@ -176,6 +176,7 @@ public class OrderService {
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
+        orderEntity.setBundleType(request.getBundleType());
         orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
@@ -244,6 +245,7 @@ public class OrderService {
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
+        orderResponse.setBundleType(orderEntity.getBundleType());
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());

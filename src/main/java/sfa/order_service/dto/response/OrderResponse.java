@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sfa.order_service.constant.BundleType;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
@@ -21,6 +22,7 @@ public class OrderResponse {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Double totalPrice;
+    private BundleType bundleType;
     private Long productId;
     private ProductRes productRes;
     private Integer quantity;
