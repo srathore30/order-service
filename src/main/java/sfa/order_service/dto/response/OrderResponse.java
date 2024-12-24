@@ -19,10 +19,10 @@ import java.util.Date;
 @NoArgsConstructor
 public class OrderResponse {
     private Long orderId;
-    private BundleType bundleType;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Double totalPrice;
+    private BundleType bundleType;
     private Long productId;
     private ProductRes productRes;
     private Integer quantity;

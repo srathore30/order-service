@@ -2,6 +2,7 @@ package sfa.order_service.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import sfa.order_service.constant.BundleType;
 
 @Getter
 @Setter
@@ -11,6 +12,8 @@ import lombok.experimental.FieldDefaults;
 public class ProductRes {
     String name;
     String sku;
+    Double bundleSize;
+    String imageUrl;
     String unitOfMeasurement;
     Long productId;
     ProductPriceRes productPriceRes;
