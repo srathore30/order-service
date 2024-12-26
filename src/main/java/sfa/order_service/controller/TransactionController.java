@@ -19,35 +19,35 @@ public class TransactionController {
 
     @Async
     @PostMapping
-    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody TransactionRequest request) {
         TransactionResponse transaction = transactionService.createTransaction(request);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
 
     @GetMapping("getTransactionById/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id) {
         TransactionResponse transaction = transactionService.getTransactionById(id);
         return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
     @PutMapping("updateTransaction/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<TransactionResponse> updateTransaction(@PathVariable Long id, @RequestBody TransactionRequest request) {
         TransactionResponse transaction = transactionService.updateTransaction(id, request);
         return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
     @DeleteMapping("deleteTransactionById/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("deleteAllTransactions")
-    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<Void> deleteAllTransactions() {
         transactionService.deleteAllTransaction();
         return new ResponseEntity<>(HttpStatus.OK);
