@@ -455,20 +455,33 @@ public class OrderService {
         }
         return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
     }
-    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
+    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, boolean isManagerSaleIncluded,int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
-        Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByReportingManagerMembersAndSalesLevel(salesLevel, memberIds, pageable);
-        List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
-        for(OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
-            List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
-            List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
-            OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
-            groupedResponses.add(orders);
+        if(isManagerSaleIncluded) {
+            memberIds.add(reportingManagerId);
+            Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByReportingManagerMembersAndSalesLevel(salesLevel, memberIds, pageable);
+            List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
+            for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
+                List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
+                groupedResponses.add(orders);
+            }
+            return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
         }
-        return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
+        else{
+            Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByReportingManagerMembersAndSalesLevel(salesLevel, memberIds, pageable);
+            List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
+            for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
+                List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
+                groupedResponses.add(orders);
+            }
+            return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
+        }
     }
     public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, SalesLevel salesLevel,int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
