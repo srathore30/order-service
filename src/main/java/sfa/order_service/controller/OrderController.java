@@ -87,8 +87,8 @@ public class OrderController {
 
     @GetMapping("/getOrdersGroupedByInvoiceByReportingManagerId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
-    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoiceByReportingManagerId(@RequestParam Long reportingManagerId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
-        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoiceByReportingManagerId(reportingManagerId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoiceByReportingManagerId(@RequestParam Long reportingManagerId, @RequestParam SalesLevel salesLevel, @RequestParam boolean isMangerSaleIncluded,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoiceByReportingManagerId(reportingManagerId, salesLevel, isMangerSaleIncluded,page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
 
     @PostMapping("/createOrderInBulk")
