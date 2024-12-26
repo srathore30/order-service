@@ -21,45 +21,45 @@ public class SalesReturnController {
     private final SalesReturnServices salesReturnServices;
 
     @PostMapping
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SalesReturnRes> createSalesReturn(@RequestBody SalesReturnReq salesReturnReq) {
         return new ResponseEntity<>(salesReturnServices.createReturn(salesReturnReq), HttpStatus.CREATED);
     }
 
     @GetMapping("/returnByOrderId/{orderId}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SalesReturnRes> getSalesReturnByOrderId(@PathVariable Long orderId) {
         return new ResponseEntity<>(salesReturnServices.getReturnByOrderId(orderId), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SalesReturnRes> getSalesReturnById(@PathVariable Long id) {
         return new ResponseEntity<>(salesReturnServices.getReturnById(id), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SalesReturnRes> updateSalesReturnById(@PathVariable Long id, @RequestBody SalesReturnReq salesReturnReq) {
         return new ResponseEntity<>(salesReturnServices.updateReturnById(id, salesReturnReq), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<Void> deleteSalesReturn(@PathVariable Long id) {
         salesReturnServices.deleteReturn(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{id}/status")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<Void> updateSalesReturnStatus(@PathVariable Long id, @RequestParam ReturnStatus returnStatus) {
         salesReturnServices.updateReturnStatus(id, returnStatus);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/getAllSalesReturnsByClientFmcgAndSalesLevelAndReturnStatus/{clientFmcgId}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<SalesReturnRes>> getAllSalesReturnsByClientFmcgAndSalesLevel(
             @RequestParam Long clientFmcgId,
             @RequestParam ReturnStatus returnStatus,
@@ -71,7 +71,7 @@ public class SalesReturnController {
                 clientFmcgId, salesLevel, returnStatus, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
     @GetMapping("/getAllReturnClientFmcgAndSalesLevel/{clientFmcgId}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager,UserRole.View_Manager,UserRole.Manager})
+    @UserAuthorization(allowedRoles = {UserRole.Client,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<SalesReturnRes>> getAllClientFmcgAndSalesLevel(
             @PathVariable Long clientFmcgId,
             @RequestParam SalesLevel salesLevel,
