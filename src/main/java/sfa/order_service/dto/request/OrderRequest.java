@@ -24,4 +24,5 @@ public class OrderRequest {
     private OrderMedium orderMedium;
     private OrderCallStatus orderCallStatus;
     private String remarks;
+    private String discountCode;
 }
