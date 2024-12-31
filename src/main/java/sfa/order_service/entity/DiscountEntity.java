@@ -25,4 +25,6 @@ public class DiscountEntity extends BaseEntity {
     private Date validFrom;
     private Date validTo;
     private Integer minQuantity;
+    private Integer bogoOfferQuantity;  // Number of products to buy for BOGO
+    private Integer bogoFreeQuantity;   // Number of products to get free
 }

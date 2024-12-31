@@ -2,11 +2,21 @@ package sfa.order_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sfa.order_service.constant.ApiErrorCodes;
+import sfa.order_service.constant.DiscountType;
 import sfa.order_service.dto.request.DiscountRequest;
 import sfa.order_service.dto.response.DiscountResponse;
+import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.entity.DiscountEntity;
+import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.DiscountRepo;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +35,12 @@ public class DiscountService {
         discountEntity.setOutletId(request.getOutletId());
         discountEntity.setValidFrom(request.getValidFrom());
         discountEntity.setValidTo(request.getValidTo());
+        discountEntity.setMinQuantity(request.getMinQuantity());
+        discountEntity.setBogoOfferQuantity(request.getBogoOfferQuantity());
+        discountEntity.setBogoFreeQuantity(request.getBogoFreeQuantity());
         return discountEntity;
     }
+
     public DiscountResponse entityToDto(DiscountEntity discountEntity) {
         DiscountResponse discountResponse = new DiscountResponse();
         discountResponse.setDiscountCode(discountEntity.getDiscountCode());
@@ -40,12 +54,42 @@ public class DiscountService {
         discountResponse.setValidTo(discountEntity.getValidTo());
         return discountResponse;
     }
+
     public DiscountResponse createDiscount(DiscountRequest request) {
-        log.info("create discount");
+        log.info("Check if discountCode already exists");
+        if (discountRepo.existsByDiscountCode(request.getDiscountCode())) {
+            throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        }
+
+        // Modify this check to allow BOGO discount type without percentage or fixedAmount
+        log.info("Checking if either percentage or fixedAmount is provided, unless discountType is BOGO");
+        if (request.getDiscountType() != DiscountType.BOGO) {
+            if (request.getPercentage() == null && request.getFixedAmount() == null) {
+                throw new IllegalArgumentException("Either percentage or fixedAmount must be provided.");
+            }
+            log.info("percentage discount is within a valid range (0-100%)");
+            if (request.getPercentage() != null && request.getPercentage() > 100) {
+                throw new IllegalArgumentException("Percentage cannot exceed 100.");
+            }
+        }
+
+        log.info("discount dto to entity conversion");
         DiscountEntity discountEntity = dtoToEntity(request);
+
+        log.info("saving discount into master table");
         discountRepo.save(discountEntity);
-        log.info("discount created successfully");
+
+        log.info("Discount created successfully");
         return entityToDto(discountEntity);
     }
 
+    public PaginatedResp<DiscountResponse> getDiscountDetailsByProductId(Long productId, int page, int pageSize, String sortBy, String sortDirection) {
+        log.info("Make pageable data for pagination");
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        log.info("Get all discounts by product id");
+        Page<DiscountEntity> discountEntities = discountRepo.findAllByProductId(productId, pageable);
+        List<DiscountResponse> discountResponses = discountEntities.stream().map(this::entityToDto).toList();
+        return new PaginatedResp<>(discountEntities.getTotalElements(), discountEntities.getTotalPages(), page, discountResponses);
+    }
 }

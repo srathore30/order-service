@@ -159,57 +159,84 @@ public class OrderService {
     }
 
     public OrderEntity dtoToEntity(OrderRequest request, String salesType) {
-        log.info("calculate final price for order");
+        log.info("Calculate final price for order");
         Double finalPrice = finalPrice(request);
-        log.info("calculate discount for order");
         Double discountAmount = 0.0;
+
+        log.info("Fetch and apply applicable discounts");
         if (request.getDiscountCode() != null) {
-            DiscountEntity discount = discountRepo.findByDiscountCode(request.getDiscountCode());
+            List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductIdAndOutletId(request.getDiscountCode(), request.getProductId(), request.getOutletId());
 
-            if (discount != null) {
-                log.info("Promotional discount (percentage or fixed amount)");
-                if (discount.getDiscountType() == DiscountType.PROMOTIONAL) {
-                    if (discount.getPercentage() != null) {
-                        discountAmount = (finalPrice * discount.getPercentage()) / 100;
-                    } else if (discount.getFixedAmount() != null) {
-                        discountAmount = discount.getFixedAmount();
+            if (!discounts.isEmpty()) {
+                for (DiscountEntity discount : discounts) {
+                    log.info("Applying discount: " + discount.getDescription());
+                    switch (discount.getDiscountType()) {
+                        case PROMOTIONAL:
+                            if (discount.getPercentage() != null) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            } else if (discount.getFixedAmount() != null) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+                        case QUANTITY_BASED:
+                            if (request.getQuantity() >= discount.getMinQuantity()) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+                        case SEASONAL:
+                            if (discount.getPercentage() != null) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            }
+                            break;
+
+                        case BOGO:
+                            log.info("Applying BOGO (Buy One Get One) discount");
+                            if (request.getQuantity() >= discount.getBogoOfferQuantity()) {
+                                int freeItems = (request.getQuantity() / discount.getBogoOfferQuantity()) * discount.getBogoFreeQuantity();
+                                discountAmount += (finalPrice * freeItems);
+                            }
+                            break;
+
+                        case VOLUME_BASED:
+                            log.info("Applying Volume-based discount");
+                            if (request.getQuantity() >= discount.getMinQuantity()) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+
+                        case LOYALTY:
+                            log.info("Applying Loyalty discount");
+                            if (request.getQuantity() > 0) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            }
+                            break;
+                        default:
+                            log.warn("Unknown discount type: " + discount.getDiscountType());
                     }
                 }
-
-                else if (discount.getDiscountType() == DiscountType.QUANTITY_BASED) {
-                    log.info("Quantity based discount");
-                    if (request.getQuantity() >= discount.getMinQuantity()) {
-                        discountAmount = discount.getFixedAmount();
-                    }
-                }
-
-
-                else if (discount.getDiscountType() == DiscountType.SEASONAL) {
-                    log.info("Seasonal discount");
-                    if (discount.getPercentage() != null) {
-                        discountAmount = (finalPrice * discount.getPercentage()) / 100;
-                    }
-                }
+            } else {
+                log.warn("No applicable discounts found for code: " + request.getDiscountCode());
             }
         }
-        log.info("calculate Price after discount for order");
+
+        log.info("Calculate price after applying discounts");
         Double priceAfterDiscount = finalPrice - discountAmount;
-        log.info("Get FMCG-client details for order creation");
+
+        log.info("Validate FMCG client");
         ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
-        log.info("check if FMCG-client exists or not");
         if (client == null) {
             throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
         }
-        log.info("check if client has sufficient balance or not");
         if (client.getTopUpBalance() < finalPrice) {
             throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
         }
-        log.info("Get member details for order creation");
+
+        log.info("Validate member");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
-        log.info("check if member exists or not");
         if (member == null) {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
+
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
@@ -222,22 +249,26 @@ public class OrderService {
         orderEntity.setPriceAfterDiscount(priceAfterDiscount);
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setRemarks(request.getRemarks());
+
         if (salesType.equalsIgnoreCase("secondary")) {
             orderEntity.setOrderMedium(request.getOrderMedium());
             orderEntity.setOutletId(request.getOutletId());
             orderEntity.setBeetId(request.getBeetId());
-            log.info("Get outlet details for order creation");
+
+            log.info("Validate outlet");
             String outletById = externalRestService.getOutletById(request.getOutletId());
             if (outletById.isEmpty()) {
                 throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
             }
-            log.info("Get beets details for order creation");
+
+            log.info("Validate beet");
             String beetById = externalRestService.getBeetById(request.getBeetId());
             if (beetById.isEmpty()) {
                 throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
             }
         }
-        log.info("Updating FMCG-client balance after order creation");
+
+        log.info("Update FMCG client balance asynchronously");
         ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
         clientFMCGUpdateRequest.setId(request.getClientId());
         clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
@@ -252,9 +283,11 @@ public class OrderService {
         clientFMCGUpdateRequest.setState(client.getState());
         clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
         externalRestService.updateClientAsync(clientFMCGUpdateRequest);
-        log.info("Make request for transaction  table after order creation");
+
+        log.info("Order creation process completed successfully");
         return orderEntity;
     }
+
 
     public String rechargeClientBalance(ClientFMCGUpdateRequest request) {
         log.info("Recharge FMCG-client balance");

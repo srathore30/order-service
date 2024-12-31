@@ -22,4 +22,7 @@ public class DiscountRequest {
     private Long outletId;
     private Date validFrom;
     private Date validTo;
+    private Integer minQuantity;
+    private Integer bogoOfferQuantity;  // e.g., Buy 2
+    private Integer bogoFreeQuantity;   // e.g., Get 1
 }
