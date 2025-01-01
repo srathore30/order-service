@@ -1,7 +1,6 @@
 package sfa.order_service.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

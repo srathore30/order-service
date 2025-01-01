@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import sfa.order_service.dto.request.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
+import sfa.order_service.dto.request.InventoryUpdateRequest;
 import sfa.order_service.dto.response.ClientFMCGResponse;
 import sfa.order_service.dto.response.MemberResponse;
 

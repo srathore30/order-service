@@ -52,6 +52,9 @@ public class DiscountService {
         discountResponse.setOutletId(discountEntity.getOutletId());
         discountResponse.setValidFrom(discountEntity.getValidFrom());
         discountResponse.setValidTo(discountEntity.getValidTo());
+        discountResponse.setMinQuantity(discountEntity.getMinQuantity());
+        discountResponse.setBogoOfferQuantity(discountEntity.getBogoOfferQuantity());
+        discountResponse.setBogoFreeQuantity(discountEntity.getBogoFreeQuantity());
         return discountResponse;
     }
 

@@ -2,7 +2,10 @@ package sfa.order_service.dto.request;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import sfa.order_service.constant.DiscountType;
 
 import java.util.Date;

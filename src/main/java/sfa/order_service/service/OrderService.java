@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
-import sfa.order_service.constant.DiscountType;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.controller.TransactionController;
 import sfa.order_service.dto.request.*;
