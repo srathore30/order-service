@@ -13,6 +13,7 @@ import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.controller.TransactionController;
 import sfa.order_service.dto.request.*;
 import sfa.order_service.dto.response.*;
+import sfa.order_service.entity.DiscountEntity;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.OrderInvoice;
 import sfa.order_service.entity.TransactionEntity;
@@ -21,6 +22,7 @@ import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.enums.TransactionType;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
+import sfa.order_service.repo.DiscountRepo;
 import sfa.order_service.repo.OrderInvoicesRepo;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.repo.TransactionRepository;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class OrderService {
+    private final DiscountRepo discountRepo;
 
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
@@ -42,6 +45,7 @@ public class OrderService {
     private final TransactionController transactionController;
     private final TransactionRepository transactionRepository;
     private final OrderInvoicesRepo orderInvoicesRepo;
+    private final DiscountRepo discountRepository;
 
     public String getPriceType(SalesLevel salesLevel) {
         log.info("Get price type for sales level: {}", salesLevel);
@@ -60,7 +64,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse getOrderDetailBySalesTypeById(Long orderId, String salesType){
+    public OrderResponse getOrderDetailBySalesTypeById(Long orderId, String salesType) {
         Optional<OrderEntity> optionalOrderEntity = orderRepository.findById(orderId);
         if (optionalOrderEntity.isEmpty()) {
             throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
@@ -68,9 +72,9 @@ public class OrderService {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse = entityToDto(optionalOrderEntity.get(), "Message");
         orderResponse.setMemberResponse(externalRestService.getMember(optionalOrderEntity.get().getMemberId()));
-        if(salesType.equalsIgnoreCase("primary")){
+        if (salesType.equalsIgnoreCase("primary")) {
             orderResponse.setClientFMCGResponse(externalRestService.getClient(optionalOrderEntity.get().getClientFmcgId()));
-        }else {
+        } else {
             orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(optionalOrderEntity.get().getOutletId()));
             orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(optionalOrderEntity.get().getBeetId()));
         }
@@ -107,7 +111,7 @@ public class OrderService {
     }
 
     @Transactional
-    public List<OrderResponse>  createOrderInBulk(OrderBulkReq request, String salesType) {
+    public List<OrderResponse> createOrderInBulk(OrderBulkReq request, String salesType) {
         List<OrderResponse> orderResponseList = new ArrayList<>();
         String invoiceNumber = UniqueIdGenerator.generateUniqueId();
         OrderInvoice orderInvoice = new OrderInvoice();
@@ -120,7 +124,7 @@ public class OrderService {
         orderInvoice.setInvoiceNumber(invoiceNumber);
         OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
         log.info("Creating order in bulk");
-        for(OrderRequest orderRequest : request.getOrderRequestList()) {
+        for (OrderRequest orderRequest : request.getOrderRequestList()) {
             String message = "create order";
             log.info("Creating order: {}", request);
             OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
@@ -140,7 +144,7 @@ public class OrderService {
         return orderResponseList;
     }
 
-    public List<OrderResponse> getAllOrderByInvoiceNumber(String invoiceNumber){
+    public List<OrderResponse> getAllOrderByInvoiceNumber(String invoiceNumber) {
         List<OrderEntity> orderEntityList = orderRepository.findByInvoiceNumber(invoiceNumber);
         return orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
     }
@@ -154,24 +158,84 @@ public class OrderService {
     }
 
     public OrderEntity dtoToEntity(OrderRequest request, String salesType) {
-        log.info("calculate final price for order");
+        log.info("Calculate final price for order");
         Double finalPrice = finalPrice(request);
-        log.info("Get FMCG-client details for order creation");
+        Double discountAmount = 0.0;
+
+        log.info("Fetch and apply applicable discounts");
+        if (request.getDiscountCode() != null) {
+            List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductIdAndOutletId(request.getDiscountCode(), request.getProductId(), request.getOutletId());
+
+            if (!discounts.isEmpty()) {
+                for (DiscountEntity discount : discounts) {
+                    log.info("Applying discount: " + discount.getDescription());
+                    switch (discount.getDiscountType()) {
+                        case PROMOTIONAL:
+                            if (discount.getPercentage() != null) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            } else if (discount.getFixedAmount() != null) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+                        case QUANTITY_BASED:
+                            if (request.getQuantity() >= discount.getMinQuantity()) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+                        case SEASONAL:
+                            if (discount.getPercentage() != null) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            }
+                            break;
+
+                        case BOGO:
+                            log.info("Applying BOGO (Buy One Get One) discount");
+                            if (request.getQuantity() >= discount.getBogoOfferQuantity()) {
+                                int freeItems = (request.getQuantity() / discount.getBogoOfferQuantity()) * discount.getBogoFreeQuantity();
+                                discountAmount += (finalPrice * freeItems);
+                            }
+                            break;
+
+                        case VOLUME_BASED:
+                            log.info("Applying Volume-based discount");
+                            if (request.getQuantity() >= discount.getMinQuantity()) {
+                                discountAmount += discount.getFixedAmount();
+                            }
+                            break;
+
+                        case LOYALTY:
+                            log.info("Applying Loyalty discount");
+                            if (request.getQuantity() > 0) {
+                                discountAmount += (finalPrice * discount.getPercentage()) / 100;
+                            }
+                            break;
+                        default:
+                            log.warn("Unknown discount type: " + discount.getDiscountType());
+                    }
+                }
+            } else {
+                log.warn("No applicable discounts found for code: " + request.getDiscountCode());
+            }
+        }
+
+        log.info("Calculate price after applying discounts");
+        Double priceAfterDiscount = finalPrice - discountAmount;
+
+        log.info("Validate FMCG client");
         ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
-        log.info("check if FMCG-client exists or not");
         if (client == null) {
             throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
         }
-        log.info("check if client has sufficient balance or not");
         if (client.getTopUpBalance() < finalPrice) {
             throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
         }
-        log.info("Get member details for order creation");
+
+        log.info("Validate member");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
-        log.info("check if member exists or not");
         if (member == null) {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
+
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
@@ -181,24 +245,29 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
+        orderEntity.setPriceAfterDiscount(priceAfterDiscount);
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setRemarks(request.getRemarks());
-        if(salesType.equalsIgnoreCase("secondary")){
+
+        if (salesType.equalsIgnoreCase("secondary")) {
             orderEntity.setOrderMedium(request.getOrderMedium());
             orderEntity.setOutletId(request.getOutletId());
             orderEntity.setBeetId(request.getBeetId());
-            log.info("Get outlet details for order creation");
+
+            log.info("Validate outlet");
             String outletById = externalRestService.getOutletById(request.getOutletId());
             if (outletById.isEmpty()) {
                 throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
             }
-            log.info("Get beets details for order creation");
+
+            log.info("Validate beet");
             String beetById = externalRestService.getBeetById(request.getBeetId());
             if (beetById.isEmpty()) {
                 throw new InvalidInputException(ApiErrorCodes.BEET_NOT_FOUND.getErrorCode(), ApiErrorCodes.BEET_NOT_FOUND.getErrorMessage());
             }
         }
-        log.info("Updating FMCG-client balance after order creation");
+
+        log.info("Update FMCG client balance asynchronously");
         ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
         clientFMCGUpdateRequest.setId(request.getClientId());
         clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
@@ -213,9 +282,11 @@ public class OrderService {
         clientFMCGUpdateRequest.setState(client.getState());
         clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
         externalRestService.updateClientAsync(clientFMCGUpdateRequest);
-        log.info("Make request for transaction  table after order creation");
+
+        log.info("Order creation process completed successfully");
         return orderEntity;
     }
+
 
     public String rechargeClientBalance(ClientFMCGUpdateRequest request) {
         log.info("Recharge FMCG-client balance");
@@ -268,6 +339,8 @@ public class OrderService {
         ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
+        orderResponse.setDiscountCode(orderEntity.getDiscountCode());
+        orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
     }
 
@@ -285,13 +358,13 @@ public class OrderService {
     public OrderUpdateResponse updateOrder(Long orderId, OrderUpdateRequest request) {
         log.info("update order status");
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
-        if(request.getStatus() == OrderStatus.DELIVERED && orderEntity.getStatus() != OrderStatus.DELIVERED){
+        if (request.getStatus() == OrderStatus.DELIVERED && orderEntity.getStatus() != OrderStatus.DELIVERED) {
             ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
             ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
             clientFMCGUpdateRequest.setId(orderEntity.getClientFmcgId());
-            if(orderEntity.getSalesLevel() == SalesLevel.WAREHOUSE){
+            if (orderEntity.getSalesLevel() == SalesLevel.WAREHOUSE) {
                 clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance() - orderEntity.getPrice());
-            }else {
+            } else {
                 clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
             }
             clientFMCGUpdateRequest.setClientCode(client.getClientCode());
@@ -318,7 +391,7 @@ public class OrderService {
             orderResponse.setMessage("Order status updated to delivered!!");
             orderResponse.setRemarks(updatedOrder.getRemarks());
             return orderResponse;
-        }else{
+        } else {
             orderEntity.setStatus(request.getStatus());
             orderEntity.setRemarks(request.getRemarks());
             log.info("Order status updated to {}", request.getStatus());
@@ -335,8 +408,9 @@ public class OrderService {
         }
 
     }
+
     @Transactional
-    public OrderUpdateResponse updateOrderQuantity(OrderUpdateRequest orderUpdateRequest){
+    public OrderUpdateResponse updateOrderQuantity(OrderUpdateRequest orderUpdateRequest) {
         OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
         orderEntity.setStatus(orderUpdateRequest.getStatus());
         orderEntity.setQuantity(orderUpdateRequest.getQuantity());
@@ -359,9 +433,10 @@ public class OrderService {
         transactionRepository.save(transactionEntity);
         return orderUpdateResponse;
     }
+
     public List<OrderUpdateResponse> updateOrderInBulk(OrderBulkUpdateRequest orderBulkUpdateRequest) {
         List<OrderUpdateResponse> orderUpdateResponseList = new ArrayList<>();
-        for(OrderUpdateRequest orderUpdateRequest : orderBulkUpdateRequest.getOrderUpdateRequests()) {
+        for (OrderUpdateRequest orderUpdateRequest : orderBulkUpdateRequest.getOrderUpdateRequests()) {
             log.info("update order status");
             OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
             orderEntity.setStatus(orderUpdateRequest.getStatus());
@@ -375,7 +450,7 @@ public class OrderService {
             orderResponse.setRemarks(updatedOrder.getRemarks());
             orderUpdateResponseList.add(orderResponse);
         }
-            return orderUpdateResponseList;
+        return orderUpdateResponseList;
     }
 
     public FinalProductPriceResponse calculateFinalPrice(FinalProductPriceRequest finalProductPriceRequest) {
@@ -447,7 +522,7 @@ public class OrderService {
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByClientFmcgIdAndSalesLevel(clientFmcgId, salesLevel, pageable);
         List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
-        for(OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
+        for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
             List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
             List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
             OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
@@ -455,11 +530,12 @@ public class OrderService {
         }
         return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
     }
-    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, boolean isManagerSaleIncluded,int page, int pageSize, String sortBy, String sortDirection) {
+
+    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, boolean isManagerSaleIncluded, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
-        if(isManagerSaleIncluded) {
+        if (isManagerSaleIncluded) {
             memberIds.add(reportingManagerId);
             Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByReportingManagerMembersAndSalesLevel(salesLevel, memberIds, pageable);
             List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
@@ -470,8 +546,7 @@ public class OrderService {
                 groupedResponses.add(orders);
             }
             return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
-        }
-        else{
+        } else {
             Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findByReportingManagerMembersAndSalesLevel(salesLevel, memberIds, pageable);
             List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
             for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
@@ -483,7 +558,8 @@ public class OrderService {
             return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
         }
     }
-    public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, SalesLevel salesLevel,int page, int pageSize, String sortBy, String sortDirection) {
+
+    public PaginatedResp<OrderResponse> getAllOrderByReportingManagerMembers(Long memberId, SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByMemberId");

@@ -42,4 +42,6 @@ public class OrderResponse {
     private ClientFMCGResponse clientFMCGResponse;
     private MemberResponse memberResponse;
     private String remarks;
+    private String discountCode;
+    private Double priceAfterDiscount;
 }

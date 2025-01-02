@@ -1,10 +1,6 @@
 package sfa.order_service.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +9,17 @@ import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.ReportsRequest;
-import sfa.order_service.dto.response.*;
-import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.dto.response.BeetReportResponse;
+import sfa.order_service.dto.response.OutletReportResponse;
+import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.dto.response.ReportsResponse;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.ReportServices;
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/reports")
