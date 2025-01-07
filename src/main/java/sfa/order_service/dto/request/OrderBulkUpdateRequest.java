@@ -2,7 +2,6 @@ package sfa.order_service.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import sfa.order_service.dto.response.OrderUpdateResponse;
 
 import java.util.List;
 

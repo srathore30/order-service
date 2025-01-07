@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 import sfa.order_service.entity.TransactionEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import sfa.order_service.entity.OrderInvoice;
 import sfa.order_service.enums.SalesLevel;
 
-import java.util.List;
 import java.util.Set;
 
 @Repository

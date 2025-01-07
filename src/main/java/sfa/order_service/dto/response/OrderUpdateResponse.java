@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sfa.order_service.enums.OrderStatus;
 
-import java.awt.*;
-
 @Getter
 @Setter
 @AllArgsConstructor

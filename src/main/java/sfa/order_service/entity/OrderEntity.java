@@ -41,4 +41,6 @@ public class OrderEntity extends BaseEntity {
     @ManyToOne
     @JsonBackReference
     OrderInvoice orderInvoice;
+    private String discountCode;
+    private Double priceAfterDiscount;
 }
