@@ -316,8 +316,14 @@ public class OrderService {
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
-        orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
-        orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
+        if (orderEntity.getOutletId() != null) {
+            log.info("fetch details from SFA Outlet controller");
+            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
+        }
+        if (orderEntity.getBeetId() != null) {
+            log.info("fetch details from SFA ");
+            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
+        }
         orderResponse.setBundleType(orderEntity.getBundleType());
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
