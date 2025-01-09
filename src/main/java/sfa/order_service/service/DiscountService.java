@@ -26,20 +26,77 @@ public class DiscountService {
 
     public DiscountEntity dtoToEntity(DiscountRequest request) {
         DiscountEntity discountEntity = new DiscountEntity();
+        log.info("Common fields for discount payload");
         discountEntity.setDiscountCode(request.getDiscountCode());
         discountEntity.setDescription(request.getDescription());
-        discountEntity.setPercentage(request.getPercentage());
-        discountEntity.setFixedAmount(request.getFixedAmount());
         discountEntity.setDiscountType(request.getDiscountType());
-        discountEntity.setProductId(request.getProductId());
-        discountEntity.setOutletId(request.getOutletId());
         discountEntity.setValidFrom(request.getValidFrom());
         discountEntity.setValidTo(request.getValidTo());
-        discountEntity.setMinQuantity(request.getMinQuantity());
-        discountEntity.setBogoOfferQuantity(request.getBogoOfferQuantity());
-        discountEntity.setBogoFreeQuantity(request.getBogoFreeQuantity());
+        discountEntity.setProductId(request.getProductId());
+
+        // Conditional fields based on DiscountType
+        switch (request.getDiscountType()) {
+            case PROMOTIONAL:
+                log.info("Setting Fixed Amount for PROMOTIONAL discount");
+                discountEntity.setFixedAmount(request.getFixedAmount());
+                discountEntity.setPercentage(null);
+                discountEntity.setMinQuantity(null);
+                discountEntity.setBogoOfferQuantity(null);
+                discountEntity.setBogoFreeQuantity(null);
+                break;
+
+            case QUANTITY_BASED:
+                log.info("Setting MinQuantity & Percentage for QUANTITY_BASED discount");
+                discountEntity.setMinQuantity(request.getMinQuantity());
+                discountEntity.setPercentage(request.getPercentage());
+                discountEntity.setFixedAmount(null);
+                discountEntity.setBogoOfferQuantity(null);
+                discountEntity.setBogoFreeQuantity(null);
+                break;
+
+            case SEASONAL:
+                log.info("Setting Percentage & FixedAmount for SEASONAL discount");
+                discountEntity.setPercentage(request.getPercentage());
+                discountEntity.setFixedAmount(request.getFixedAmount());
+                discountEntity.setMinQuantity(null);
+                discountEntity.setBogoOfferQuantity(null);
+                discountEntity.setBogoFreeQuantity(null);
+                break;
+
+            case BOGO:
+                log.info("Setting bogoOfferQuantity & bogoFreeQuantity for BOGO discount");
+                discountEntity.setBogoOfferQuantity(request.getBogoOfferQuantity());
+                discountEntity.setBogoFreeQuantity(request.getBogoFreeQuantity());
+                discountEntity.setPercentage(null);
+                discountEntity.setFixedAmount(null);
+                discountEntity.setMinQuantity(null);
+                break;
+
+            case VOLUME_BASED:
+                log.info("Setting FixedAmount & MinQuantity for VOLUME_BASED discount");
+                discountEntity.setFixedAmount(request.getFixedAmount());
+                discountEntity.setMinQuantity(request.getMinQuantity());
+                discountEntity.setPercentage(null);
+                discountEntity.setBogoOfferQuantity(null);
+                discountEntity.setBogoFreeQuantity(null);
+                break;
+
+            case LOYALTY:
+                log.info("Setting Percentage & FixedAmount for LOYALTY discount");
+                discountEntity.setPercentage(request.getPercentage());
+                discountEntity.setFixedAmount(request.getFixedAmount());
+                discountEntity.setMinQuantity(null);
+                discountEntity.setBogoOfferQuantity(null);
+                discountEntity.setBogoFreeQuantity(null);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported DiscountType: " + request.getDiscountType());
+        }
+
         return discountEntity;
     }
+
 
     public DiscountResponse entityToDto(DiscountEntity discountEntity) {
         DiscountResponse discountResponse = new DiscountResponse();
@@ -49,7 +106,6 @@ public class DiscountService {
         discountResponse.setFixedAmount(discountEntity.getFixedAmount());
         discountResponse.setDiscountType(discountEntity.getDiscountType());
         discountResponse.setProductId(discountEntity.getProductId());
-        discountResponse.setOutletId(discountEntity.getOutletId());
         discountResponse.setValidFrom(discountEntity.getValidFrom());
         discountResponse.setValidTo(discountEntity.getValidTo());
         discountResponse.setMinQuantity(discountEntity.getMinQuantity());

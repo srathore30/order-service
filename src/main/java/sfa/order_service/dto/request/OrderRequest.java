@@ -9,6 +9,8 @@ import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.SalesLevel;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class OrderRequest {

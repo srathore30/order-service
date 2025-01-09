@@ -21,7 +21,6 @@ public class DiscountEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;
     private Long productId;
-    private Long outletId;
     private Date validFrom;
     private Date validTo;
     private Integer minQuantity;
