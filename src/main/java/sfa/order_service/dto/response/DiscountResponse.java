@@ -27,4 +27,5 @@ public class DiscountResponse {
     private Integer minQuantity;
     private Integer bogoOfferQuantity;  // e.g., Buy 2
     private Integer bogoFreeQuantity;
+    private String productName;
 }
