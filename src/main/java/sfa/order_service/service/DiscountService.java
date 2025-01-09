@@ -121,7 +121,7 @@ public class DiscountService {
     public DiscountResponse createDiscount(DiscountRequest request) {
         log.info("Check if discountCode already exists");
         if (discountRepo.existsByDiscountCode(request.getDiscountCode())) {
-            throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+            throw new InvalidInputException(ApiErrorCodes.DISCOUNT_CODE_ALREADY_EXIST.getErrorCode(), ApiErrorCodes.DISCOUNT_CODE_ALREADY_EXIST.getErrorMessage());
         }
 
         // Modify this check to allow BOGO discount type without percentage or fixedAmount
