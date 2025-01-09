@@ -164,10 +164,16 @@ public class OrderService {
 
         log.info("Fetch and apply applicable discounts");
         if (request.getDiscountCode() != null) {
-            List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductIdAndOutletId(request.getDiscountCode(), request.getProductId(), request.getOutletId());
-
+            List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductId(request.getDiscountCode(), request.getProductId());
             if (!discounts.isEmpty()) {
                 for (DiscountEntity discount : discounts) {
+                    log.info("Check discount validity");
+                    Date orderDate = new Date();
+                    Date validFrom = discount.getValidFrom();
+                    Date validTo = discount.getValidTo();
+                    if (!(orderDate.after(validFrom) && orderDate.before(validTo))) {
+                        continue;
+                    }
                     log.info("Applying discount: " + discount.getDescription());
                     switch (discount.getDiscountType()) {
                         case PROMOTIONAL:
