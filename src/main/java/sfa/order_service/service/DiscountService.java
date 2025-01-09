@@ -12,6 +12,7 @@ import sfa.order_service.constant.DiscountType;
 import sfa.order_service.dto.request.DiscountRequest;
 import sfa.order_service.dto.response.DiscountResponse;
 import sfa.order_service.dto.response.PaginatedResp;
+import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.DiscountEntity;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.DiscountRepo;
@@ -23,6 +24,7 @@ import java.util.List;
 @Slf4j
 public class DiscountService {
     private final DiscountRepo discountRepo;
+    private final ProductServiceClient productServiceClient;
 
     public DiscountEntity dtoToEntity(DiscountRequest request) {
         DiscountEntity discountEntity = new DiscountEntity();
@@ -106,6 +108,8 @@ public class DiscountService {
         discountResponse.setFixedAmount(discountEntity.getFixedAmount());
         discountResponse.setDiscountType(discountEntity.getDiscountType());
         discountResponse.setProductId(discountEntity.getProductId());
+        ProductRes product = productServiceClient.getProduct(discountEntity.getProductId());
+        discountResponse.setProductName(product.getName());
         discountResponse.setValidFrom(discountEntity.getValidFrom());
         discountResponse.setValidTo(discountEntity.getValidTo());
         discountResponse.setMinQuantity(discountEntity.getMinQuantity());
