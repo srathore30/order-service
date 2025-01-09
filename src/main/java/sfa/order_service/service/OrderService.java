@@ -226,22 +226,11 @@ public class OrderService {
 
         log.info("Calculate price after applying discounts");
         Double priceAfterDiscount = finalPrice - discountAmount;
-
-        log.info("Validate FMCG client");
-        ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
-        if (client == null) {
-            throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
-        }
-        if (client.getTopUpBalance() < finalPrice) {
-            throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
-        }
-
         log.info("Validate member");
         MemberResponse member = externalRestService.getMember(request.getMemberId());
         if (member == null) {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
-
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
@@ -259,13 +248,11 @@ public class OrderService {
             orderEntity.setOrderMedium(request.getOrderMedium());
             orderEntity.setOutletId(request.getOutletId());
             orderEntity.setBeetId(request.getBeetId());
-
             log.info("Validate outlet");
             String outletById = externalRestService.getOutletById(request.getOutletId());
             if (outletById.isEmpty()) {
                 throw new InvalidInputException(ApiErrorCodes.OUTLET_NOT_FOUND.getErrorCode(), ApiErrorCodes.OUTLET_NOT_FOUND.getErrorMessage());
             }
-
             log.info("Validate beet");
             String beetById = externalRestService.getBeetById(request.getBeetId());
             if (beetById.isEmpty()) {
@@ -273,22 +260,32 @@ public class OrderService {
             }
         }
 
-        log.info("Update FMCG client balance asynchronously");
-        ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
-        clientFMCGUpdateRequest.setId(request.getClientId());
-        clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
-        clientFMCGUpdateRequest.setClientCode(client.getClientCode());
-        clientFMCGUpdateRequest.setCity(client.getCity());
-        clientFMCGUpdateRequest.setRegion(client.getRegion());
-        clientFMCGUpdateRequest.setEmail(client.getEmail());
-        clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
-        clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
-        clientFMCGUpdateRequest.setMobile(client.getMobile());
-        clientFMCGUpdateRequest.setAddress(client.getAddress());
-        clientFMCGUpdateRequest.setState(client.getState());
-        clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
-        externalRestService.updateClientAsync(clientFMCGUpdateRequest);
+        if (salesType.equalsIgnoreCase("primary")) {
+            log.info("Validate FMCG client");
+            ClientFMCGResponse client = externalRestService.getClient(request.getClientId());
+            if (client == null) {
+                throw new InvalidInputException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), ApiErrorCodes.CLIENT_NOT_FOUND.getErrorMessage());
+            }
+            if (client.getTopUpBalance() < finalPrice) {
+                throw new InvalidInputException(ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorCode(), ApiErrorCodes.INSUFFICIENT_BALANCE.getErrorMessage());
+            }
+            log.info("Update FMCG client balance asynchronously");
+            ClientFMCGUpdateRequest clientFMCGUpdateRequest = new ClientFMCGUpdateRequest();
+            clientFMCGUpdateRequest.setId(request.getClientId());
+            clientFMCGUpdateRequest.setTopUpBalance(client.getTopUpBalance());
+            clientFMCGUpdateRequest.setClientCode(client.getClientCode());
+            clientFMCGUpdateRequest.setCity(client.getCity());
+            clientFMCGUpdateRequest.setRegion(client.getRegion());
+            clientFMCGUpdateRequest.setEmail(client.getEmail());
+            clientFMCGUpdateRequest.setClientFirstName(client.getClientFirstName());
+            clientFMCGUpdateRequest.setClientLastName(client.getClientLastName());
+            clientFMCGUpdateRequest.setMobile(client.getMobile());
+            clientFMCGUpdateRequest.setAddress(client.getAddress());
+            clientFMCGUpdateRequest.setState(client.getState());
+            clientFMCGUpdateRequest.setUserRoleList(client.getUserRoleList());
+            externalRestService.updateClientAsync(clientFMCGUpdateRequest);
 
+        }
         log.info("Order creation process completed successfully");
         return orderEntity;
     }
