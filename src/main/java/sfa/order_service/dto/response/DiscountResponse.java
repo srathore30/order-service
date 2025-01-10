@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sfa.order_service.constant.DiscountType;
+import sfa.order_service.constant.Status;
 
 import java.util.Date;
 
@@ -28,4 +29,5 @@ public class DiscountResponse {
     private Integer bogoOfferQuantity;  // e.g., Buy 2
     private Integer bogoFreeQuantity;
     private String productName;
+    private Status status;
 }

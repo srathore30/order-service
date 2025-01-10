@@ -20,7 +20,8 @@ public enum ApiErrorCodes implements Error {
     NO_SALES(1014, "No sales"),
     RETURN_NOT_FOUND(1015, "return not found"),
     RETURN_ALREADY_CREATED(10045, "return already created for this order"),
-    DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist");
+    DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist"),
+    DISCOUNT_NOT_FOUND(1016,"discount not found ");
 
     private int errorCode;
     private String errorMessage;
