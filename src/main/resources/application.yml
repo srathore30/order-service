@@ -43,6 +43,9 @@ application:
 product:
   getProduct:
     url: http://localhost:9093/product-service/products/
+doctor:
+  getDoctor:
+    url: http://localhost:8080/doctors
 products:
   service:
     url: http://localhost:9093/product-service
@@ -74,6 +77,12 @@ beets:
     url: http://localhost:8080/getBeetById
   getBeetForReport:
     url: http://localhost:8080/getBeetByIdForReport
+
+sampleInventory:
+  getInventory:
+    url: http://localhost:9095/sample-inventory/getInventoryByMemberAndProductId
+  deduct:
+    url: http://localhost:9095/sample-inventory/deduct
 
 inventory:
   update:
