@@ -12,7 +12,7 @@ import sfa.order_service.service.SampleServices;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/samples")
+@RequestMapping("/samples")
 @RequiredArgsConstructor
 @Slf4j
 public class SampleController {
