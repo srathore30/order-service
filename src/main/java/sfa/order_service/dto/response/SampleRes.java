@@ -2,6 +2,7 @@ package sfa.order_service.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import sfa.order_service.constant.BundleType;
 
 import java.util.Date;
 
@@ -15,6 +16,7 @@ public class SampleRes {
     DoctorRes doctorRes;
     Date sampleDate;
     Long id;
+    BundleType bundleType;
     Integer quantity;
     ProductRes productRes;
 }

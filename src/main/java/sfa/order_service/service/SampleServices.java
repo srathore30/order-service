@@ -127,6 +127,7 @@ public class SampleServices {
     private SampleRes mapToDto(SamplesEntity sample){
         SampleRes sampleRes = new SampleRes();
         sampleRes.setId(sample.getId());
+        sampleRes.setBundleType(sample.getBundleType());
         sampleRes.setSampleDate(sample.getSampleDate());
         sampleRes.setProductRes(productServiceClient.getProduct(sample.getProductId()));
         sampleRes.setQuantity(sample.getQuantity());
@@ -139,6 +140,7 @@ public class SampleServices {
         SamplesEntity samplesEntity = new SamplesEntity();
         samplesEntity.setQuantity(sampleReq.getQuantity());
         samplesEntity.setStatus(Status.Active);
+        samplesEntity.setBundleType(sampleReq.getBundleType());
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
         samplesEntity.setProductId(sampleReq.getProductId());
         samplesEntity.setMemberId(sampleReq.getMemberId());
@@ -149,6 +151,7 @@ public class SampleServices {
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
         samplesEntity.setProductId(sampleReq.getProductId());
         samplesEntity.setMemberId(sampleReq.getMemberId());
+        samplesEntity.setBundleType(sampleReq.getBundleType());
     }
 
 }

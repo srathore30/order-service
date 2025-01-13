@@ -6,6 +6,7 @@ import jakarta.persistence.TemporalType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
+import sfa.order_service.constant.BundleType;
 import sfa.order_service.constant.Status;
 
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.Date;
 public class SamplesEntity extends BaseEntity{
     Long memberId;
     Long doctorId;
+    BundleType bundleType;
     @Temporal(TemporalType.DATE)
     @CreatedDate
     Date sampleDate;
