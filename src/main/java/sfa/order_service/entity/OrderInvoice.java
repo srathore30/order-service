@@ -18,7 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderInvoice extends BaseEntity{
+public class
+OrderInvoice extends BaseEntity{
     @OneToMany
     @JsonManagedReference
     List<OrderEntity> orderEntityList;

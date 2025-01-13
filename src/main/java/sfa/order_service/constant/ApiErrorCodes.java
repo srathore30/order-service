@@ -12,6 +12,7 @@ public enum ApiErrorCodes implements Error {
     ORDER_NOT_FOUND(1006, "Order not found"),
     TRANSACTION_NOT_FOUND(1007,"Transaction not found" ),
     INSUFFICIENT_BALANCE(1008,"Insufficient balance" ),
+    INSUFFICIENT_QUANTITY(1008,"Insufficient quantity balance" ),
     MEMBER_NOT_FOUND(1009,"Member not found" ),
     CLIENT_NOT_FOUND(1010,"Client not found" ),
     INVALID_SALES_LEVEL(1011,"Invalid sales level" ),
@@ -20,7 +21,8 @@ public enum ApiErrorCodes implements Error {
     NO_SALES(1014, "No sales"),
     RETURN_NOT_FOUND(1015, "return not found"),
     RETURN_ALREADY_CREATED(10045, "return already created for this order"),
-    DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist");
+    DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist"),
+    SAMPLE_NOT_FOUND(42458, "Sample not found");
 
     private int errorCode;
     private String errorMessage;
