@@ -82,7 +82,7 @@ sampleInventory:
   getInventory:
     url: http://localhost:9095/inventory-service/sample-inventory/getInventoryByMemberAndProductId
   deduct:
-    url: http://localhost:9095/inventory-service/sample-inventory/deduct
+    url: http://localhost:9095/inventory-service/sample-inventory/updateSampleInventoryQuantity
 
 inventory:
   update:
