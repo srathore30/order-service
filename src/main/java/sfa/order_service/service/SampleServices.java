@@ -81,6 +81,7 @@ public class SampleServices {
             throw new NoSuchElementFoundException(ApiErrorCodes.SAMPLE_NOT_FOUND.getErrorCode(), ApiErrorCodes.SAMPLE_NOT_FOUND.getErrorMessage());
         }
         optionalSamplesEntity.get().setStatus(Status.Inactive);
+        samplesRepo.save(optionalSamplesEntity.get());
     }
 
     public List<SampleRes> createSampleInBulk(List<SampleReq> sampleReqList){
@@ -111,7 +112,7 @@ public class SampleServices {
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllSampleByMemberId");
         Page<SamplesEntity> samplesEntityPage = samplesRepo.findByMemberId(memberId, pageable);
-        List<SampleRes> sampleResList = samplesEntityPage.stream().map(this::mapToDto).toList();
+        List<SampleRes> sampleResList = samplesEntityPage.stream().filter(samplesEntity -> samplesEntity.getStatus() != Status.Inactive).map(this::mapToDto).toList();
         return new PaginatedResp<>(samplesEntityPage.getTotalElements(), samplesEntityPage.getTotalPages(), page, sampleResList);
     }
 
@@ -140,6 +141,7 @@ public class SampleServices {
         SamplesEntity samplesEntity = new SamplesEntity();
         samplesEntity.setQuantity(sampleReq.getQuantity());
         samplesEntity.setStatus(Status.Active);
+        samplesEntity.setSampleDate(new Date());
         samplesEntity.setBundleType(sampleReq.getBundleType());
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
         samplesEntity.setProductId(sampleReq.getProductId());
