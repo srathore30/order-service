@@ -9,10 +9,7 @@ import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.ReportsRequest;
-import sfa.order_service.dto.response.BeetReportResponse;
-import sfa.order_service.dto.response.OutletReportResponse;
-import sfa.order_service.dto.response.PaginatedResp;
-import sfa.order_service.dto.response.ReportsResponse;
+import sfa.order_service.dto.response.*;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.ReportServices;
@@ -20,6 +17,7 @@ import sfa.order_service.service.ReportServices;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/reports")
@@ -111,6 +109,30 @@ public class ReportController {
     public ResponseEntity<PaginatedResp<BeetReportResponse>> getAllOrderByEachBeetByClientFmcgIdByOrderMedium(@PathVariable Long clientFmcgId, @RequestParam OrderMedium orderMedium,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
         PaginatedResp<BeetReportResponse> report = reportServices.getAllOrderByEachBeetByClientFmcgIdByOrderMedium(clientFmcgId, orderMedium,page, pageSize, sortBy, sortDirection);
         return new ResponseEntity<>(report, HttpStatus.OK);
+    }
+
+    @GetMapping("/overall-sales/byDateAndSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevel(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevel(reportsRequest);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/overall-sales/byDateAndSalesLevelAndOutletId/{outletId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevelAndOutletId(@PathVariable Long outletId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevelAndOutletId(outletId, reportsRequest);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/overall-sales/byDateAndSalesLevelAndClientFmcgId/{clientFmcgId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevelAndClientFmcgId(@PathVariable Long clientFmcgId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevelAndClientFmcgId(clientFmcgId, reportsRequest);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
     }
 
 }

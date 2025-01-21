@@ -544,7 +544,7 @@ public class OrderService {
 
     public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, boolean isManagerSaleIncluded, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, pageSize, sort);
+         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
         if (isManagerSaleIncluded) {
             memberIds.add(reportingManagerId);

@@ -14,7 +14,9 @@ import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
 import sfa.order_service.dto.request.InventoryUpdateRequest;
 import sfa.order_service.dto.response.ClientFMCGResponse;
+import sfa.order_service.dto.response.DoctorRes;
 import sfa.order_service.dto.response.MemberResponse;
+import sfa.order_service.dto.response.SampleInventoryResponse;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +34,12 @@ public class ExternalRestService {
     private String getOutletUrlById;
     @Value("${beets.getBeet.url}")
     private String getBeetByIdUrl;
+    @Value("${doctor.getDoctor.url}")
+    private String getDoctorById;
+    @Value("${sampleInventory.getInventory.url}")
+    private String getSampleInventoryById;
+    @Value("${sampleInventory.deduct.url}")
+    private String deductSampleInventoryById;
     @Value("${inventory.update.url}")
     private String inventoryUpdateUrl;
     private HttpHeaders createHeaders() {
@@ -53,6 +61,33 @@ public class ExternalRestService {
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
         log.info("Fetch client details with authorization header");
         ResponseEntity<ClientFMCGResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ClientFMCGResponse.class);
+        return response.getBody();
+    }
+
+    public SampleInventoryResponse getSampleInventory(Long memberId, Long productId) {
+        String url = getSampleInventoryById + "/" + memberId + "/" + productId;
+        log.info("URL: {}", url);
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        log.info("Fetch inventiry details with authorization header");
+        ResponseEntity<SampleInventoryResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, SampleInventoryResponse.class);
+        return response.getBody();
+    }
+    public void deductSampleInventory(Long id, Integer quantity) {
+        log.info("deductSampleInventory with id: {}", id);
+        String url = deductSampleInventoryById + "/" + id + "/" + quantity;
+        log.info("URL: {}", url);
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        log.info("Fetch client details with authorization header");
+        restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
+    }
+
+    public DoctorRes getDoctor(Long doctorId) {
+        log.info("Get doctor with id: {}", doctorId);
+        String url = getDoctorById + "/" + doctorId;
+        log.info("URL: {}", url);
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        log.info("Fetch doctor details with authorization header");
+        ResponseEntity<DoctorRes> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, DoctorRes.class);
         return response.getBody();
     }
     @Async
