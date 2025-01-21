@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.constant.DiscountType;
+import sfa.order_service.constant.Status;
 
 import java.util.Date;
 @Getter
@@ -26,4 +27,5 @@ public class DiscountEntity extends BaseEntity {
     private Integer minQuantity;
     private Integer bogoOfferQuantity;  // Number of products to buy for BOGO
     private Integer bogoFreeQuantity;   // Number of products to get free
+    private Status  status;
 }

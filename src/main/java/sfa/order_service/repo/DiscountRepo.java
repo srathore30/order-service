@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import sfa.order_service.entity.DiscountEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DiscountRepo extends JpaRepository<DiscountEntity, Long> {
@@ -17,4 +18,5 @@ public interface DiscountRepo extends JpaRepository<DiscountEntity, Long> {
     boolean existsByDiscountCode(String discountCode);
 
     List<DiscountEntity> findByDiscountCodeAndProductId(String discountCode, Long productId);
+    Optional<DiscountEntity> findByProductId(Long productId);
 }
