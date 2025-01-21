@@ -7,11 +7,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
@@ -107,6 +109,44 @@ public class ReportServices {
         reportsResponse.setTotalGstCollected(totalGst);
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
+    }
+
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevel(ReportsRequest reportsRequest){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndOutletId(Long outletId, ReportsRequest reportsRequest){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndOutletId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), outletId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndClientFmcgId(Long clientFmcgId, ReportsRequest reportsRequest){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndClientFmcgId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), clientFmcgId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
     }
 
     //Member Report
@@ -432,5 +472,38 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
-
+    public OrderResponse mapToOrderResponse(OrderEntity orderEntity) {
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setOrderId(orderEntity.getId());
+        if (orderEntity.getOutletId() != null) {
+            log.info("fetch details from SFA Outlet controller");
+            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
+        }
+        if (orderEntity.getBeetId() != null) {
+            log.info("fetch details from SFA ");
+            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
+        }
+        orderResponse.setBundleType(orderEntity.getBundleType());
+        orderResponse.setQuantity(orderEntity.getQuantity());
+        orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
+        orderResponse.setProductId(orderEntity.getProductId());
+        orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
+        orderResponse.setOrderMedium(orderEntity.getOrderMedium());
+        orderResponse.setOrderCallStatus(orderEntity.getOrderCallStatus());
+        orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
+        orderResponse.setTotalPrice(orderEntity.getPrice());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
+        orderResponse.setClientId(orderEntity.getClientFmcgId());
+        orderResponse.setRemarks(orderEntity.getRemarks());
+        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        orderResponse.setMemberId(orderEntity.getMemberId());
+        orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
+        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
+        orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
+        orderResponse.setClientBalanceAmount(client.getTopUpBalance());
+        orderResponse.setDiscountCode(orderEntity.getDiscountCode());
+        orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
+        return orderResponse;
+    }
 }
