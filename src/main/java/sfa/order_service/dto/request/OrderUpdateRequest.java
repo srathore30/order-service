@@ -4,6 +4,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
+import sfa.order_service.constant.BundleType;
 import sfa.order_service.enums.OrderStatus;
 
 @Getter
@@ -13,5 +14,6 @@ public class OrderUpdateRequest {
     private OrderStatus status;
     Long orderId;
     String remarks;
+    BundleType bundleType;
     Integer quantity;
 }

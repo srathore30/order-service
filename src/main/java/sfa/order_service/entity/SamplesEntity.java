@@ -20,6 +20,8 @@ import java.util.Date;
 public class SamplesEntity extends BaseEntity{
     Long memberId;
     Long doctorId;
+    Long outletId;
+    Long clientFmcgId;
     BundleType bundleType;
     @Temporal(TemporalType.DATE)
     @CreatedDate

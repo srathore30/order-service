@@ -14,6 +14,8 @@ import java.util.Date;
 public class SampleRes {
     MemberResponse memberResponse;
     DoctorRes doctorRes;
+    OutletRespForOrderDto outletRespForOrderDto;
+    ClientFMCGResponse clientFMCGResponse;
     Date sampleDate;
     Long id;
     BundleType bundleType;

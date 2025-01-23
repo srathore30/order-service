@@ -391,6 +391,9 @@ public class OrderService {
             externalRestService.updateClientAsync(clientFMCGUpdateRequest);
             orderEntity.setStatus(OrderStatus.DELIVERED);
             orderEntity.setRemarks(request.getRemarks());
+            if (request.getBundleType() !=  null) {
+                orderEntity.setBundleType(request.getBundleType());
+            }
             log.info("Order status updated to {}", request.getStatus());
             OrderEntity updatedOrder = orderRepository.save(orderEntity);
             OrderUpdateResponse orderResponse = new OrderUpdateResponse();
@@ -404,6 +407,9 @@ public class OrderService {
             return orderResponse;
         } else {
             orderEntity.setStatus(request.getStatus());
+            if (request.getBundleType() !=  null) {
+                orderEntity.setBundleType(request.getBundleType());
+            }
             orderEntity.setRemarks(request.getRemarks());
             log.info("Order status updated to {}", request.getStatus());
             OrderEntity updatedOrder = orderRepository.save(orderEntity);
@@ -424,6 +430,9 @@ public class OrderService {
     public OrderUpdateResponse updateOrderQuantity(OrderUpdateRequest orderUpdateRequest) {
         OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
         orderEntity.setStatus(orderUpdateRequest.getStatus());
+        if (orderUpdateRequest.getBundleType() !=  null) {
+            orderEntity.setBundleType(orderUpdateRequest.getBundleType());
+        }
         orderEntity.setQuantity(orderUpdateRequest.getQuantity());
         OrderRequest orderRequest = new OrderRequest();
         orderRequest.setQuantity(orderUpdateRequest.getQuantity());
@@ -450,6 +459,9 @@ public class OrderService {
         for (OrderUpdateRequest orderUpdateRequest : orderBulkUpdateRequest.getOrderUpdateRequests()) {
             log.info("update order status");
             OrderEntity orderEntity = orderRepository.findById(orderUpdateRequest.getOrderId()).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage()));
+            if (orderUpdateRequest.getBundleType() !=  null) {
+                orderEntity.setBundleType(orderUpdateRequest.getBundleType());
+            }
             orderEntity.setStatus(orderUpdateRequest.getStatus());
             orderEntity.setRemarks(orderUpdateRequest.getRemarks());
             log.info("Order status updated to {}", orderUpdateRequest.getStatus());
