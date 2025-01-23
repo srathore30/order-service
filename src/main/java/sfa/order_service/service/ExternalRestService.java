@@ -13,10 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
 import sfa.order_service.dto.request.InventoryUpdateRequest;
-import sfa.order_service.dto.response.ClientFMCGResponse;
-import sfa.order_service.dto.response.DoctorRes;
-import sfa.order_service.dto.response.MemberResponse;
-import sfa.order_service.dto.response.SampleInventoryResponse;
+import sfa.order_service.dto.response.*;
 
 @RequiredArgsConstructor
 @Service
@@ -32,6 +29,9 @@ public class ExternalRestService {
     private String updateClientUrl;
     @Value("${outlets.getOutlet.url}")
     private String getOutletUrlById;
+
+    @Value("${outlets.getOutForReport.url}")
+    private String getOutForReportUrl;
     @Value("${beets.getBeet.url}")
     private String getBeetByIdUrl;
     @Value("${doctor.getDoctor.url}")
@@ -124,6 +124,14 @@ public class ExternalRestService {
         log.info("Async method to get outlet with authorization header");
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+        return response.getBody();
+    }
+
+    public OutletRespForOrderDto getOutletByIdWithResp(Long outletId) {
+        String url = getOutForReportUrl + "/" + outletId;
+        log.info("Async method to get outlet with authorization header");
+        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+        ResponseEntity<OutletRespForOrderDto> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, OutletRespForOrderDto.class);
         return response.getBody();
     }
 

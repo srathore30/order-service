@@ -11,16 +11,12 @@ import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.Status;
 import sfa.order_service.dto.request.SampleReq;
-import sfa.order_service.dto.response.OrderResponse;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.dto.response.SampleInventoryResponse;
 import sfa.order_service.dto.response.SampleRes;
-import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.SamplesEntity;
-import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.SamplesRepo;
-import sfa.order_service.utill.UniqueIdGenerator;
 
 import java.util.*;
 
@@ -133,7 +129,13 @@ public class SampleServices {
         sampleRes.setProductRes(productServiceClient.getProduct(sample.getProductId()));
         sampleRes.setQuantity(sample.getQuantity());
         sampleRes.setMemberResponse(externalRestService.getMember(sample.getMemberId()));
-        sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
+        if(sample.getDoctorId() != null){
+            sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
+        } else if (sample.getClientFmcgId() != null) {
+            sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
+        }else {
+            sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
+        }
         return sampleRes;
     }
 
@@ -142,6 +144,8 @@ public class SampleServices {
         samplesEntity.setQuantity(sampleReq.getQuantity());
         samplesEntity.setStatus(Status.Active);
         samplesEntity.setSampleDate(new Date());
+        samplesEntity.setClientFmcgId(sampleReq.getClientFmcgId());
+        samplesEntity.setOutletId(sampleReq.getClientFmcgId());
         samplesEntity.setBundleType(sampleReq.getBundleType());
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
         samplesEntity.setProductId(sampleReq.getProductId());
@@ -151,6 +155,9 @@ public class SampleServices {
 
     private void updateEntityFromDto(SamplesEntity samplesEntity, SampleReq sampleReq){
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
+        if(sampleReq.getBundleType() != null){
+            samplesEntity.setBundleType(sampleReq.getBundleType());
+        }
         samplesEntity.setProductId(sampleReq.getProductId());
         samplesEntity.setMemberId(sampleReq.getMemberId());
         samplesEntity.setBundleType(sampleReq.getBundleType());
