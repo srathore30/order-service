@@ -21,7 +21,7 @@ jobs:
 
       - name: Build Order Service
         run: |
-          mvn clean package -DskipTests
+          mvn clean install
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
