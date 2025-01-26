@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Order Service
         run: |
-          cd sfa-service/order-service  # Navigate to the order-service directory
+          cd order-service  # Navigate to the order-service directory
           mvn clean package -DskipTests  # Build the project and skip tests for faster builds
 
       - name: List built artifacts
@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: jar-file
-          path: sfa-service/order-service/target/*.jar
+          path: order-service/target/*.jar
           if-no-files-found: warn
 
   deploy:
@@ -62,7 +62,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           source: "*.jar"
-          target: "~/sfa-service/order-service/"
+          target: "~/order-service/"
 
       - name: Run Deployment Script on VPS
         uses: appleboy/ssh-action@v0.1.0
