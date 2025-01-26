@@ -16,8 +16,8 @@ jobs:
       - name: Print working directory and list files
         run: |
           echo "Root Directory:"
-          pwd  # Print current working directory
-          ls -la  # List all files and directories at the root level
+          pwd
+          ls -la
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -26,11 +26,10 @@ jobs:
           java-version: '17'
 
       - name: Build Order Service
-        run: |
-          mvn clean package -DskipTests  # Build the Maven project
+        run: mvn clean package -DskipTests
 
       - name: List built artifacts
-        run: ls -la target/  # Verify the target directory contains the JAR file
+        run: ls -la target/
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
@@ -49,20 +48,30 @@ jobs:
         with:
           name: jar-file
 
-      - name: Copy JAR to VPS
+      # Set up SSH key for authentication
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Optional: Add the host to known hosts for security
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy JAR to VPS using SCP
         uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "*.jar"
           target: "~/sfa-service/order-service/"
 
-
-      - name: Run Deployment Script on VPS
+      - name: Run Deployment Script on VPS using SSH
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          script: "bash ~/sfa-service/order-service/orderStartUp.sh"
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            bash ~/sfa-service/order-service/orderStartUp.sh
+            # Additional deployment commands if needed
