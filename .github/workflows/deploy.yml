@@ -1,73 +1,39 @@
-name: Deploy to VPS
+name: Debug Directory Structure
 
 on:
   push:
     branches:
       - dev
-    schedules:
-      - cron: '0 0 * * *'
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
-
-    env:
-      USERNAME: ${{ secrets.USERNAME }}
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Print working directory
+      - name: Print root directory structure
         run: |
-          pwd
-          ls -la  # Verify files in the root directory
+          echo "Root Directory:"
+          pwd  # Print current working directory
+          ls -la  # List all files and directories at the root level
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Build Order Service
+      - name: Check sfa-service directory
         run: |
-          cd sfa-service/order-service  # Navigate to order-service directory
-          ./gradlew build               # Build the project
+          if [ -d "sfa-service" ]; then
+            echo "sfa-service directory exists. Listing contents:"
+            ls -la sfa-service
+          else
+            echo "sfa-service directory does not exist."
+          fi
 
-      - name: List built artifacts
-        run: ls -la sfa-service/order-service/build/libs/
-
-      - name: Upload JAR as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: jar-file
-          path: sfa-service/order-service/build/libs/*.jar
-          if-no-files-found: warn
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: jar-file
-
-      - name: Copy JAR to VPS
-        uses: appleboy/scp-action@v0.1.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          source: "*.jar"
-          target: "~/sfa-service/order-service/"
-
-      - name: Run Deployment Script on VPS
-        uses: appleboy/ssh-action@v0.1.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          script: "bash ~/sfa-service/order-service/orderStartUp.sh"
+      - name: Check order-service directory
+        run: |
+          if [ -d "sfa-service/order-service" ]; then
+            echo "order-service directory exists. Listing contents:"
+            ls -la sfa-service/order-service
+          else
+            echo "order-service directory does not exist. Checking other possibilities:"
+            find . -type d -name "order-service" || echo "No order-service directory found."
+          fi
