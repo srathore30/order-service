@@ -63,9 +63,7 @@ jobs:
             exit 1
             fi
           
-            # Stop any existing process using the old JAR
-            echo "Stopping any existing Java processes..."
-            pkill -f 'java -jar' || echo "No running Java process to terminate."
+  
           
             # Remove nohup.out if it exists
             if [ -f ~/sfa-service/order-service/nohup.out ]; then
