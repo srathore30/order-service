@@ -3,58 +3,54 @@ name: Deploy Order Service
 on:
   push:
     branches:
-      - dev
+      - main  # You can specify the branch you want to trigger this for
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Build Order Service
-        run: |
-          mvn clean install
-
-      - name: Upload JAR as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: jar-file
-          path: target/*.jar
-          if-no-files-found: warn
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: jar-file
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Copy JAR to VPS using SCP with Password
-        uses: appleboy/scp-action@v0.1.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}  # Use password for authentication
-          source: "*.jar"
-          target: "~/sfa-service/order-service/"
-          debug: true
-
-      - name: Run Deployment Script on VPS with Increased Timeout
+      # Set up SSH for remote access
+      - name: Set up SSH
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}  # Use password for SSH access
-          script: "~/sfa-service/order-service/orderStartUp.sh"
+          password: ${{ secrets.VPS_PASSWORD }}
+          timeout: 1h  # Increase timeout for the deployment process
+          command_timeout: 30m  # Timeout for individual commands
+          script: |
+            # Ensure the JAR exists
+            if [ ! -f ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar ]; then
+              echo "Error: JAR file not found!"
+              exit 1
+            fi
 
+            # Stop any existing process using the old JAR
+            echo "Stopping any existing Java processes..."
+            pkill -f 'java -jar' || echo "No running Java process to terminate."
+
+            # Remove nohup.out if it exists
+            if [ -f ~/sfa-service/order-service/nohup.out ]; then
+              echo "Removing old nohup.out..."
+              rm ~/sfa-service/order-service/nohup.out
+            else
+              echo "No existing nohup.out file found."
+            fi
+
+            # Log the JAR path to confirm it exists
+            echo "Running JAR: $(ls -l ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar)"
+
+            # Start the new JAR with nohup
+            echo "Starting new JAR..."
+            nohup java -jar ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar > ~/sfa-service/order-service/nohup.out 2>&1 &
+
+            # Log the process to ensure it's running
+            ps aux | grep 'java -jar'
+
+            # Optional: Tail the nohup output to see logs live
+            echo "Tailing logs..."
+            tail -f ~/sfa-service/order-service/nohup.out
