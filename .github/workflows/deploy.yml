@@ -53,7 +53,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
+          username: ${{ secrets.USERNAME }}
           password: ${{ secrets.VPS_PASSWORD }}
           source: "*.jar"
           target: "~/sfa-service/order-service/"
@@ -63,6 +63,6 @@ jobs:
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
+          username: ${{ secrets.USERNAME }}
           password: ${{ secrets.VPS_PASSWORD }}
           script: "bash ~/sfa-service/order-service/orderStartUp.sh"
