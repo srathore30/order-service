@@ -13,14 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Print working directory and list files
-        run: |
-          echo "Root Directory:"
-          pwd
-          ls -la
-
-
-
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -30,9 +22,6 @@ jobs:
       - name: Build Order Service
         run: |
           mvn clean package -DskipTests
-
-      - name: List built artifacts
-        run: ls -la target/
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
@@ -51,22 +40,20 @@ jobs:
         with:
           name: jar-file
 
-      - name: Copy JAR to VPS using SCP
+      - name: Copy JAR to VPS using SCP with Password
         uses: appleboy/scp-action@v0.1.0
         with:
-          host: 195.35.22.253
-          username: root
-          key: b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcnNhAAAAAwEAAQAAAQEAoaOAQv9zVuIN5G7PLXu7pby3M7Zb0b9wgUn4bIiloWlvEv2nDgudG1bO3d6dw5Dxc71DrTJsZj7h+N9FW9rZAL8UygONBiKUqh67jZNrzf53NZBN7qv5GBzF0qgZE/ISdMOlBttUKL2rAlMOTl/Yn6wW9bF40y38gUqntzbtS+UgLg30MlytOGsK29ExIx836srVrBgKpeWhcZujtxgvPfq71RpW1DyIJ0ARHqAcVKyeuus7bTh7Sr9sWSJigta9szsOcqqdMeQOHfllDuZzLwCFalf4DS39OjhyqNuveNCF6tHpOZ1W1ZjhKe39HJ03RpfDzHZkG52G2Sj6rCsZaQAAA8iGO2vEhjtrxAAAAAdzc2gtcnNhAAABAQCho4BC/3NW4g3kbs8te7ulvLcztlvRv3CBSfhsiKWhaW8S/acOC50bVs7d3p3DkPFzvUOtMmxmPuH430Vb2tkAvxTKA40GIpSqHruNk2vN/nc1kE3uq/kYHMXSqBkT8hJ0w6UG21QovasCUw5OX9ifrBb1sXjTLfyBSqe3Nu1L5SAuDfQyXK04awrb0TEjHzfqytWsGAql5aFxm6O3GC89+rvVGlbUPIgnQBEeoBxUrJ666zttOHtKv2xZImKC1r2zOw5yqp0x5A4d+WUO5nMvAIVqV/gNLf06OHKo26940IXq0ek5nVbVmOEp7f0cnTdGl8PMdmQbnYbZKPqsKxlpAAAAAwEAAQAAAQADyxR9fgU06sUssTUHejnjH9Sk0AjDmVyIjDXaRjKs4Q6MQYukFr2vIJBmQI0vQ72G29A0xlQo6hzffE3iY/ZnwBQ60W6D0FfwzhvUrLsA8JHXnfVWPo7v8+zojq1X/HxWZSkASjFla14SBeT2DeXFiYJYbbvKKPAeEKRy9kUHXOWg4KrR59dfcNoxEcL6cgHPTvyllZxLu37mgjms+gdlBWpF6SBI0znpfibUkVq33ig5XWMXh3Pe8CBTarJV4BsyM5wf17AGxK9QRNcMjnbUEqfBT0dux9XakrbNlrBgikGhRWLFcQWq1QuI7uj9fk0usmCFj3gHPv0KaZruvCkhAAAAgQChzluO9isV89UBioOLihkK7UkqtcpqMXp+gAvM6ONbyrgD7DebPVjuTwGXQ8vW5Pz8d7vkJk41ryVY53ctPjSkzyTfvckRsn6UIq18yxMPnhwcm3mdJt5zOxPedECAUyTEpMoJnE+RfxGLYdRr5mF+2ockrbGLcCWg6fYRAq4wWQAAAIEA0kbpOlJm8cmP3RzjjT5FlP4KK4MxFprEGHQDlJxvaTBzMMn76I1HcjOLe9+MbqghYFowplM5C4dsuX6xJSM+bN5Try0kceURiUtKVRuHsr3THojSjUtwC5oBTyk4T7bv1jIX/ogDGYn4G8vzCoNV+6plJHf7kbYWUwVcEySpDR0AAACBAMTJIhz70DwNR26soGZF5JRkIYvFUn/4hfcuAo5nm7qPOcMVNLPcgsdEluav5jCiFAza98KObA/SowzP88cZR5NcQohPNaESHRMlN6ovCkwrr+1g2YRhUqT9qm0E4fcFrw5YBCV6tVpILjE686L38JD/zuHrni19/lU3kBe+QSe9AAAAEnNrcGFuQFZpbWFsLVBhbmRleQ==  # Add the SSH key here
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}  # Use password for authentication
           source: "*.jar"
           target: "~/sfa-service/order-service/"
+          debug: true
 
       - name: Run Deployment Script on VPS
         uses: appleboy/ssh-action@v0.1.0
         with:
-          host: 195.35.22.253
-          username: 195.35.22.253
-          key: b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcnNhAAAAAwEAAQAAAQEAoaOAQv9zVuIN5G7PLXu7pby3M7Zb0b9wgUn4bIiloWlvEv2nDgudG1bO3d6dw5Dxc71DrTJsZj7h+N9FW9rZAL8UygONBiKUqh67jZNrzf53NZBN7qv5GBzF0qgZE/ISdMOlBttUKL2rAlMOTl/Yn6wW9bF40y38gUqntzbtS+UgLg30MlytOGsK29ExIx836srVrBgKpeWhcZujtxgvPfq71RpW1DyIJ0ARHqAcVKyeuus7bTh7Sr9sWSJigta9szsOcqqdMeQOHfllDuZzLwCFalf4DS39OjhyqNuveNCF6tHpOZ1W1ZjhKe39HJ03RpfDzHZkG52G2Sj6rCsZaQAAA8iGO2vEhjtrxAAAAAdzc2gtcnNhAAABAQCho4BC/3NW4g3kbs8te7ulvLcztlvRv3CBSfhsiKWhaW8S/acOC50bVs7d3p3DkPFzvUOtMmxmPuH430Vb2tkAvxTKA40GIpSqHruNk2vN/nc1kE3uq/kYHMXSqBkT8hJ0w6UG21QovasCUw5OX9ifrBb1sXjTLfyBSqe3Nu1L5SAuDfQyXK04awrb0TEjHzfqytWsGAql5aFxm6O3GC89+rvVGlbUPIgnQBEeoBxUrJ666zttOHtKv2xZImKC1r2zOw5yqp0x5A4d+WUO5nMvAIVqV/gNLf06OHKo26940IXq0ek5nVbVmOEp7f0cnTdGl8PMdmQbnYbZKPqsKxlpAAAAAwEAAQAAAQADyxR9fgU06sUssTUHejnjH9Sk0AjDmVyIjDXaRjKs4Q6MQYukFr2vIJBmQI0vQ72G29A0xlQo6hzffE3iY/ZnwBQ60W6D0FfwzhvUrLsA8JHXnfVWPo7v8+zojq1X/HxWZSkASjFla14SBeT2DeXFiYJYbbvKKPAeEKRy9kUHXOWg4KrR59dfcNoxEcL6cgHPTvyllZxLu37mgjms+gdlBWpF6SBI0znpfibUkVq33ig5XWMXh3Pe8CBTarJV4BsyM5wf17AGxK9QRNcMjnbUEqfBT0dux9XakrbNlrBgikGhRWLFcQWq1QuI7uj9fk0usmCFj3gHPv0KaZruvCkhAAAAgQChzluO9isV89UBioOLihkK7UkqtcpqMXp+gAvM6ONbyrgD7DebPVjuTwGXQ8vW5Pz8d7vkJk41ryVY53ctPjSkzyTfvckRsn6UIq18yxMPnhwcm3mdJt5zOxPedECAUyTEpMoJnE+RfxGLYdRr5mF+2ockrbGLcCWg6fYRAq4wWQAAAIEA0kbpOlJm8cmP3RzjjT5FlP4KK4MxFprEGHQDlJxvaTBzMMn76I1HcjOLe9+MbqghYFowplM5C4dsuX6xJSM+bN5Try0kceURiUtKVRuHsr3THojSjUtwC5oBTyk4T7bv1jIX/ogDGYn4G8vzCoNV+6plJHf7kbYWUwVcEySpDR0AAACBAMTJIhz70DwNR26soGZF5JRkIYvFUn/4hfcuAo5nm7qPOcMVNLPcgsdEluav5jCiFAza98KObA/SowzP88cZR5NcQohPNaESHRMlN6ovCkwrr+1g2YRhUqT9qm0E4fcFrw5YBCV6tVpILjE686L38JD/zuHrni19/lU3kBe+QSe9AAAAEnNrcGFuQFZpbWFsLVBhbmRleQ==  # Add the SSH key here
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}  # Use password for SSH access
           script: "bash ~/sfa-service/order-service/orderStartUp.sh"
-
-
-
