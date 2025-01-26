@@ -3,7 +3,7 @@ name: Deploy Order Service
 on:
   push:
     branches:
-      - dev
+      - devsss
 
 jobs:
   build:
@@ -78,7 +78,7 @@ jobs:
           
             # Start the new JAR with nohup
             echo "Starting new JAR..."
-            nohup java -jar ~/sfa-service/order-service/target/order-0.0.1-SNAPSHOT.jar > ~/sfa-service/order-service/nohup.out 2>&1 &
+            nohup java -jar ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar > ~/sfa-service/order-service/nohup.out 2>&1 &
           
             # Log the process to ensure it's running
             ps aux | grep 'java -jar'
