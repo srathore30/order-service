@@ -22,7 +22,7 @@ jobs:
       - name: Print working directory
         run: |
           pwd
-          ls -la  # Verify the presence of gradlew
+          ls -la  # Verify files in the root directory
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -32,17 +32,17 @@ jobs:
 
       - name: Build Order Service
         run: |
-          cd order-service  # Navigate to correct directory
-          ./gradlew build  # Build the project
+          cd sfa-service/order-service  # Navigate to order-service directory
+          ./gradlew build               # Build the project
 
       - name: List built artifacts
-        run: ls -la order-service/build/libs/
+        run: ls -la sfa-service/order-service/build/libs/
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
         with:
           name: jar-file
-          path: order-service/build/libs/*.jar
+          path: sfa-service/order-service/build/libs/*.jar
           if-no-files-found: warn
 
   deploy:
