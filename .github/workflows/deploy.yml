@@ -59,4 +59,4 @@ jobs:
           script: |
             # Stop any existing process using the old JAR
             pkill -f 'java -jar'
-            bash ~/gate-service/social-feed/socialFeedStartUp.sh
+            bash ~/sfa-service/order-service/orderStartUp.sh
