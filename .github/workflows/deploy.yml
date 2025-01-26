@@ -3,7 +3,7 @@ name: Deploy Order Service
 on:
   push:
     branches:
-      - main  # You can specify the branch you want to trigger this for
+      - dev  # You can specify the branch you want to trigger this for
 
 jobs:
   deploy:
