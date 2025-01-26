@@ -26,6 +26,12 @@ public class DiscountController {
         return new ResponseEntity<>(discountService.createDiscount(request), HttpStatus.CREATED);
     }
 
+    @PostMapping("/demo")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<DiscountResponse> df(@RequestBody DiscountRequest request) {
+        return new ResponseEntity<>(discountService.createDiscount(request), HttpStatus.CREATED);
+    }
+
     @GetMapping("getDiscountDetailsByProductId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<DiscountResponse>> getDiscountDetailsByProductId(@RequestParam Long productId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection) {
