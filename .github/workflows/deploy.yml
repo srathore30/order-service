@@ -50,6 +50,7 @@ jobs:
           target: "~/sfa-service/order-service/"
           debug: true
 
+
       - name: Run Deployment Script on VPS
         uses: appleboy/ssh-action@v0.1.0
         with:
