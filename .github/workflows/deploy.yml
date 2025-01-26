@@ -32,17 +32,17 @@ jobs:
 
       - name: Build Order Service
         run: |
-          cd sfa-service/order-service  # Navigate to order-service directory
-          ./gradlew build               # Build the project
+          cd sfa-service/order-service  # Navigate to the order-service directory
+          mvn clean package -DskipTests  # Build the project and skip tests for faster builds
 
       - name: List built artifacts
-        run: ls -la sfa-service/order-service/build/libs/
+        run: ls -la sfa-service/order-service/target/
 
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
         with:
           name: jar-file
-          path: sfa-service/order-service/build/libs/*.jar
+          path: sfa-service/order-service/target/*.jar
           if-no-files-found: warn
 
   deploy:
