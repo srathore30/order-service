@@ -26,7 +26,8 @@ jobs:
           java-version: '17'
 
       - name: Build Order Service
-        run: mvn clean package -DskipTests
+        run: |
+          mvn clean package -DskipTests
 
       - name: List built artifacts
         run: ls -la target/
@@ -48,32 +49,20 @@ jobs:
         with:
           name: jar-file
 
-      # Set up SSH key for authentication
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          # Optional: Add the host to known hosts for security
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-
       - name: Copy JAR to VPS using SCP
         uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the SSH key here
           source: "*.jar"
           target: "~/sfa-service/order-service/"
 
-      - name: Run Deployment Script on VPS using SSH
+      - name: Run Deployment Script on VPS
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            bash ~/sfa-service/order-service/orderStartUp.sh
-            # Additional deployment commands if needed
-
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the SSH key here too
+          script: "bash ~/sfa-service/order-service/orderStartUp.sh"
 
