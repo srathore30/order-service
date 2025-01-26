@@ -30,7 +30,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build Social Feed
+      - name: Build Order Service
         run: |
           ./gradlew build  # Build the project
           cd ..
@@ -65,7 +65,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           source: "*.jar"
-          target: "~/gate-service/social-feed/"
+          target: "~/sfa-service/order-service/"
 
       - name: Run Deployment Script on VPS
         uses: appleboy/ssh-action@v0.1.0
@@ -73,4 +73,4 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          script: "bash ~/gate-service/social-feed/socialFeedStartUp.sh"
+          script: "bash ~/sfa-service/order-service/orderStartUp.sh"
