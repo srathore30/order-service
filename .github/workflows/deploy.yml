@@ -66,3 +66,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add the SSH key here too
           script: "bash ~/sfa-service/order-service/orderStartUp.sh"
 
+
