@@ -80,6 +80,7 @@ public class SampleServices {
         samplesRepo.save(optionalSamplesEntity.get());
     }
 
+    @Transactional
     public List<SampleRes> createSampleInBulk(List<SampleReq> sampleReqList){
         List<SampleRes> sampleResList = new ArrayList<>();
         for(SampleReq sampleReq : sampleReqList) {
@@ -133,7 +134,7 @@ public class SampleServices {
             sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
         } else if (sample.getClientFmcgId() != null) {
             sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
-        }else {
+        }else if(sample.getOutletId() != null){
             sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
         }
         return sampleRes;
@@ -145,7 +146,7 @@ public class SampleServices {
         samplesEntity.setStatus(Status.Active);
         samplesEntity.setSampleDate(new Date());
         samplesEntity.setClientFmcgId(sampleReq.getClientFmcgId());
-        samplesEntity.setOutletId(sampleReq.getClientFmcgId());
+        samplesEntity.setOutletId(sampleReq.getOutletId());
         samplesEntity.setBundleType(sampleReq.getBundleType());
         samplesEntity.setDoctorId(sampleReq.getDoctorId());
         samplesEntity.setProductId(sampleReq.getProductId());
