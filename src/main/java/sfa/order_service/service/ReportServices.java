@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.dto.request.ReportsRequest;
@@ -15,6 +16,7 @@ import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
+import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
 
@@ -492,7 +494,8 @@ public class ReportServices {
         orderResponse.setOrderMedium(orderEntity.getOrderMedium());
         orderResponse.setOrderCallStatus(orderEntity.getOrderCallStatus());
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
-        orderResponse.setTotalPrice(orderEntity.getPrice());
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
+        orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
@@ -505,5 +508,20 @@ public class ReportServices {
         orderResponse.setDiscountCode(orderEntity.getDiscountCode());
         orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
+    }
+    public String getPriceType(SalesLevel salesLevel) {
+        log.info("Get price type for sales level: {}", salesLevel);
+        return switch (salesLevel) {
+            case RETAILER -> "retailer";
+            case WAREHOUSE -> "warehouse";
+            case STOCKIST -> "stocklist";
+            default ->
+                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        };
+    }
+
+    public Double getProductPrice(Long productId, String priceType) {
+        log.info("Get product price with product id: {} and price type: {}", productId, priceType);
+        return productServiceClient.getProductPrice(productId, priceType);
     }
 }
