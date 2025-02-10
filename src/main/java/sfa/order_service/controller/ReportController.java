@@ -118,6 +118,29 @@ public class ReportController {
         List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevel(reportsRequest);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
     }
+    @GetMapping("/overall-sales/region/byDateAndSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevelAndRegion(@RequestParam Long regionId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevelAndRegion(reportsRequest, regionId);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/overall-sales/state/byDateAndSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevelAndState(@RequestParam Long stateId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevelAndState(reportsRequest, stateId);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/overall-sales/city/byDateAndSalesLevel")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> findOverallSalesByDateAndSalesLevelAndCity(@RequestParam Long cityId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<OrderResponse> reportsResponse = reportServices.findOverallSalesByDateAndSalesLevelAndCity(reportsRequest, cityId);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
 
     @GetMapping("/overall-sales/byDateAndSalesLevelAndOutletId/{outletId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})

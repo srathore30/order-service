@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SampleRes {
-    MemberResponse memberResponse;
+    MemberGetDto memberResponse;
     DoctorRes doctorRes;
     OutletRespForOrderDto outletRespForOrderDto;
     ClientFMCGResponse clientFMCGResponse;

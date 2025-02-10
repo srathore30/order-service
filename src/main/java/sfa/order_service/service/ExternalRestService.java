@@ -103,11 +103,11 @@ public class ExternalRestService {
     }
 
 
-    public MemberResponse getMember(Long memberId) {
+    public MemberGetDto getMember(Long memberId) {
         String url = memberServiceUrl + "/" + memberId;
         HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
         log.info("Fetch member details with authorization header");
-        ResponseEntity<MemberResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, MemberResponse.class);
+        ResponseEntity<MemberGetDto> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, MemberGetDto.class);
         return response.getBody();
     }
 

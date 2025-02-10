@@ -40,7 +40,7 @@ public class OrderResponse {
     private BeetRespForOrderDto beetRespForOrderDto;
     private OutletRespForOrderDto outletRespForOrderDto;
     private ClientFMCGResponse clientFMCGResponse;
-    private MemberResponse memberResponse;
+    private MemberGetDto memberResponse;
     private String remarks;
     private String discountCode;
     private Double priceAfterDiscount;

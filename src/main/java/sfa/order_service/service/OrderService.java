@@ -161,7 +161,7 @@ public class OrderService {
         log.info("Calculate final price for order");
         Double finalPrice = finalPrice(request);
         Double discountAmount = 0.0;
-
+        BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(request.getBeetId());
         log.info("Fetch and apply applicable discounts");
         if (request.getDiscountCode() != null) {
             List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductId(request.getDiscountCode(), request.getProductId());
@@ -227,7 +227,7 @@ public class OrderService {
         log.info("Calculate price after applying discounts");
         Double priceAfterDiscount = finalPrice - discountAmount;
         log.info("Validate member");
-        MemberResponse member = externalRestService.getMember(request.getMemberId());
+        MemberGetDto member = externalRestService.getMember(request.getMemberId());
         if (member == null) {
             throw new InvalidInputException(ApiErrorCodes.MEMBER_NOT_FOUND.getErrorCode(), ApiErrorCodes.MEMBER_NOT_FOUND.getErrorMessage());
         }
@@ -240,6 +240,9 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
+        orderEntity.setRegionId(beetRespForOrderDto.getRegionId());
+        orderEntity.setStateId(beetRespForOrderDto.getStateId());
+        orderEntity.setCityId(beetRespForOrderDto.getCityId());
         orderEntity.setPriceAfterDiscount(priceAfterDiscount);
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setRemarks(request.getRemarks());
@@ -344,8 +347,9 @@ public class OrderService {
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
-        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        MemberGetDto member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
+        orderResponse.setMemberResponse(member);
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
         ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());

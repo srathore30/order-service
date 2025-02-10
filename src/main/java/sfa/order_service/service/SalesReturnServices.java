@@ -64,7 +64,7 @@ public class SalesReturnServices {
         return mapToDto(salesReturnOptional.get());
     }
     public SalesReturnRes updateReturnById(Long id, SalesReturnReq  salesReturnReq){
-        log.info("updateing sales return");
+        log.info("updating sales return");
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findById(id);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());
@@ -173,7 +173,7 @@ public class SalesReturnServices {
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
-        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        MemberGetDto member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
         ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());

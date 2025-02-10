@@ -9,6 +9,6 @@ public class SampleInventoryResponse {
     private Long id;
     private Long productId;
     private Integer sampleQuantity;
-    private MemberResponse memberRes;
+    private MemberGetDto memberRes;
     private ProductRes productRes;
 }

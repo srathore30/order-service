@@ -125,6 +125,44 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndState(ReportsRequest reportsRequest, Long stateId){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndCity(ReportsRequest reportsRequest, Long cityId){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndOutletId(Long outletId, ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndOutletId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), outletId);
         if (orderEntityList.isEmpty()){
@@ -499,13 +537,14 @@ public class ReportServices {
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
-        MemberResponse member = externalRestService.getMember(orderEntity.getMemberId());
+        MemberGetDto member = externalRestService.getMember(orderEntity.getMemberId());
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
         ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         orderResponse.setDiscountCode(orderEntity.getDiscountCode());
+        orderResponse.setMemberResponse(member);
         orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
     }

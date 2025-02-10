@@ -26,5 +26,4 @@ public class ReportsRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     LocalDateTime endDate;
     SalesLevel salesLevelConstant;
-
 }

@@ -29,6 +29,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
                                                               @Param("endDate") LocalDateTime endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel);
 
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndRegionId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long regionId);
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndStateId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long stateId);
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndCityId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long cityId);
+
    @Query("SELECT o FROM OrderEntity o WHERE o.createdDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel AND o.outletId = :outletId")
    List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndOutletId(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate,

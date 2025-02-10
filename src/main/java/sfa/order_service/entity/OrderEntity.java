@@ -26,6 +26,9 @@ public class OrderEntity extends BaseEntity {
     private OrderStatus status;
     private String invoiceNumber;
     private Long productId;
+    private Long regionId;
+    private Long stateId;
+    private Long cityId;
     @Temporal(TemporalType.DATE)
     private Date orderCreatedDate;
     @Enumerated(EnumType.STRING)
