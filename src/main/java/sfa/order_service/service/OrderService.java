@@ -161,7 +161,7 @@ public class OrderService {
         log.info("Calculate final price for order");
         Double finalPrice = finalPrice(request);
         Double discountAmount = 0.0;
-        BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(request.getBeetId());
+        ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(request.getClientId());
         log.info("Fetch and apply applicable discounts");
         if (request.getDiscountCode() != null) {
             List<DiscountEntity> discounts = discountRepo.findByDiscountCodeAndProductId(request.getDiscountCode(), request.getProductId());
@@ -240,9 +240,9 @@ public class OrderService {
         orderEntity.setProductId(request.getProductId());
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
-        orderEntity.setRegionId(beetRespForOrderDto.getRegionId());
-        orderEntity.setStateId(beetRespForOrderDto.getStateId());
-        orderEntity.setCityId(beetRespForOrderDto.getCityId());
+        orderEntity.setRegionId(clientFMCGResponse.getRegion());
+        orderEntity.setStateId(clientFMCGResponse.getState());
+        orderEntity.setCityId(clientFMCGResponse.getCity());
         orderEntity.setPriceAfterDiscount(priceAfterDiscount);
         orderEntity.setOrderCreatedDate(new Date());
         orderEntity.setRemarks(request.getRemarks());
