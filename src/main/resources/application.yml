@@ -1,8 +1,15 @@
 spring:
+  profiles:
+    active: prod
   datasource:
-    url: jdbc:mysql://api.prism-sfa-dev.net:3306/sfa_db
-    username: PrismSfa
-    password: TestUser123!
+    username: ${DB_USERNAME}
+    url: ${DB_URL}
+    password: ${DB_PASSWORD}
+    hikari:
+      connection-timeout: 60000          # 1 minute
+      max-lifetime: 1800000              # 30 minutes
+      idle-timeout: 300000               # 5 minutes
+      maximum-pool-size: 20           # Adjust based on application needs
 
   jpa:
     hibernate:
@@ -38,11 +45,58 @@ application:
 product:
   getProduct:
     url: http://localhost:9093/product-service/products/
-
-
+doctor:
+  getDoctor:
+    url: http://localhost:8080/doctors
 products:
   service:
     url: http://localhost:9093/product-service
+
+clients:
+  service:
+    url: http://localhost:8080/client-fmcg/getClientFMCGById
+  updateClient:
+    url: http://localhost:8080/client-fmcg/updateClientFMCGById
+
+members:
+  memberIds:
+    url: http://localhost:8080/getAllMemberIdsByReportingManager
+  service:
+    url: http://localhost:8080/getMemberById
+
+outlets:
+  getAllOutlet:
+    url: http://localhost:8080/getAllOutletByIds
+  getOutlet:
+    url: http://localhost:8080/getOutletById
+  getOutForReport:
+    url: http://localhost:8080/getOutletForReportById
+
+beets:
+  getAllBeets:
+    url: http://localhost:8080/getAllBeetByIds
+  getBeet:
+    url: http://localhost:8080/getBeetById
+  getBeetForReport:
+    url: http://localhost:8080/getBeetByIdForReport
+
+sampleInventory:
+  getInventory:
+    url: http://localhost:9095/inventory-service/sample-inventory/getInventoryByMemberAndProductId
+  deduct:
+    url: http://localhost:9095/inventory-service/sample-inventory/updateSampleInventoryQuantity
+
+inventory:
+  update:
+    url: http://localhost:9095/inventory-service/inventory/update
+
+name:
+  state:
+    url: http://localhost:8080/states/getStateNameById
+  city:
+    url: http://localhost:8080/getCityNameById
+  region:
+    url: http://localhost:8080/getRegionNameById
 
   # CORS Configuration
   spring:

@@ -1,24 +1,16 @@
 package sfa.order_service.interceptor;
 
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import sfa.order_service.AuthUtils.JwtHelper;
+import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.constant.UserRole;
 
-
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,6 +39,7 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return false;
                 }
+                TokenContext.setToken(token);
                 if(!validateToken(token)){
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return false;
@@ -89,5 +82,10 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
             logger.log(Level.SEVERE, "Exception occurred in UserAuthorizationInterceptor due to invalid role or token ", e);
         }
         return null;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        TokenContext.clear(); 
     }
 }

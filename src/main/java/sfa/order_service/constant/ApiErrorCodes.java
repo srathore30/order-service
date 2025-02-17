@@ -9,7 +9,21 @@ public enum ApiErrorCodes implements Error {
     INVALID_SEARCH_CRITERIA(1003, "Invalid search criteria"),
     PRODUCT_NOT_FOUND(1004, "Product not found"),
     PRODUCT__PRICE_NOT_FOUND(1005, "Product price not found"),
-    ORDER_NOT_FOUND(1006, "Order not found");
+    ORDER_NOT_FOUND(1006, "Order not found"),
+    TRANSACTION_NOT_FOUND(1007,"Transaction not found" ),
+    INSUFFICIENT_BALANCE(1008,"Insufficient balance" ),
+    INSUFFICIENT_QUANTITY(1008,"Insufficient quantity balance" ),
+    MEMBER_NOT_FOUND(1009,"Member not found" ),
+    CLIENT_NOT_FOUND(1010,"Client not found" ),
+    INVALID_SALES_LEVEL(1011,"Invalid sales level" ),
+    OUTLET_NOT_FOUND(1012,"Outlet not found" ),
+    BEET_NOT_FOUND(1013,"Beet not found" ),
+    NO_SALES(1014, "No sales"),
+    RETURN_NOT_FOUND(1015, "return not found"),
+    RETURN_ALREADY_CREATED(10045, "return already created for this order"),
+    DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist"),
+    DISCOUNT_NOT_FOUND(1016,"discount not found "),
+    SAMPLE_NOT_FOUND(42458, "Sample not found");
 
     private int errorCode;
     private String errorMessage;

@@ -11,6 +11,8 @@ import lombok.experimental.FieldDefaults;
 public class ProductRes {
     String name;
     String sku;
+    Double bundleSize;
+    String imageUrl;
     String unitOfMeasurement;
     Long productId;
     ProductPriceRes productPriceRes;
