@@ -20,7 +20,11 @@ import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -125,6 +129,104 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraph(ReportsRequest reportsRequest) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(
+                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
+                .collect(Collectors.groupingBy(
+                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
+                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
+                ));
+
+        return monthlySales.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForState(ReportsRequest reportsRequest, Long stateId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndStateId(
+                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
+                .collect(Collectors.groupingBy(
+                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
+                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
+                ));
+
+        return monthlySales.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForCity(ReportsRequest reportsRequest, Long cityId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndCityId(
+                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
+                .collect(Collectors.groupingBy(
+                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
+                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
+                ));
+
+        return monthlySales.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForRegion(ReportsRequest reportsRequest, Long regionId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndRegionId(
+                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
+                .collect(Collectors.groupingBy(
+                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
+                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
+                ));
+
+        return monthlySales.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+
+    private LocalDate convertToLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
 
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
