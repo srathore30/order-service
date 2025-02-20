@@ -154,7 +154,7 @@ public class ReportServices {
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForState(ReportsRequest reportsRequest, Long stateId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndStateId(
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(
                 reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
 
         if (orderEntityList.isEmpty()) {
@@ -177,7 +177,7 @@ public class ReportServices {
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForCity(ReportsRequest reportsRequest, Long cityId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndCityId(
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(
                 reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
 
         if (orderEntityList.isEmpty()) {
@@ -200,7 +200,7 @@ public class ReportServices {
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForRegion(ReportsRequest reportsRequest, Long regionId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndRegionId(
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(
                 reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
 
         if (orderEntityList.isEmpty()) {
@@ -229,7 +229,7 @@ public class ReportServices {
 
 
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
         if (orderEntityList.isEmpty()){
             return Collections.emptyList();
         }
@@ -241,7 +241,7 @@ public class ReportServices {
         return orderResponseList;
     }
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndState(ReportsRequest reportsRequest, Long stateId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
         if (orderEntityList.isEmpty()){
             return Collections.emptyList();
         }
@@ -253,7 +253,7 @@ public class ReportServices {
         return orderResponseList;
     }
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndCity(ReportsRequest reportsRequest, Long cityId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
         if (orderEntityList.isEmpty()){
             return Collections.emptyList();
         }
