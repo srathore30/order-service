@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: prod
+    active: dev
   datasource:
     username: ${DB_USERNAME}
     url: ${DB_URL}
