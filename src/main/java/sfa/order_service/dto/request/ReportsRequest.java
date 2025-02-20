@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import sfa.order_service.enums.SalesLevel;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -17,13 +18,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReportsRequest {
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    LocalDateTime startDate;
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    LocalDateTime endDate;
+
+    Date startDate;
+    Date endDate;
     SalesLevel salesLevelConstant;
 }

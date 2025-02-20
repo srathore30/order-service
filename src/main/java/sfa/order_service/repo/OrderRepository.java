@@ -11,7 +11,6 @@ import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.enums.SalesLevel;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -25,22 +24,22 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
    List<OrderEntity> findByProductId(Long productId);
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel")
-   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") LocalDateTime startDate,
-                                                              @Param("endDate") LocalDateTime endDate,
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevel(@Param("startDate") Date startDate,
+                                                              @Param("endDate") Date endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel);
 
-   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long regionId);
-   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long stateId);
-   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(LocalDateTime startDate, LocalDateTime endDate, SalesLevel salesLevel, Long cityId);
+   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(Date startDate, Date endDate, SalesLevel salesLevel, Long regionId);
+   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(Date startDate, Date endDate, SalesLevel salesLevel, Long stateId);
+   List<OrderEntity> findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(Date startDate, Date endDate, SalesLevel salesLevel, Long cityId);
 
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel AND o.outletId = :outletId")
-   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndOutletId(@Param("startDate") LocalDateTime startDate,
-                                                              @Param("endDate") LocalDateTime endDate,
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndOutletId(@Param("startDate") Date startDate,
+                                                              @Param("endDate") Date endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel,
                                                               @Param("outletId") Long outletId);
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.salesLevel = :salesLevel AND o.clientFmcgId = :clientFmcgId")
-   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndClientFmcgId(@Param("startDate") LocalDateTime startDate,
-                                                              @Param("endDate") LocalDateTime endDate,
+   List<OrderEntity> findAllByCreatedDateBetweenAndSalesLevelAndClientFmcgId(@Param("startDate") Date startDate,
+                                                              @Param("endDate") Date endDate,
                                                               @Param("salesLevel") SalesLevel salesLevel,
                                                               @Param("clientFmcgId") Long clientFmcgId);
 
