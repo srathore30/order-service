@@ -129,6 +129,18 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+    public List<OrderResponse> byDateAndSalesLevelAndMemberId(ReportsRequest reportsRequest, Long memberId){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraph(ReportsRequest reportsRequest) {
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(
