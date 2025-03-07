@@ -129,6 +129,18 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+    public List<OrderResponse> byDateAndSalesLevelAndMemberId(ReportsRequest reportsRequest, Long memberId){
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()){
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraph(ReportsRequest reportsRequest) {
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(
@@ -142,13 +154,15 @@ public class ReportServices {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
-                .collect(Collectors.groupingBy(
-                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
-                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
-                ));
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
 
-        return monthlySales.entrySet().stream()
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
                 .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
@@ -165,13 +179,15 @@ public class ReportServices {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
-                .collect(Collectors.groupingBy(
-                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
-                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
-                ));
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
 
-        return monthlySales.entrySet().stream()
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
                 .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
@@ -188,13 +204,15 @@ public class ReportServices {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
-                .collect(Collectors.groupingBy(
-                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
-                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
-                ));
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
 
-        return monthlySales.entrySet().stream()
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
                 .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
@@ -211,22 +229,117 @@ public class ReportServices {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        Map<YearMonth, Double> monthlySales = orderResponseList.stream()
-                .collect(Collectors.groupingBy(
-                        order -> YearMonth.from(convertToLocalDate(order.getOrderCreatedDate())),
-                        Collectors.summingDouble(OrderResponse::getTotalPriceWithGst)
-                ));
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
 
-        return monthlySales.entrySet().stream()
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
                 .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
 
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForManager(ReportsRequest reportsRequest, Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), memberIds);
 
-    private LocalDate convertToLocalDate(Date date) {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
+
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForStateForManager(ReportsRequest reportsRequest, Long stateId,Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), stateId,memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
+
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForCityForManager(ReportsRequest reportsRequest, Long cityId, Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), cityId,memberIds);
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
+
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForRegionForManager(ReportsRequest reportsRequest, Long regionId, Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), regionId,memberIds);
+
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
+
+        for (OrderResponse orderRes : orderResponseList) {
+            LocalDate orderDate = ((java.sql.Date) orderRes.getOrderCreatedDate()).toLocalDate();
+            YearMonth yearMonth = YearMonth.from(orderDate);
+
+            monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
+        }
+        return monthlySalesMap.entrySet().stream()
+                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+    }
 
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId){
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
@@ -240,6 +353,7 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndState(ReportsRequest reportsRequest, Long stateId){
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
         if (orderEntityList.isEmpty()){
@@ -252,6 +366,7 @@ public class ReportServices {
         }
         return orderResponseList;
     }
+
     public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndCity(ReportsRequest reportsRequest, Long cityId){
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
         if (orderEntityList.isEmpty()){
@@ -378,7 +493,6 @@ public class ReportServices {
         outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalSales).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
-
 
     public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection){
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
