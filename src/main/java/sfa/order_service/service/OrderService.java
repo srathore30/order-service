@@ -8,24 +8,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sfa.order_service.Configs.PreOrPost;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.controller.TransactionController;
 import sfa.order_service.dto.request.*;
 import sfa.order_service.dto.response.*;
-import sfa.order_service.entity.DiscountEntity;
-import sfa.order_service.entity.OrderEntity;
-import sfa.order_service.entity.OrderInvoice;
-import sfa.order_service.entity.TransactionEntity;
+import sfa.order_service.entity.*;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.enums.TransactionType;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
-import sfa.order_service.repo.DiscountRepo;
-import sfa.order_service.repo.OrderInvoicesRepo;
-import sfa.order_service.repo.OrderRepository;
-import sfa.order_service.repo.TransactionRepository;
+import sfa.order_service.repo.*;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
 import sfa.order_service.utill.UniqueIdGenerator;
@@ -38,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
     private final DiscountRepo discountRepo;
-
+    private final InvoiceMasterRepo invoiceMasterRepo;
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
     private final ExternalRestService externalRestService;
@@ -84,7 +79,21 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(OrderRequest request, String salesType) {
         String message = "create order";
-        String invoiceNumber = UniqueIdGenerator.generateUniqueId();
+        List<InvoiceMaster> invoiceMastersList = invoiceMasterRepo.findAll();
+        if(invoiceMastersList.isEmpty()){
+            throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
+        }
+
+        String invoiceNumber;
+        InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
+        int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
+        invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
+        invoiceMasterRepo.save(invoiceMaster);
+        if(invoiceMaster.getPreOrPost() == PreOrPost.Pre){
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + new Date().getYear();
+        }else {
+            invoiceNumber = currentSerialNumber + new Date().getYear() + invoiceMaster.getCode();
+        }
         log.info("Creating order: {}", request);
         OrderEntity orderEntity = dtoToEntity(request, salesType);
         OrderInvoice orderInvoice = new OrderInvoice();
