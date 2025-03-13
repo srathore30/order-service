@@ -122,7 +122,21 @@ public class OrderService {
     @Transactional
     public List<OrderResponse> createOrderInBulk(OrderBulkReq request, String salesType) {
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        String invoiceNumber = UniqueIdGenerator.generateUniqueId();
+        List<InvoiceMaster> invoiceMastersList = invoiceMasterRepo.findAll();
+        if(invoiceMastersList.isEmpty()){
+            throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
+        }
+
+        String invoiceNumber;
+        InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
+        int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
+        invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
+        invoiceMasterRepo.save(invoiceMaster);
+        if(invoiceMaster.getPreOrPost() == PreOrPost.Pre){
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + new Date().getYear();
+        }else {
+            invoiceNumber = currentSerialNumber + new Date().getYear() + invoiceMaster.getCode();
+        }
         OrderInvoice orderInvoice = new OrderInvoice();
         orderInvoice.setInvoiceDate(new Date());
         orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());

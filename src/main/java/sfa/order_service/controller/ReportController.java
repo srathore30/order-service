@@ -46,6 +46,20 @@ public class ReportController {
         return new ResponseEntity<>(beetReportResponsePaginatedResp, HttpStatus.OK);
     }
 
+    @GetMapping("/getLastTenDaysOrderByStockistAndMemberId/{memberId}/{stockistId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> getLastTenDaysOrderByStockistAndMemberId(@PathVariable Long memberId, @PathVariable Long stockistId){
+        List<OrderResponse> orderResponseList = reportServices.getLastTenDaysOrderByStockistAndMemberId(memberId, stockistId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @GetMapping("/getLastTenDaysOrderByOutletIdAndMemberId/{memberId}/{outletId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> getLastTenDaysOrderByOutletIdAndMemberId(@PathVariable Long memberId, @PathVariable Long outletId){
+        List<OrderResponse> orderResponseList = reportServices.getLastTenDaysOrderByOutletIdAndMemberId(memberId, outletId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
     @GetMapping("/getOutletOrderReportByBeetIdWithDateFilter/{beetId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<OutletReportResponse>> getOutletOrderReportByBeetIdWithDateFilter(@PathVariable Long beetId, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
