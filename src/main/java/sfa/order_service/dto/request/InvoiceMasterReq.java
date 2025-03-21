@@ -11,6 +11,5 @@ import sfa.order_service.Configs.PreOrPost;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvoiceMasterReq {
     String code;
-    Integer currentSerialNumber;
     PreOrPost preOrPost;
 }
