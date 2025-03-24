@@ -25,6 +25,7 @@ import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
 import sfa.order_service.utill.UniqueIdGenerator;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,16 +84,16 @@ public class OrderService {
         if(invoiceMastersList.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
         }
-
         String invoiceNumber;
         InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
         int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
         invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
         invoiceMasterRepo.save(invoiceMaster);
-        if(invoiceMaster.getPreOrPost() == PreOrPost.Pre){
-            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + new Date().getYear();
-        }else {
-            invoiceNumber = currentSerialNumber + new Date().getYear() + invoiceMaster.getCode();
+        int currentYear = LocalDate.now().getYear();
+        if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
+        } else {
+            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
         }
         log.info("Creating order: {}", request);
         OrderEntity orderEntity = dtoToEntity(request, salesType);
@@ -132,10 +133,11 @@ public class OrderService {
         int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
         invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
         invoiceMasterRepo.save(invoiceMaster);
-        if(invoiceMaster.getPreOrPost() == PreOrPost.Pre){
-            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + new Date().getYear();
-        }else {
-            invoiceNumber = currentSerialNumber + new Date().getYear() + invoiceMaster.getCode();
+        int currentYear = LocalDate.now().getYear();
+        if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
+        } else {
+            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
         }
         OrderInvoice orderInvoice = new OrderInvoice();
         orderInvoice.setInvoiceDate(new Date());

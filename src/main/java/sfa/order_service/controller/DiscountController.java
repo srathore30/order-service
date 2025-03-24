@@ -39,7 +39,7 @@ public class DiscountController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<PaginatedResp<DiscountResponse>> getAllDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "discountCode") String sortBy, @RequestParam(defaultValue = "ASC") String sortDirection) {
+    public ResponseEntity<PaginatedResp<DiscountResponse>> getAllDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "ASC") String sortDirection) {
         PaginatedResp<DiscountResponse> response = discountService.getAllDiscounts(page, pageSize, sortBy, sortDirection);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
