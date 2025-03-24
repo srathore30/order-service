@@ -84,7 +84,7 @@ public class OrderService {
         if(invoiceMastersList.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
         }
-        String invoiceNumber;
+        String invoiceNumber = "";
         InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
         int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
         invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
