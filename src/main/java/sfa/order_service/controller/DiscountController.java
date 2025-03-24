@@ -33,18 +33,21 @@ public class DiscountController {
     }
 
     @PostMapping("/discounts/bulk")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<DiscountResponse>> createBulkDiscount(@RequestBody DiscountBulkReq bulkRequest) {
         List<DiscountResponse> responses = discountService.createBulkDiscount(bulkRequest);
         return new ResponseEntity<>(responses,HttpStatus.OK);
     }
 
     @GetMapping("/getAll")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<DiscountResponse>> getAllDiscounts(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "ASC") String sortDirection) {
         PaginatedResp<DiscountResponse> response = discountService.getAllDiscounts(page, pageSize, sortBy, sortDirection);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
     @PutMapping("/updateDiscountByProductId/{productId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<DiscountResponse> updateDiscountByProductId(@PathVariable Long productId, @RequestBody DiscountRequest discountRequest) {
         DiscountResponse updatedDiscount = discountService.updateDiscountByProductId(productId, discountRequest);
         return new ResponseEntity<>(updatedDiscount,HttpStatus.OK);
