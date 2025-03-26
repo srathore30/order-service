@@ -52,4 +52,12 @@ public class DiscountController {
         DiscountResponse updatedDiscount = discountService.updateDiscountByProductId(productId, discountRequest);
         return new ResponseEntity<>(updatedDiscount,HttpStatus.OK);
     }
+
+    @PutMapping("/updateDiscountById/{discountId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<DiscountResponse> updateDiscountById(@PathVariable Long discountId,
+                                                               @RequestBody DiscountRequest discountRequest) {
+        return ResponseEntity.ok(discountService.updateDiscountById(discountId, discountRequest));
+    }
+
 }
