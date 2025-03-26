@@ -20,6 +20,7 @@ import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.OrderRepository;
 import sfa.order_service.utill.CalculateGst;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -115,6 +116,33 @@ public class ReportServices {
         reportsResponse.setTotalGstCollected(totalGst);
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
+    }
+    public List<OrderResponse> getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId){
+        Date endDate = new Date();
+        LocalDate localDate = LocalDate.now().minusDays(10);
+        Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Date startDate = Date.from(instant);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+
+    public List<OrderResponse> getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId){
+        Date endDate = new Date();
+        LocalDate localDate = LocalDate.now().minusDays(10);
+        Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Date startDate = Date.from(instant);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList){
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
     }
 
     public List<OrderResponse> findOverallSalesByDateAndSalesLevel(ReportsRequest reportsRequest){
