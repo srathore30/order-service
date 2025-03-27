@@ -48,16 +48,16 @@ public class ReportController {
 
     @GetMapping("/getLastTenDaysOrderByStockistAndMemberId/{memberId}/{stockistId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<List<OrderResponse>> getLastTenDaysOrderByStockistAndMemberId(@PathVariable Long memberId, @PathVariable Long stockistId){
-        List<OrderResponse> orderResponseList = reportServices.getLastTenDaysOrderByStockistAndMemberId(memberId, stockistId);
-        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByStockistAndMemberId(@PathVariable Long memberId, @PathVariable Long stockistId){
+        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByStockistAndMemberId(memberId, stockistId);
+        return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
     }
 
     @GetMapping("/getLastTenDaysOrderByOutletIdAndMemberId/{memberId}/{outletId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<List<OrderResponse>> getLastTenDaysOrderByOutletIdAndMemberId(@PathVariable Long memberId, @PathVariable Long outletId){
-        List<OrderResponse> orderResponseList = reportServices.getLastTenDaysOrderByOutletIdAndMemberId(memberId, outletId);
-        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByOutletIdAndMemberId(@PathVariable Long memberId, @PathVariable Long outletId){
+        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByOutletIdAndMemberId(memberId, outletId);
+        return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
     }
 
     @GetMapping("/getOutletOrderReportByBeetIdWithDateFilter/{beetId}")

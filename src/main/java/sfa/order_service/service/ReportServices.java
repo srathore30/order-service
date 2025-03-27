@@ -14,10 +14,12 @@ import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.OrderRepository;
+import sfa.order_service.repo.SamplesRepo;
 import sfa.order_service.utill.CalculateGst;
 
 import java.time.Instant;
@@ -34,6 +36,7 @@ public class ReportServices {
     private final OrderRepository orderRepository;
     private final ProductServiceClient productServiceClient;
     private final ExternalRestService externalRestService;
+    private final SamplesRepo samplesRepo;
 
     public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
@@ -117,32 +120,44 @@ public class ReportServices {
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
     }
-    public List<OrderResponse> getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId){
+    public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId){
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Date startDate = Date.from(instant);
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
+        List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList){
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        return orderResponseList;
+        List<SampleRes> sampleResList = new ArrayList<>();
+        for (SamplesEntity samplesEntity : samplesEntityList){
+            SampleRes sampleRes = mapToSampleRes(samplesEntity);
+            sampleResList.add(sampleRes);
+        }
+        return new TenDayReportRes(orderResponseList, sampleResList);
     }
 
-    public List<OrderResponse> getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId){
+    public TenDayReportRes getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId){
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Date startDate = Date.from(instant);
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
+        List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList){
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
-        return orderResponseList;
+        List<SampleRes> sampleResList = new ArrayList<>();
+        for (SamplesEntity samplesEntity : samplesEntityList){
+            SampleRes sampleRes = mapToSampleRes(samplesEntity);
+            sampleResList.add(sampleRes);
+        }
+        return new TenDayReportRes(orderResponseList, sampleResList);
     }
 
     public List<OrderResponse> findOverallSalesByDateAndSalesLevel(ReportsRequest reportsRequest){
@@ -806,5 +821,22 @@ public class ReportServices {
     public Double getProductPrice(Long productId, String priceType) {
         log.info("Get product price with product id: {} and price type: {}", productId, priceType);
         return productServiceClient.getProductPrice(productId, priceType);
+    }
+    private SampleRes mapToSampleRes(SamplesEntity sample) {
+        SampleRes sampleRes = new SampleRes();
+        sampleRes.setId(sample.getId());
+        sampleRes.setBundleType(sample.getBundleType());
+        sampleRes.setSampleDate(sample.getSampleDate());
+        sampleRes.setProductRes(productServiceClient.getProduct(sample.getProductId()));
+        sampleRes.setQuantity(sample.getQuantity());
+        sampleRes.setMemberResponse(externalRestService.getMember(sample.getMemberId()));
+        if (sample.getDoctorId() != null) {
+            sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
+        } else if (sample.getClientFmcgId() != null) {
+            sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
+        } else if (sample.getOutletId() != null) {
+            sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
+        }
+        return sampleRes;
     }
 }
