@@ -14,7 +14,7 @@ public class MemberGetDto {
     private boolean isDayStarted;
     private boolean isAttendanceBlocked;
     private String employeeId;
-    private List<String> designationName;
+    private String designationName;
     private LocalDateTime checkIn;
     private String headQuarter;
     private LocalDateTime checkOut;
