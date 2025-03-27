@@ -96,6 +96,15 @@ jobs:
             cd ~/sfa-service/order-service/
             chmod +x orderStartUp.sh
             echo "Starting the service..."
-            ./orderStartUp.sh
-            echo "Deployment done"
+            nohup ./orderStartUp.sh > app.log 2>&1 &
+            echo "Streaming logs..."
+            touch app.log
+            tail -f app.log | while read LINE; do
+              echo "$LINE"
+              if [[ "$LINE" == *"Tomcat started on port(s):"* ]]; then
+                echo "Detected Tomcat startup, stopping log streaming."
+                pkill -P $$ tail
+              fi
+            done
+            echo "Deployment successful!"
 
