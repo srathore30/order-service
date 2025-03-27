@@ -88,7 +88,7 @@ jobs:
               echo "Killing running service with PID: $PID"
               sudo kill -9 $PID
             else
-              echo "No service running on port 8097"
+              echo "No service running on port 9092"
             fi
             echo "Setting execution permission..."
             export JAVA_HOME=/usr/local/java/jdk-17.0.12
