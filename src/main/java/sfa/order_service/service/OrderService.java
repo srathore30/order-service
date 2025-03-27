@@ -356,6 +356,7 @@ public class OrderService {
             orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
         }
         orderResponse.setBundleType(orderEntity.getBundleType());
+        orderResponse.setClientCityName(productServiceClient.getCityNameById(orderEntity.getCityId()));
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());

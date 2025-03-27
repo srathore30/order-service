@@ -25,6 +25,7 @@ public class OrderResponse {
     private BundleType bundleType;
     private Long productId;
     private ProductRes productRes;
+    private String clientCityName;
     private Integer quantity;
     private Double gstAmount;
     private String invoiceNumber;
