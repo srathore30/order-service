@@ -282,7 +282,6 @@ public class DiscountService {
     public DiscountResponse updateDiscountById(Long discountId, DiscountRequest discountRequest) {
         log.info("Retrieve discount by ID: {}", discountId);
         Optional<DiscountEntity> optionalDiscount = discountRepo.findById(discountId);
-
         if (optionalDiscount.isEmpty()) {
             throw new InvalidInputException(ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorCode(),
                     ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorMessage());
@@ -298,10 +297,13 @@ public class DiscountService {
         existingDiscount.setValidTo(discountRequest.getValidTo());
         existingDiscount.setStatus(discountRequest.getStatus());
 
+        if (discountRequest.getProductId() != null) {
+            existingDiscount.setProductId(discountRequest.getProductId());
+        }
         switch (discountRequest.getDiscountType()) {
             case PROMOTIONAL:
                 existingDiscount.setFixedAmount(discountRequest.getFixedAmount());
-                existingDiscount.setPercentage(null);
+                existingDiscount.setPercentage(discountRequest.getPercentage());
                 existingDiscount.setMinQuantity(null);
                 existingDiscount.setBogoOfferQuantity(null);
                 existingDiscount.setBogoFreeQuantity(null);
