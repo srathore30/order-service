@@ -19,13 +19,12 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Order Service Swagger APIs")
+                        .title("Order Service APIs")
                         .description("API documentation for Order Service")
                         .version("v1.0"))
                 .servers(List.of(
                         new Server().url("http://localhost:9092/order-service").description("Local Server"),
-                        new Server().url("https://staging.prism-sfa-dev.net/order-service").description("Dev Server With https"),
-                        new Server().url("http://staging.prism-sfa-dev.net/order-service").description("Dev Server With http")
+                        new Server().url("https://staging.prism-sfa-dev.net/order-service").description("Dev Server")
                 )) .components(new Components().addSecuritySchemes(securitySchemeName,
                         new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
