@@ -14,6 +14,8 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://www.prism-sfa-dev.net",
                         "https://api.prism-sfa-dev.net",
                         "http://localhost:3000",
+                        "http://localhost:9092",
+                        "http://localhost:9092/order-service",
                         "https://dev.prism-sfa-dev.net",
                         "https://staging.prism-sfa-dev.net",
                         "https://staging.prism-sfa-dev.net/order-service",

@@ -37,7 +37,7 @@ public class SampleController {
     }
 
     @GetMapping("/{id}")
-    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+//    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SampleRes> getSampleById(@PathVariable Long id) {
         log.info("Fetching sample with ID: {}", id);
         SampleRes response = sampleServices.getSampleById(id);
