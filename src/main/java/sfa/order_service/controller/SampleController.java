@@ -2,7 +2,6 @@ package sfa.order_service.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
@@ -43,10 +42,6 @@ public class SampleController {
         log.info("Fetching sample with ID: {}", id);
         SampleRes response = sampleServices.getSampleById(id);
         return ResponseEntity.ok(response);
-    }
-    @GetMapping("/demo")
-    public ResponseEntity<String> demo() {
-        return new ResponseEntity<>("Done", HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
