@@ -14,17 +14,10 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://www.prism-sfa-dev.net",
                         "https://api.prism-sfa-dev.net",
                         "http://localhost:3000",
-                        "http://localhost:9092",
-                        "http://localhost:9092/order-service",
                         "https://dev.prism-sfa-dev.net",
                         "https://staging.prism-sfa-dev.net",
                         "https://staging.prism-sfa-dev.net/order-service",
                         "http://staging.prism-sfa-dev.net",
-                        "http://88.222.215.37:9092",
-                        "https://88.222.215.37:9092",
-                        "http://88.222.215.37:9092/order-service",
-                        "https://88.222.215.37:9092/order-service",
-                        "http://88.222.215.37",
                         "https://www.dev.prism-sfa-dev.net"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")

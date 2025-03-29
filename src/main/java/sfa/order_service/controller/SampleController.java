@@ -2,6 +2,7 @@ package sfa.order_service.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
@@ -37,11 +38,15 @@ public class SampleController {
     }
 
     @GetMapping("/{id}")
-//    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<SampleRes> getSampleById(@PathVariable Long id) {
         log.info("Fetching sample with ID: {}", id);
         SampleRes response = sampleServices.getSampleById(id);
         return ResponseEntity.ok(response);
+    }
+    @GetMapping("/demo")
+    public ResponseEntity<String> demo() {
+        return new ResponseEntity<>("Done", HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
