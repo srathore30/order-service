@@ -120,12 +120,12 @@ public class ReportServices {
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
     }
-    public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId){
+    public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId, SalesLevel salesLevel){
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Date startDate = Date.from(instant);
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndOutletIdAndSalesLevel(startDate, endDate, memberId, outletId, salesLevel);
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList){
@@ -139,13 +139,26 @@ public class ReportServices {
         }
         return new TenDayReportRes(orderResponseList, sampleResList);
     }
-
-    public TenDayReportRes getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId){
+    public List<SampleRes> getLastTenDaysSampleByDoctorIdAndMemberId(Long memberId, Long doctorId){
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Date startDate = Date.from(instant);
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
+        List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndDoctorId(startDate, endDate, memberId, doctorId);
+        List<SampleRes> sampleResList = new ArrayList<>();
+        for (SamplesEntity samplesEntity : samplesEntityList){
+            SampleRes sampleRes = mapToSampleRes(samplesEntity);
+            sampleResList.add(sampleRes);
+        }
+        return sampleResList;
+    }
+
+    public TenDayReportRes getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId, SalesLevel salesLevel){
+        Date endDate = new Date();
+        LocalDate localDate = LocalDate.now().minusDays(10);
+        Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Date startDate = Date.from(instant);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgIdAndSalesLevel(startDate, endDate, memberId, clientId, salesLevel);
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList){

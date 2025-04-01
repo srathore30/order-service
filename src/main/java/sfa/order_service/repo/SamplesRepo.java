@@ -20,6 +20,7 @@ public interface SamplesRepo extends JpaRepository<SamplesEntity, Long> {
     @Query("SELECT o FROM SamplesEntity o WHERE o.memberId IN :memberIds")
     Page<SamplesEntity> findByMembersIdList(@Param("memberIds") Set<Long> memberIds, Pageable pageable);
     List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndOutletId(Date startDate, Date endDate, Long memberId, Long outletId);
+    List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndDoctorId(Date startDate, Date endDate, Long memberId, Long doctorId);
     List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndClientFmcgId(Date startDate, Date endDate, Long memberId, Long clientFmcgId);
 
 

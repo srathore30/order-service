@@ -46,17 +46,24 @@ public class ReportController {
         return new ResponseEntity<>(beetReportResponsePaginatedResp, HttpStatus.OK);
     }
 
-    @GetMapping("/getLastTenDaysOrderByStockistAndMemberId/{memberId}/{stockistId}")
+    @GetMapping("/getLastTenDaysOrderByStockistAndMemberId/{memberId}/{stockistId}/{salesLevel}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByStockistAndMemberId(@PathVariable Long memberId, @PathVariable Long stockistId){
-        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByStockistAndMemberId(memberId, stockistId);
+    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByStockistAndMemberId(@PathVariable Long memberId, @PathVariable Long stockistId, @PathVariable SalesLevel salesLevel){
+        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByStockistAndMemberId(memberId, stockistId, salesLevel);
         return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
     }
 
-    @GetMapping("/getLastTenDaysOrderByOutletIdAndMemberId/{memberId}/{outletId}")
+    @GetMapping("/getLastTenDaysOrderByOutletIdAndMemberId/{memberId}/{outletId}/{salesLevel}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByOutletIdAndMemberId(@PathVariable Long memberId, @PathVariable Long outletId){
-        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByOutletIdAndMemberId(memberId, outletId);
+    public ResponseEntity<TenDayReportRes> getLastTenDaysOrderByOutletIdAndMemberId(@PathVariable Long memberId, @PathVariable Long outletId, @PathVariable SalesLevel salesLevel){
+        TenDayReportRes tenDayReportRes = reportServices.getLastTenDaysOrderByOutletIdAndMemberId(memberId, outletId, salesLevel);
+        return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
+    }
+
+    @GetMapping("/getLastTenDaysSampleByDoctorIdAndMemberId/{memberId}/{outletId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<SampleRes>> getLastTenDaysSampleByDoctorIdAndMemberId(@PathVariable Long memberId, @PathVariable Long doctorId){
+        List<SampleRes> tenDayReportRes = reportServices.getLastTenDaysSampleByDoctorIdAndMemberId(memberId, doctorId);
         return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
     }
 
