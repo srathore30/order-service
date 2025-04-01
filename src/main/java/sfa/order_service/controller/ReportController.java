@@ -60,7 +60,7 @@ public class ReportController {
         return new ResponseEntity<>(tenDayReportRes, HttpStatus.OK);
     }
 
-    @GetMapping("/getLastTenDaysSampleByDoctorIdAndMemberId/{memberId}/{outletId}")
+    @GetMapping("/getLastTenDaysSampleByDoctorIdAndMemberId/{memberId}/{doctorId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<SampleRes>> getLastTenDaysSampleByDoctorIdAndMemberId(@PathVariable Long memberId, @PathVariable Long doctorId){
         List<SampleRes> tenDayReportRes = reportServices.getLastTenDaysSampleByDoctorIdAndMemberId(memberId, doctorId);

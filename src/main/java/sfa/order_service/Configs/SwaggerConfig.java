@@ -23,7 +23,6 @@ public class SwaggerConfig {
                         .description("API documentation for Order Service")
                         .version("v1.0"))
                 .servers(List.of(
-                        new Server().url("http://localhost:9092/order-service").description("Local Server"),
                         new Server().url("https://staging.prism-sfa-dev.net/order-service").description("Dev Server")
                 )) .components(new Components().addSecuritySchemes(securitySchemeName,
                         new SecurityScheme()
