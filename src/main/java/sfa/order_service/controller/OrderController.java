@@ -98,6 +98,13 @@ public class OrderController {
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 
+    @PostMapping("/createOrderInBulkWithInventoryUpdate")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> createOrderInBulkWithInventoryUpdate(@RequestBody OrderBulkReq orderBulkReq, @RequestParam String salesType){
+        List<OrderResponse> orderResponseList = orderService.createOrderInBulkWithInventoryUpdate(orderBulkReq, salesType);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
     @PutMapping("/updateOrderInBulk")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OrderUpdateResponse>> updateOrderInBulk(@RequestBody OrderBulkUpdateRequest orderUpdateRequest){

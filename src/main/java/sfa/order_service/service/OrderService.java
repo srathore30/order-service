@@ -168,6 +168,58 @@ public class OrderService {
         }
         return orderResponseList;
     }
+    @Transactional
+    public List<OrderResponse> createOrderInBulkWithInventoryUpdate(OrderBulkReq request, String salesType) {
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        List<InvoiceMaster> invoiceMastersList = invoiceMasterRepo.findAll();
+        if(invoiceMastersList.isEmpty()){
+            throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
+        }
+
+        String invoiceNumber;
+        InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
+        int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
+        invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
+        invoiceMasterRepo.save(invoiceMaster);
+        int currentYear = LocalDate.now().getYear();
+        if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
+        } else {
+            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
+        }
+        OrderInvoice orderInvoice = new OrderInvoice();
+        orderInvoice.setInvoiceDate(new Date());
+        orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());
+        orderInvoice.setBeetId(request.getOrderRequestList().get(0).getBeetId());
+        orderInvoice.setSalesLevel(request.getOrderRequestList().get(0).getSalesLevel());
+        orderInvoice.setMemberId(request.getOrderRequestList().get(0).getMemberId());
+        orderInvoice.setClientFmcgId(request.getOrderRequestList().get(0).getClientId());
+        orderInvoice.setInvoiceNumber(invoiceNumber);
+        OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
+        log.info("Creating order in bulk");
+        for (OrderRequest orderRequest : request.getOrderRequestList()) {
+            String message = "create order";
+            log.info("Creating order: {}", request);
+            OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
+            orderEntity.setOrderInvoice(generatedInvoice);
+            orderEntity.setInvoiceNumber(invoiceNumber);
+            OrderEntity entity = orderRepository.save(orderEntity);
+            log.info("create transaction before order creation");
+            TransactionRequest transactionRequest = new TransactionRequest();
+            transactionRequest.setClientId(orderRequest.getClientId());
+            transactionRequest.setTransactionAmount(finalPrice(orderRequest));
+            transactionRequest.setTransactionType(TransactionType.DEBIT);
+            transactionRequest.setOrderId(entity.getId());
+            log.info("create transaction after order creation");
+            transactionController.createTransaction(transactionRequest);
+            orderResponseList.add(entityToDto(entity, message));
+            InventoryUpdateRequest inventoryUpdateRequest = new InventoryUpdateRequest();
+            inventoryUpdateRequest.setQuantitySold((long) orderEntity.getQuantity());
+            inventoryUpdateRequest.setSalesLevel(orderEntity.getSalesLevel());
+            externalRestService.updateInventory(orderEntity.getClientFmcgId(), orderEntity.getProductId(), new InventoryUpdateRequest());
+        }
+        return orderResponseList;
+    }
 
     public List<OrderResponse> getAllOrderByInvoiceNumber(String invoiceNumber) {
         List<OrderEntity> orderEntityList = orderRepository.findByInvoiceNumber(invoiceNumber);
