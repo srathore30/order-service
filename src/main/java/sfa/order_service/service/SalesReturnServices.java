@@ -83,7 +83,7 @@ public class SalesReturnServices {
     }
     @Transactional
     public void updateReturnStatus(Long id, ReturnStatus returnStatus){
-        log.info("updateing sales return status");
+        log.info("updating sales return status");
         Optional<SalesReturn> salesReturnOptional = salesReturnRepo.findById(id);
         if(salesReturnOptional.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.RETURN_NOT_FOUND.getErrorCode(), ApiErrorCodes.RETURN_NOT_FOUND.getErrorMessage());

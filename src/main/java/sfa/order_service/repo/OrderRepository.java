@@ -98,4 +98,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    long countByBeetIdAndClientFmcgIdAndOrderCallStatus(Long beetId, Long clientFmcgId, OrderCallStatus orderCallStatus);
    long countByBeetIdAndClientFmcgIdAndOrderMedium(Long beetId, Long clientFmcgId, OrderMedium orderMedium);
 
+   @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate " + "AND o.memberId IN :memberIds AND o.salesLevel = :salesLevel")
+   List<OrderEntity> findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(@Param("startDate") Date startDate, @Param("salesLevel") SalesLevel salesLevel, @Param("endDate") Date endDate,@Param("memberIds") Set<Long> memberIds);
+
 }

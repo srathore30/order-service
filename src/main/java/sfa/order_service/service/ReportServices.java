@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
@@ -15,7 +14,6 @@ import sfa.order_service.dto.request.ReportsRequest;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.SamplesEntity;
-import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.repo.OrderRepository;
@@ -38,9 +36,9 @@ public class ReportServices {
     private final ExternalRestService externalRestService;
     private final SamplesRepo samplesRepo;
 
-    public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
-        if (orderEntityList.isEmpty()){
+    public ReportsResponse getSalesReportBetweenDatesAndSalesLevel(ReportsRequest reportsRequest) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
             return new ReportsResponse(0D, 0D, 0, Collections.emptyList());
         }
         double totalGst = 0D;
@@ -48,8 +46,8 @@ public class ReportServices {
         int totalOrder = 0;
         ReportsResponse reportsResponse = new ReportsResponse();
         List<TopSellingProductRes> topSellingProductRes = new ArrayList<>();
-        if (reportsRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE){
-            for (OrderEntity orderEntity : orderEntityList){
+        if (reportsRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE) {
+            for (OrderEntity orderEntity : orderEntityList) {
                 ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
                 ProductPriceRes productPriceRes = productRes.getProductPriceRes();
                 if (productPriceRes != null) {
@@ -62,7 +60,7 @@ public class ReportServices {
                     totalOrder += orderEntity.getQuantity();
                     Double totalSaleByProduct = 0D;
                     List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
-                    for(OrderEntity order : orderListByProductId){
+                    for (OrderEntity order : orderListByProductId) {
                         totalSaleByProduct += order.getPrice();
                     }
                     TopSellingProductRes resp = new TopSellingProductRes();
@@ -78,9 +76,8 @@ public class ReportServices {
                     topSellingProductRes.add(resp);
                 }
             }
-        }
-        else if(reportsRequest.getSalesLevelConstant() == SalesLevel.STOCKIST || reportsRequest.getSalesLevelConstant() == SalesLevel.RETAILER){
-            for (OrderEntity orderEntity : orderEntityList){
+        } else if (reportsRequest.getSalesLevelConstant() == SalesLevel.STOCKIST || reportsRequest.getSalesLevelConstant() == SalesLevel.RETAILER) {
+            for (OrderEntity orderEntity : orderEntityList) {
                 ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
                 ProductPriceRes productPriceRes = productRes.getProductPriceRes();
                 if (productPriceRes != null) {
@@ -95,7 +92,7 @@ public class ReportServices {
                     totalOrder += orderEntity.getQuantity();
                     Double totalSaleByProduct = 0D;
                     List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
-                    for(OrderEntity order : orderListByProductId){
+                    for (OrderEntity order : orderListByProductId) {
                         totalSaleByProduct += order.getPrice();
                     }
                     TopSellingProductRes resp = new TopSellingProductRes();
@@ -120,7 +117,8 @@ public class ReportServices {
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
     }
-    public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId, SalesLevel salesLevel){
+
+    public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId, SalesLevel salesLevel) {
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
@@ -128,32 +126,33 @@ public class ReportServices {
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndOutletIdAndSalesLevel(startDate, endDate, memberId, outletId, salesLevel);
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndOutletId(startDate, endDate, memberId, outletId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         List<SampleRes> sampleResList = new ArrayList<>();
-        for (SamplesEntity samplesEntity : samplesEntityList){
+        for (SamplesEntity samplesEntity : samplesEntityList) {
             SampleRes sampleRes = mapToSampleRes(samplesEntity);
             sampleResList.add(sampleRes);
         }
         return new TenDayReportRes(orderResponseList, sampleResList);
     }
-    public List<SampleRes> getLastTenDaysSampleByDoctorIdAndMemberId(Long memberId, Long doctorId){
+
+    public List<SampleRes> getLastTenDaysSampleByDoctorIdAndMemberId(Long memberId, Long doctorId) {
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
         Date startDate = Date.from(instant);
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndDoctorId(startDate, endDate, memberId, doctorId);
         List<SampleRes> sampleResList = new ArrayList<>();
-        for (SamplesEntity samplesEntity : samplesEntityList){
+        for (SamplesEntity samplesEntity : samplesEntityList) {
             SampleRes sampleRes = mapToSampleRes(samplesEntity);
             sampleResList.add(sampleRes);
         }
         return sampleResList;
     }
 
-    public TenDayReportRes getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId, SalesLevel salesLevel){
+    public TenDayReportRes getLastTenDaysOrderByStockistAndMemberId(Long memberId, Long clientId, SalesLevel salesLevel) {
         Date endDate = new Date();
         LocalDate localDate = LocalDate.now().minusDays(10);
         Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
@@ -161,37 +160,38 @@ public class ReportServices {
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgIdAndSalesLevel(startDate, endDate, memberId, clientId, salesLevel);
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllBySampleDateBetweenAndMemberIdAndClientFmcgId(startDate, endDate, memberId, clientId);
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         List<SampleRes> sampleResList = new ArrayList<>();
-        for (SamplesEntity samplesEntity : samplesEntityList){
+        for (SamplesEntity samplesEntity : samplesEntityList) {
             SampleRes sampleRes = mapToSampleRes(samplesEntity);
             sampleResList.add(sampleRes);
         }
         return new TenDayReportRes(orderResponseList, sampleResList);
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevel(ReportsRequest reportsRequest){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevel(ReportsRequest reportsRequest) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         return orderResponseList;
     }
-    public List<OrderResponse> byDateAndSalesLevelAndMemberId(ReportsRequest reportsRequest, Long memberId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
-        if (orderEntityList.isEmpty()){
+
+    public List<OrderResponse> byDateAndSalesLevelAndMemberId(ReportsRequest reportsRequest, Long memberId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -199,14 +199,13 @@ public class ReportServices {
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraph(ReportsRequest reportsRequest) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(
-                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -218,20 +217,17 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForState(ReportsRequest reportsRequest, Long stateId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(
-                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -243,20 +239,17 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForCity(ReportsRequest reportsRequest, Long cityId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(
-                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -268,20 +261,17 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForRegion(ReportsRequest reportsRequest, Long regionId) {
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(
-                reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -293,20 +283,18 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForManager(ReportsRequest reportsRequest, Long managerId) {
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
-        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), memberIds);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), memberIds);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -318,19 +306,17 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
-    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForStateForManager(ReportsRequest reportsRequest, Long stateId,Long managerId) {
+    public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForStateForManager(ReportsRequest reportsRequest, Long stateId, Long managerId) {
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
-        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), stateId,memberIds);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndStateId(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), stateId, memberIds);
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -342,20 +328,18 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForCityForManager(ReportsRequest reportsRequest, Long cityId, Long managerId) {
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
-        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), cityId,memberIds);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndCityId(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), cityId, memberIds);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -367,20 +351,18 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForRegionForManager(ReportsRequest reportsRequest, Long regionId, Long managerId) {
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
-        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant() ,reportsRequest.getEndDate(), regionId,memberIds);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByDateRangeAndMembersAndSalesLevelAndRegionId(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), regionId, memberIds);
 
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -392,70 +374,68 @@ public class ReportServices {
 
             monthlySalesMap.put(yearMonth, monthlySalesMap.getOrDefault(yearMonth, 0.0) + orderRes.getTotalPriceWithGst());
         }
-        return monthlySalesMap.entrySet().stream()
-                .map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndRegion(ReportsRequest reportsRequest, Long regionId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndRegionId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), regionId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         return orderResponseList;
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndState(ReportsRequest reportsRequest, Long stateId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndState(ReportsRequest reportsRequest, Long stateId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         return orderResponseList;
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndCity(ReportsRequest reportsRequest, Long cityId){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndCity(ReportsRequest reportsRequest, Long cityId) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndCityId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), cityId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         return orderResponseList;
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndOutletId(Long outletId, ReportsRequest reportsRequest){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndOutletId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), outletId);
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndOutletId(Long outletId, ReportsRequest reportsRequest) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndOutletId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), outletId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
         return orderResponseList;
     }
 
-    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndClientFmcgId(Long clientFmcgId, ReportsRequest reportsRequest){
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndClientFmcgId(reportsRequest.getStartDate(),reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), clientFmcgId);
-        if (orderEntityList.isEmpty()){
+    public List<OrderResponse> findOverallSalesByDateAndSalesLevelAndClientFmcgId(Long clientFmcgId, ReportsRequest reportsRequest) {
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndClientFmcgId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), clientFmcgId);
+        if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList){
+        for (OrderEntity orderEntity : orderEntityList) {
             OrderResponse orderResponse = mapToOrderResponse(orderEntity);
             orderResponseList.add(orderResponse);
         }
@@ -463,23 +443,23 @@ public class ReportServices {
     }
 
     //Member Report
-    public PaginatedResp<BeetReportResponse> getBeetOrderReportByMemberIdWithDateFilter(Long memberId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<BeetReportResponse> getBeetOrderReportByMemberIdWithDateFilter(Long memberId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection) {
         Map<Long, Double> beetOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndMemberId(startDate, endDate, memberId,pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndMemberId(startDate, endDate, memberId, pageable);
 
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
-        for(OrderEntity order : orderEntityPage.getContent()){
+        for (OrderEntity order : orderEntityPage.getContent()) {
             if (order.getSalesLevel() != SalesLevel.WAREHOUSE) {
                 beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
             }
         }
         Set<Long> beetIds = beetOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
-        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
@@ -492,23 +472,24 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalSales).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
-    public PaginatedResp<BeetReportResponse> getBeetOrderReportByReportingManagerIdWithDateFilter(Long reportingManagerId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<BeetReportResponse> getBeetOrderReportByReportingManagerIdWithDateFilter(Long reportingManagerId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection) {
         Map<Long, Double> beetOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
-        Page<OrderEntity> orderEntityPage = orderRepository.findOrdersByDateRangeAndMembers(startDate, endDate, memberIds,pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findOrdersByDateRangeAndMembers(startDate, endDate, memberIds, pageable);
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
-        for(OrderEntity order : orderEntityPage.getContent()){
-            if(order.getSalesLevel() != SalesLevel.WAREHOUSE) {
+        for (OrderEntity order : orderEntityPage.getContent()) {
+            if (order.getSalesLevel() != SalesLevel.WAREHOUSE) {
                 beetOrderMap.put(order.getBeetId(), beetOrderMap.getOrDefault(order.getBeetId(), 0.0) + order.getPrice());
             }
         }
         Set<Long> beetIds = beetOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
-        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : beetOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalSales(entry.getValue());
                     beetReportResponse.setBeetRespForOrderDto(beetRespForOrderDto);
@@ -521,22 +502,23 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalSales).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
-    public PaginatedResp<OutletReportResponse> getOutletOrderReportByBeetIdWithDateFilter(Long beetId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<OutletReportResponse> getOutletOrderReportByBeetIdWithDateFilter(Long beetId, Date startDate, Date endDate, int page, int pageSize, String sortBy, String sortDirection) {
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         Page<OrderEntity> orderEntityPage = orderRepository.findAllByOrderCreatedDateBetweenAndBeetId(startDate, endDate, beetId, pageable);
         List<OutletReportResponse> outletReportResponsesList = new ArrayList<>();
-        for(OrderEntity order : orderEntityPage.getContent()){
-            if(order.getSalesLevel() != SalesLevel.WAREHOUSE) {
+        for (OrderEntity order : orderEntityPage.getContent()) {
+            if (order.getSalesLevel() != SalesLevel.WAREHOUSE) {
                 outletOrderMap.put(order.getOutletId(), outletOrderMap.getOrDefault(order.getOutletId(), 0.0) + order.getPrice());
             }
         }
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
-                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList) {
+                if (Objects.equals(outletRespForOrderDto.getId(), entry.getKey())) {
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
                     outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setTotalOrder((long) orderRepository.findAllByOrderCreatedDateBetweenAndOutletId(startDate, endDate, entry.getKey()).size());
@@ -550,7 +532,7 @@ public class ReportServices {
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
 
-    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -564,11 +546,11 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
-                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList) {
+                if (Objects.equals(outletRespForOrderDto.getId(), entry.getKey())) {
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
-                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndMemberIdAndOrderCallStatus(entry.getKey(), memberId,orderCallStatus));
+                    outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndMemberIdAndOrderCallStatus(entry.getKey(), memberId, orderCallStatus));
                     outletReportResponse.setTotalSales(entry.getValue());
                     outletReportResponse.setOutletRespForOrderDto(outletRespForOrderDto);
                     outletReportResponsesList.add(outletReportResponse);
@@ -579,7 +561,8 @@ public class ReportServices {
         outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
-    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -593,9 +576,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
-                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList) {
+                if (Objects.equals(outletRespForOrderDto.getId(), entry.getKey())) {
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
                     outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndMemberIdAndOrderMedium(entry.getKey(), memberId, orderMedium));
                     outletReportResponse.setTotalSales(entry.getValue());
@@ -608,12 +591,13 @@ public class ReportServices {
         outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
-    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByProductiveStatus(Long memberId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
-        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatusAndSalesLevelNot(memberId, orderCallStatus, SalesLevel.WAREHOUSE,pageable);
+        Page<OrderEntity> orderEntityPage = orderRepository.findByMemberIdAndOrderCallStatusAndSalesLevelNot(memberId, orderCallStatus, SalesLevel.WAREHOUSE, pageable);
         log.info("api called findByMemberIdAndOrderCallStatus");
         List<BeetReportResponse> beetReportResponsesList = new ArrayList<>();
         for (OrderEntity order : orderEntityPage.getContent()) {
@@ -622,9 +606,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndMemberIdAndOrderCallStatus(entry.getKey(), memberId, orderCallStatus));
                     beetReportResponse.setTotalSales(entry.getValue());
@@ -637,7 +621,8 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
-    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByMemberIdByOrderMedium(Long memberId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -651,9 +636,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndMemberIdAndOrderMedium(entry.getKey(), memberId, orderMedium));
                     beetReportResponse.setTotalSales(entry.getValue());
@@ -668,7 +653,7 @@ public class ReportServices {
     }
 
     //Client Fmcg reports
-    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus,int page, int pageSize, String sortBy, String sortDirection){
+    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -682,9 +667,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
-                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList) {
+                if (Objects.equals(outletRespForOrderDto.getId(), entry.getKey())) {
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
                     outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndClientFmcgIdAndOrderCallStatus(entry.getKey(), clientFmcgId, orderCallStatus));
                     outletReportResponse.setTotalSales(entry.getValue());
@@ -697,7 +682,8 @@ public class ReportServices {
         outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
-    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<OutletReportResponse> getAllOrderByEachOutletByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachOutletByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -711,9 +697,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<OutletRespForOrderDto> outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
-                if(Objects.equals(outletRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList) {
+                if (Objects.equals(outletRespForOrderDto.getId(), entry.getKey())) {
                     OutletReportResponse outletReportResponse = new OutletReportResponse();
                     outletReportResponse.setTotalOrder(orderRepository.countByOutletIdAndClientFmcgIdAndOrderMedium(entry.getKey(), clientFmcgId, orderMedium));
                     outletReportResponse.setTotalSales(entry.getValue());
@@ -726,7 +712,8 @@ public class ReportServices {
         outletReportResponsesList.sort(Comparator.comparingDouble(OutletReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, outletReportResponsesList);
     }
-    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus,int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByProductiveStatus(Long clientFmcgId, OrderCallStatus orderCallStatus, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -740,9 +727,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndClientFmcgIdAndOrderCallStatus(entry.getKey(), clientFmcgId, orderCallStatus));
                     beetReportResponse.setTotalSales(entry.getValue());
@@ -755,7 +742,8 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
-    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium,int page, int pageSize, String sortBy, String sortDirection){
+
+    public PaginatedResp<BeetReportResponse> getAllOrderByEachBeetByClientFmcgIdByOrderMedium(Long clientFmcgId, OrderMedium orderMedium, int page, int pageSize, String sortBy, String sortDirection) {
         log.info("inside of getAllProductiveOrderByEachBeetByMemberId function in report controller");
         Map<Long, Double> outletOrderMap = new HashMap<>();
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -769,9 +757,9 @@ public class ReportServices {
         Set<Long> outletIds = outletOrderMap.keySet();
         List<BeetRespForOrderDto> beetRespForOrderDtoList = productServiceClient.getBeets(outletIds);
         log.info("going for loop");
-        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()){
-            for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
-                if(Objects.equals(beetRespForOrderDto.getId(), entry.getKey())){
+        for (Map.Entry<Long, Double> entry : outletOrderMap.entrySet()) {
+            for (BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList) {
+                if (Objects.equals(beetRespForOrderDto.getId(), entry.getKey())) {
                     BeetReportResponse beetReportResponse = new BeetReportResponse();
                     beetReportResponse.setTotalOrder(orderRepository.countByBeetIdAndClientFmcgIdAndOrderMedium(entry.getKey(), clientFmcgId, orderMedium));
                     beetReportResponse.setTotalSales(entry.getValue());
@@ -784,6 +772,7 @@ public class ReportServices {
         beetReportResponsesList.sort(Comparator.comparingDouble(BeetReportResponse::getTotalOrder).reversed());
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, beetReportResponsesList);
     }
+
     public OrderResponse mapToOrderResponse(OrderEntity orderEntity) {
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setOrderId(orderEntity.getId());
@@ -820,6 +809,7 @@ public class ReportServices {
         orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
     }
+
     public String getPriceType(SalesLevel salesLevel) {
         log.info("Get price type for sales level: {}", salesLevel);
         return switch (salesLevel) {
@@ -835,6 +825,7 @@ public class ReportServices {
         log.info("Get product price with product id: {} and price type: {}", productId, priceType);
         return productServiceClient.getProductPrice(productId, priceType);
     }
+
     private SampleRes mapToSampleRes(SamplesEntity sample) {
         SampleRes sampleRes = new SampleRes();
         sampleRes.setId(sample.getId());
@@ -851,5 +842,59 @@ public class ReportServices {
             sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
         }
         return sampleRes;
+    }
+
+    public List<MemberSalesResponse> totalSalesByDateAndSalesLevelWithGroupByMembers(ReportsRequest reportsRequest) {
+        log.info("Get overall sales by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by MemberId and calculate Total Sales per member");
+        Map<Long, Double> memberSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getMemberId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        return memberSalesMap.entrySet().stream().map(entry -> buildMemberSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(MemberSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
+                .collect(Collectors.toList());
+    }
+
+    private MemberSalesResponse buildMemberSalesResponse(Long memberId, Double totalSales) {
+        log.info("Get member with member id: {}", memberId);
+        MemberGetDto member = externalRestService.getMember(memberId);
+        log.info("Making Response with MemberId, Member Name & total sales");
+        return new MemberSalesResponse(memberId, member.getFirstName() + " " + member.getLastName(), totalSales);
+    }
+
+    public List<ProductSalesResponse> totalSalesByDateAndSalesLevelWithGroupByProduct(ReportsRequest reportsRequest, Long memberId) {
+        log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getProductId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        return productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
+                .collect(Collectors.toList());
+    }
+    private ProductSalesResponse buildProductSalesResponse(Long productId, Double totalSales) {
+        log.info("Get product with product id: {}", productId);
+        ProductRes product = productServiceClient.getProduct(productId);
+        log.info("Making Response with ProductId, Product Name & total sales");
+        return new ProductSalesResponse(productId, product.getName(), totalSales);
+    }
+
+    public List<MemberSalesResponse> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers(ReportsRequest reportsRequest,Long reportingManagerId) {
+        log.info("Fetch list of Members Ids by Reporting manager");
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
+        log.info("Fetch order by Start date and End Date And Sales level and members-list under Reporting manager");
+        List<OrderEntity> orderEntityList =orderRepository.findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by memberId and calculate total sales per member");
+        Map<Long, Double> memberSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getMemberId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        return memberSalesMap.entrySet().stream().map(entry -> buildMemberSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(MemberSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
+                .collect(Collectors.toList());
     }
 }
