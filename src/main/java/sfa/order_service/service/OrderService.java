@@ -214,9 +214,10 @@ public class OrderService {
             transactionController.createTransaction(transactionRequest);
             orderResponseList.add(entityToDto(entity, message));
             InventoryUpdateRequest inventoryUpdateRequest = new InventoryUpdateRequest();
-            inventoryUpdateRequest.setQuantitySold((long) orderEntity.getQuantity());
-            inventoryUpdateRequest.setSalesLevel(orderEntity.getSalesLevel());
-            externalRestService.updateInventory(orderEntity.getClientFmcgId(), orderEntity.getProductId(), new InventoryUpdateRequest());
+            inventoryUpdateRequest.setQuantitySold((long) orderRequest.getQuantity());
+            inventoryUpdateRequest.setSalesLevel(orderRequest.getSalesLevel());
+            inventoryUpdateRequest.setClientId(orderRequest.getClientId());
+            externalRestService.updateInventory(orderEntity.getClientFmcgId(), orderEntity.getProductId(), inventoryUpdateRequest);
         }
         return orderResponseList;
     }
