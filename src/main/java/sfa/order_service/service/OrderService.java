@@ -218,6 +218,7 @@ public class OrderService {
             inventoryUpdateRequest.setSalesLevel(orderRequest.getSalesLevel());
             inventoryUpdateRequest.setClientId(orderRequest.getClientId());
             externalRestService.updateInventory(orderEntity.getClientFmcgId(), orderEntity.getProductId(), inventoryUpdateRequest);
+
         }
         return orderResponseList;
     }
