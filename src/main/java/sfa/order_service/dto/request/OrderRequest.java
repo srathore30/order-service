@@ -16,6 +16,9 @@ import java.util.Date;
 public class OrderRequest {
     private Long productId;
     private int quantity;
+    private Long beetLogId;
+    private Long doctorLogId;
+    private Long clientLogId;
     @Enumerated(EnumType.STRING)
     private SalesLevel salesLevel;
     private Long clientId;

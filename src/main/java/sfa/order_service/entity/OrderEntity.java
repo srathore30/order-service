@@ -24,6 +24,9 @@ public class OrderEntity extends BaseEntity {
     private SalesLevel salesLevel;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    private Long beetLogId;
+    private Long doctorLogId;
+    private Long clientLogId;
     private String invoiceNumber;
     private Long productId;
     private Long regionId;

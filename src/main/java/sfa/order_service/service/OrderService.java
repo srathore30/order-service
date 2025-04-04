@@ -314,6 +314,9 @@ public class OrderService {
         orderEntity.setClientFmcgId(request.getClientId());
         orderEntity.setQuantity(request.getQuantity());
         orderEntity.setSalesLevel(request.getSalesLevel());
+        orderEntity.setBeetLogId(request.getBeetLogId());
+        orderEntity.setClientLogId(request.getClientLogId());
+        orderEntity.setDoctorLogId(request.getDoctorLogId());
         orderEntity.setBundleType(request.getBundleType());
         orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
@@ -414,6 +417,9 @@ public class OrderService {
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());
+        orderResponse.setBeetLogId(orderEntity.getBeetLogId());
+        orderResponse.setClientLogId(orderEntity.getClientLogId());
+        orderResponse.setDoctorLogId(orderEntity.getDoctorLogId());
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());

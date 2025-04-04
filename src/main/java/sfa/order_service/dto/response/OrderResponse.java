@@ -45,4 +45,6 @@ public class OrderResponse {
     private String remarks;
     private String discountCode;
     private Double priceAfterDiscount;
-}
+    private Long beetLogId;
+    private Long doctorLogId;
+    private Long clientLogId;}

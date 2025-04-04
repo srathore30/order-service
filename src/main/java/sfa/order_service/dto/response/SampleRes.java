@@ -13,6 +13,9 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SampleRes {
     MemberGetDto memberResponse;
+    Long beetLogId;
+    Long doctorLogId;
+    Long clientLogId;
     DoctorRes doctorRes;
     OutletRespForOrderDto outletRespForOrderDto;
     ClientFMCGResponse clientFMCGResponse;
