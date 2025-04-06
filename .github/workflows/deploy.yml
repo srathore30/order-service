@@ -90,25 +90,21 @@ jobs:
             else
               echo "No service running on port 9092"
             fi
-
             echo "Setting execution permission..."
             chmod +x orderStartUp.sh
+            ./orderStartUp.sh
+            echo "Service started. Monitoring logs..."
 
-            echo "Starting service with nohup..."
-            nohup ./orderStartUp.sh > nohup.out 2>&1 &
-
-            echo "Waiting for Tomcat to start..."
-            sleep 2
+            # Start tail in background and capture its PID
             tail -f nohup.out &
-
             TAIL_PID=$!
+
+            # Monitor the log line by line
             while read LINE; do
               echo "$LINE"
               if [[ "$LINE" == *"Tomcat started on port 9092 (http) with context path '/order-service'"* ]]; then
-                echo "✅ Tomcat started — stopping log stream (tail PID: $TAIL_PID)"
+                echo "✅ Detected Tomcat startup — killing tail (PID: $TAIL_PID)"
                 kill $TAIL_PID
                 break
               fi
             done < <(tail -f nohup.out)
-
-            echo "🚀 Deployment successful!"
