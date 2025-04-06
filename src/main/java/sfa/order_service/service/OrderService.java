@@ -18,6 +18,7 @@ import sfa.order_service.entity.*;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.enums.TransactionType;
+import sfa.order_service.exception.BusinessServiceException;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.*;
@@ -218,7 +219,6 @@ public class OrderService {
             inventoryUpdateRequest.setSalesLevel(orderRequest.getSalesLevel());
             inventoryUpdateRequest.setClientId(orderRequest.getClientId());
             externalRestService.updateInventory(orderEntity.getClientFmcgId(), orderEntity.getProductId(), inventoryUpdateRequest);
-
         }
         return orderResponseList;
     }
