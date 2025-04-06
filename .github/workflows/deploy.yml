@@ -82,23 +82,19 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             cd ~/sfa-service/order-service/
-            echo "Checking if service is running on port 9092..."
             PID=$(sudo lsof -n -i:9092 | awk 'NR==2 {print $2}')
             if [ -n "$PID" ]; then
               echo "Killing running service with PID: $PID"
               sudo kill -9 $PID
-            else
-              echo "No service running on port 9092"
             fi
-            echo "Setting execution permission..."
             chmod +x orderStartUp.sh
             ./orderStartUp.sh
             echo "Service started. Monitoring logs..."
-
+            
             # Start tail in background and capture its PID
             tail -f nohup.out &
             TAIL_PID=$!
-
+            
             # Monitor the log line by line
             while read LINE; do
               echo "$LINE"
