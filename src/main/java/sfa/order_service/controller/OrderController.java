@@ -25,9 +25,6 @@ public class OrderController {
         return new ResponseEntity<>(orderService.createOrder(orderRequest, salesType), HttpStatus.OK);
     }
 
-    @GetMapping("/demo")
-    public void demo(){
-    }
     @GetMapping("/orders/{orderId}")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<PaginatedResp<OrderResponse>> getOrderById(@PathVariable Long orderId,
