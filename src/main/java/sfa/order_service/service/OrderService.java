@@ -94,8 +94,8 @@ public class OrderService {
         if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
             invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
         } else {
-            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
-        }
+            String unFormattedInvoiceNumber = currentYear + invoiceMaster.getCode();
+            invoiceNumber = currentSerialNumber + unFormattedInvoiceNumber;        }
         log.info("Creating order: {}", request);
         OrderEntity orderEntity = dtoToEntity(request, salesType);
         OrderInvoice orderInvoice = new OrderInvoice();
@@ -138,8 +138,8 @@ public class OrderService {
         if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
             invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
         } else {
-            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
-        }
+            String unFormattedInvoiceNumber = currentYear + invoiceMaster.getCode();
+            invoiceNumber = currentSerialNumber + unFormattedInvoiceNumber;        }
         OrderInvoice orderInvoice = new OrderInvoice();
         orderInvoice.setInvoiceDate(new Date());
         orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());
@@ -186,7 +186,8 @@ public class OrderService {
         if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
             invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
         } else {
-            invoiceNumber = currentSerialNumber + currentYear + invoiceMaster.getCode();
+            String unFormattedInvoiceNumber = currentYear + invoiceMaster.getCode();
+            invoiceNumber = currentSerialNumber + unFormattedInvoiceNumber;
         }
         OrderInvoice orderInvoice = new OrderInvoice();
         orderInvoice.setInvoiceDate(new Date());
