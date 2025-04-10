@@ -29,4 +29,6 @@ public class DiscountRequest {
     private Integer bogoOfferQuantity;  // e.g., Buy 2
     private Integer bogoFreeQuantity;   // e.g., Get 1
     private Status status;
+    private String  state;
+    private String  city;
 }

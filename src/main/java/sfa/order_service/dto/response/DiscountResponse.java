@@ -30,4 +30,6 @@ public class DiscountResponse {
     private Integer bogoFreeQuantity;
     private String productName;
     private Status status;
+    private String  state;
+    private String  city;
 }
