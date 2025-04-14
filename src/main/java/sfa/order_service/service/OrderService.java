@@ -441,6 +441,7 @@ public class OrderService {
         ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
+        orderResponse.setClientFMCGResponse(client);
         orderResponse.setDiscountCode(orderEntity.getDiscountCode());
         orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
