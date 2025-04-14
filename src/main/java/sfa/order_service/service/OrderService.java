@@ -443,6 +443,7 @@ public class OrderService {
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         orderResponse.setClientFMCGResponse(client);
         orderResponse.setDiscountCode(orderEntity.getDiscountCode());
+
         orderResponse.setPriceAfterDiscount(orderEntity.getPriceAfterDiscount());
         return orderResponse;
     }
