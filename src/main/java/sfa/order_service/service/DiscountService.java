@@ -40,6 +40,8 @@ public class DiscountService {
         discountEntity.setValidTo(request.getValidTo());
         discountEntity.setProductId(request.getProductId());
         discountEntity.setStatus(request.getStatus());
+        discountEntity.setCity(request.getCity());
+        discountEntity.setState(request.getState());
 
         // Conditional fields based on DiscountType
         switch (request.getDiscountType()) {
@@ -120,6 +122,8 @@ public class DiscountService {
         discountResponse.setBogoOfferQuantity(discountEntity.getBogoOfferQuantity());
         discountResponse.setBogoFreeQuantity(discountEntity.getBogoFreeQuantity());
         discountResponse.setStatus(discountEntity.getStatus());
+        discountResponse.setCity(discountEntity.getCity());
+        discountResponse.setState(discountEntity.getState());
         return discountResponse;
     }
 
