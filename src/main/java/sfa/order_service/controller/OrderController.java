@@ -119,10 +119,10 @@ public class OrderController {
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 
-    @GetMapping("/getAllSampleByClientLogId")
+    @GetMapping("/getAllSampleByDoctorLogId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<OrderAndSampleRes> getAllSampleByClientLogId(@RequestParam Long doctorLogId){
-        OrderAndSampleRes orderResponseList = orderService.getAllSampleByDoctorLogId(doctorLogId);
+    public ResponseEntity<OrderAndSampleRes> getAllSampleByDoctorLogId(@RequestParam Long clientLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllSampleByDoctorLogId(clientLogId);
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 
