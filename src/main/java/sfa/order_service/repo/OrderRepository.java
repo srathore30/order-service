@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.enums.SalesLevel;
 
 import java.util.Date;
@@ -17,6 +18,8 @@ import java.util.Set;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+   List<OrderEntity> findByBeetLogId(Long beetLogId);
+   List<OrderEntity> findByClientLogId(Long clientLogId);
    Page<OrderEntity> findById(Long orderId, Pageable pageable);
 
    @Query("SELECT o FROM OrderEntity o WHERE o.invoiceNumber = :invoiceNumber")

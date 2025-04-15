@@ -17,6 +17,9 @@ import java.util.Set;
 @Repository
 public interface SamplesRepo extends JpaRepository<SamplesEntity, Long> {
     Page<SamplesEntity> findByMemberId(Long memberId, Pageable pageable);
+    List<SamplesEntity> findByBeetLogId(Long beetLogId);
+    List<SamplesEntity> findByDoctorLogId(Long doctorLogId);
+    List<SamplesEntity> findByClientLogId(Long clientLogId);
     @Query("SELECT o FROM SamplesEntity o WHERE o.memberId IN :memberIds")
     Page<SamplesEntity> findByMembersIdList(@Param("memberIds") Set<Long> memberIds, Pageable pageable);
     List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndOutletId(Date startDate, Date endDate, Long memberId, Long outletId);

@@ -37,6 +37,7 @@ public class OrderService {
     private final DiscountRepo discountRepo;
     private final InvoiceMasterRepo invoiceMasterRepo;
     private final OrderRepository orderRepository;
+    private final SamplesRepo samplesRepo;
     private final ProductServiceClient productServiceClient;
     private final ExternalRestService externalRestService;
     private final TransactionController transactionController;
@@ -53,6 +54,27 @@ public class OrderService {
             default ->
                     throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
         };
+    }
+
+    public OrderAndSampleRes getAllOrderAndSampleByBeetLogId(Long beetLogId){
+        List<OrderEntity> orderEntityList = orderRepository.findByBeetLogId(beetLogId);
+        List<SamplesEntity> samplesEntityList = samplesRepo.findByBeetLogId(beetLogId);
+        List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+        List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
+        return new OrderAndSampleRes(orderResponseList, sampleResList);
+    }
+    public OrderAndSampleRes getAllOrderAndSampleByClientLogId(Long clientLogId){
+        List<OrderEntity> orderEntityList = orderRepository.findByClientLogId(clientLogId);
+        List<SamplesEntity> samplesEntityList = samplesRepo.findByClientLogId(clientLogId);
+        List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+        List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
+        return new OrderAndSampleRes(orderResponseList, sampleResList);
+    }
+
+    public OrderAndSampleRes getAllSampleByDoctorLogId(Long doctorLogId){
+        List<SamplesEntity> samplesEntityList = samplesRepo.findByDoctorLogId(doctorLogId);
+        List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
+        return new OrderAndSampleRes(new ArrayList<>(), sampleResList);
     }
 
     public Double getProductPrice(Long productId, String priceType) {
@@ -684,4 +706,26 @@ public class OrderService {
         List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }
+
+    private SampleRes mapToSampleDto(SamplesEntity sample){
+        SampleRes sampleRes = new SampleRes();
+        sampleRes.setId(sample.getId());
+        sampleRes.setBeetLogId(sample.getBeetLogId());
+        sampleRes.setClientLogId(sample.getClientLogId());
+        sampleRes.setDoctorLogId(sample.getDoctorLogId());
+        sampleRes.setBundleType(sample.getBundleType());
+        sampleRes.setSampleDate(sample.getSampleDate());
+        sampleRes.setProductRes(productServiceClient.getProduct(sample.getProductId()));
+        sampleRes.setQuantity(sample.getQuantity());
+        sampleRes.setMemberResponse(externalRestService.getMember(sample.getMemberId()));
+        if(sample.getDoctorId() != null){
+            sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
+        } else if (sample.getClientFmcgId() != null) {
+            sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
+        }else if(sample.getOutletId() != null){
+            sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
+        }
+        return sampleRes;
+    }
+
 }

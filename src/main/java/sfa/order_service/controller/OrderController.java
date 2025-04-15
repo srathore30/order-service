@@ -105,6 +105,27 @@ public class OrderController {
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 
+    @GetMapping("/getAllOrderAndSampleByBeetLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllOrderAndSampleByBeetLogId(@RequestParam Long beetLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllOrderAndSampleByBeetLogId(beetLogId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllOrderAndSampleByClientLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllOrderAndSampleByClientLogId(@RequestParam Long clientLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllOrderAndSampleByClientLogId(clientLogId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllSampleByClientLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllSampleByClientLogId(@RequestParam Long doctorLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllSampleByDoctorLogId(doctorLogId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
     @PutMapping("/updateOrderInBulk")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OrderUpdateResponse>> updateOrderInBulk(@RequestBody OrderBulkUpdateRequest orderUpdateRequest){
