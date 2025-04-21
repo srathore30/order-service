@@ -836,9 +836,9 @@ public class ReportServices {
         sampleRes.setMemberResponse(externalRestService.getMember(sample.getMemberId()));
         if (sample.getDoctorId() != null) {
             sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
-        } else if (sample.getClientFmcgId() != null) {
+        } if (sample.getClientFmcgId() != null) {
             sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
-        } else if (sample.getOutletId() != null) {
+        } if (sample.getOutletId() != null) {
             sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
         }
         return sampleRes;
