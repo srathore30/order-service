@@ -85,10 +85,14 @@ sampleInventory:
     url: http://localhost:9095/inventory-service/sample-inventory/getInventoryByMemberAndProductId
   deduct:
     url: http://localhost:9095/inventory-service/sample-inventory/updateSampleInventoryQuantity
+  customUpdate:
+    url: http://localhost:9095/inventory-service/sample-inventory/updateCustomInventory
 
 inventory:
   update:
-      url: http://localhost:9095/inventory-service/inventory/sync/update
+    url: http://localhost:9095/inventory-service/inventory/sync/update
+  customUpdate:
+    url: http://localhost:9095/inventory-service/inventory/updateCustomInventory
 
 name:
   state:

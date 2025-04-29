@@ -18,7 +18,11 @@ public class CorsConfig implements WebMvcConfigurer {
                         "https://staging.prism-sfa-dev.net",
                         "https://staging.prism-sfa-dev.net/order-service",
                         "http://staging.prism-sfa-dev.net",
-                        "https://www.dev.prism-sfa-dev.net"
+                        "https://www.dev.prism-sfa-dev.net",
+                        "https://test-pharma.prism-sfa-dev.net/",
+                        "https://www.test-pharma.prism-sfa-dev.net/",
+                        "https://test-fmcg.prism-sfa-dev.net/",
+                        "https://www.test-fmcg.prism-sfa-dev.net/"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

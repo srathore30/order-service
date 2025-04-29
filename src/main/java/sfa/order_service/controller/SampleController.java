@@ -2,6 +2,7 @@ package sfa.order_service.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sfa.order_service.constant.UserRole;
@@ -26,6 +27,13 @@ public class SampleController {
         log.info("Creating a sample: {}", sampleReq);
         SampleRes response = sampleServices.createSample(sampleReq);
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/rollBackSampleAndInventory")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<Void> rollBackSampleAndInventory(@RequestParam List<Long> sampleIds){
+        sampleServices.rollBackSampleAndInventory(sampleIds);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{id}")

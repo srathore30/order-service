@@ -14,8 +14,11 @@ import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
 import sfa.order_service.dto.request.InventoryUpdateRequest;
+import sfa.order_service.dto.request.UpdateCustomInventoryReq;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.exception.BusinessServiceException;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -42,8 +45,13 @@ public class ExternalRestService {
     private String getSampleInventoryById;
     @Value("${sampleInventory.deduct.url}")
     private String deductSampleInventoryById;
+    @Value("${sampleInventory.customUpdate.url}")
+    private String customUpdateSampleUrl;
     @Value("${inventory.update.url}")
     private String inventoryUpdateUrl;
+    @Value("${inventory.customUpdate.url}")
+    private String customUpdateUrl;
+
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
         log.info("Token: {}", TokenContext.getToken());
@@ -78,7 +86,7 @@ public class ExternalRestService {
             String url = getSampleInventoryById + "/" + memberId + "/" + productId;
             log.info("URL: {}", url);
             HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-            log.info("Fetch inventiry details with authorization header");
+            log.info("Fetch inventory details with authorization header");
             ResponseEntity<SampleInventoryResponse> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, SampleInventoryResponse.class);
             return response.getBody();
         }catch (Exception e){
@@ -86,6 +94,33 @@ public class ExternalRestService {
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }
+
+    public void rollBackInventoryForOrder(List<UpdateCustomInventoryReq> updateCustomInventoryReqList) {
+        try{
+            log.info("RollBackInventory from external rest service");
+            String url = customUpdateUrl;
+            log.info("URL: {}", url);
+            HttpEntity<List<UpdateCustomInventoryReq>> requestEntity = new HttpEntity<>(updateCustomInventoryReqList, createHeaders());
+            restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+
+    public void rollBackInventoryForSample(List<UpdateCustomInventoryReq> updateCustomInventoryReqList) {
+        try{
+            log.info("RollBackInventory for sample from external rest service");
+            String url = customUpdateSampleUrl;
+            log.info("URL: {}", url);
+            HttpEntity<List<UpdateCustomInventoryReq>> requestEntity = new HttpEntity<>(updateCustomInventoryReqList, createHeaders());
+            restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+
     public void deductSampleInventory(Long id, Integer quantity) {
         try {
             log.info("While fetching deductSampleInventory from external rest service");

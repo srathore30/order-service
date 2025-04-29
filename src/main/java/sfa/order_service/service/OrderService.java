@@ -63,6 +63,21 @@ public class OrderService {
         List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
         return new OrderAndSampleRes(orderResponseList, sampleResList);
     }
+
+    @Transactional
+    public void rollBackOrderAndInventory(List<Long> orderIds){
+        List<OrderEntity> orderEntityList = orderRepository.findAllById(orderIds);
+        List<UpdateCustomInventoryReq> updateCustomInventoryReqList = new ArrayList<>();
+        for(OrderEntity orderEntity : orderEntityList){
+            UpdateCustomInventoryReq updateCustomInventoryReq = new UpdateCustomInventoryReq();
+            updateCustomInventoryReq.setQuantity(orderEntity.getQuantity());
+            updateCustomInventoryReq.setProductId(orderEntity.getProductId());
+            updateCustomInventoryReq.setClientFmcgId(orderEntity.getClientFmcgId());
+            updateCustomInventoryReqList.add(updateCustomInventoryReq);
+        }
+        externalRestService.rollBackInventoryForOrder(updateCustomInventoryReqList);
+        orderRepository.deleteAllById(orderIds);
+    }
     public OrderAndSampleRes getAllOrderAndSampleByClientLogId(Long clientLogId){
         List<OrderEntity> orderEntityList = orderRepository.findByClientLogId(clientLogId);
         List<SamplesEntity> samplesEntityList = samplesRepo.findByClientLogId(clientLogId);

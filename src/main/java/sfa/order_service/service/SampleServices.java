@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.Status;
 import sfa.order_service.dto.request.SampleReq;
+import sfa.order_service.dto.request.UpdateCustomInventoryReq;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.dto.response.SampleInventoryResponse;
 import sfa.order_service.dto.response.SampleRes;
+import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.SamplesRepo;
@@ -61,6 +63,22 @@ public class SampleServices {
             externalRestService.deductSampleInventory(sampleInventoryResponse.getId(), newQuantity);
         }
         return mapToDto(samplesRepo.save(optionalSamplesEntity.get()));
+    }
+
+
+    @Transactional
+    public void rollBackSampleAndInventory(List<Long> sampleIds){
+        List<SamplesEntity> samplesEntityList = samplesRepo.findAllById(sampleIds);
+        List<UpdateCustomInventoryReq> updateCustomInventoryReqList = new ArrayList<>();
+        for(SamplesEntity samplesEntity : samplesEntityList){
+            UpdateCustomInventoryReq updateCustomInventoryReq = new UpdateCustomInventoryReq();
+            updateCustomInventoryReq.setQuantity(samplesEntity.getQuantity());
+            updateCustomInventoryReq.setProductId(samplesEntity.getProductId());
+            updateCustomInventoryReq.setMemberId(samplesEntity.getMemberId());
+            updateCustomInventoryReqList.add(updateCustomInventoryReq);
+        }
+        externalRestService.rollBackInventoryForSample(updateCustomInventoryReqList);
+        samplesRepo.deleteAllById(sampleIds);
     }
 
     public SampleRes getSampleById(Long sampleId){
