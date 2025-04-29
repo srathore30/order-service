@@ -77,6 +77,7 @@ public class OrderService {
         }
         externalRestService.rollBackInventoryForOrder(updateCustomInventoryReqList);
         orderRepository.deleteAllById(orderIds);
+        transactionRepository.deleteAllByOrderId(orderIds);
     }
     public OrderAndSampleRes getAllOrderAndSampleByClientLogId(Long clientLogId){
         List<OrderEntity> orderEntityList = orderRepository.findByClientLogId(clientLogId);

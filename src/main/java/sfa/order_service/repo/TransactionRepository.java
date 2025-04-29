@@ -10,6 +10,8 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
 //   Page<OrderEntity> findById(Long orderId, Pageable pageable);
    List<TransactionEntity> findByClientId(Long clientId);
+   void deleteAllByOrderId(List<Long> ids);
+
    TransactionEntity findByClientIdAndOrderId(Long clientId, Long orderId);
 
 }
