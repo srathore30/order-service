@@ -31,7 +31,7 @@ public class SampleController {
 
     @DeleteMapping("/rollBackSampleAndInventory")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<Void> rollBackSampleAndInventory(@RequestParam List<Long> sampleIds){
+    public ResponseEntity<Void> rollBackSampleAndInventory(@RequestBody List<Long> sampleIds){
         sampleServices.rollBackSampleAndInventory(sampleIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
