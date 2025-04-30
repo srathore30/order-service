@@ -68,6 +68,7 @@ public class SampleServices {
 
     @Transactional
     public void rollBackSampleAndInventory(List<Long> sampleIds){
+        log.info("inside of rollBackSampleAndInventory");
         List<SamplesEntity> samplesEntityList = samplesRepo.findAllById(sampleIds);
         List<UpdateCustomInventoryReq> updateCustomInventoryReqList = new ArrayList<>();
         for(SamplesEntity samplesEntity : samplesEntityList){
@@ -77,7 +78,9 @@ public class SampleServices {
             updateCustomInventoryReq.setMemberId(samplesEntity.getMemberId());
             updateCustomInventoryReqList.add(updateCustomInventoryReq);
         }
+        log.info("reverting inventory");
         externalRestService.rollBackInventoryForSample(updateCustomInventoryReqList);
+        log.info("reverting samples");
         samplesRepo.deleteAllById(sampleIds);
     }
 
