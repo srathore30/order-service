@@ -21,6 +21,7 @@ import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.SamplesRepo;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -81,7 +82,8 @@ public class SampleServices {
         log.info("reverting inventory");
         externalRestService.rollBackInventoryForSample(updateCustomInventoryReqList);
         log.info("reverting samples");
-        samplesRepo.deleteAllById(sampleIds);
+        Set<Long> uniqueSampleIds = new HashSet<>(sampleIds);
+        samplesRepo.deleteAllById(uniqueSampleIds);
     }
 
     public SampleRes getSampleById(Long sampleId){
