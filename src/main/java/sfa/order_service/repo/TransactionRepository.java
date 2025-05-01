@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import sfa.order_service.entity.TransactionEntity;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -11,5 +12,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 //   Page<OrderEntity> findById(Long orderId, Pageable pageable);
    List<TransactionEntity> findByClientId(Long clientId);
    TransactionEntity findByClientIdAndOrderId(Long clientId, Long orderId);
+   List<TransactionEntity> findByMemeberIdAndTransactionDateBetween(Long memeberId, Date startDate, Date endDate);
 
 }

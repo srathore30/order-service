@@ -10,6 +10,9 @@ import sfa.order_service.entity.TransactionEntity;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.TransactionRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -31,6 +34,8 @@ public class TransactionService {
         response.setClientId(transactionEntity.getClientId());
         response.setTransactionType(transactionEntity.getTransactionType());
         response.setOrderId(transactionEntity.getOrderId());
+        response.setMemberId(transactionEntity.getMemeberId());
+        response.setTransactionDate(transactionEntity.getTransactionDate());
         return response;
     }
 
@@ -71,4 +76,15 @@ public class TransactionService {
         transactionRepository.findById(id).orElseThrow(() -> new NoSuchElementFoundException(ApiErrorCodes.TRANSACTION_NOT_FOUND.getErrorCode(), ApiErrorCodes.TRANSACTION_NOT_FOUND.getErrorMessage()));
         return entityToDto(transactionRepository.findById(id).get());
     }
+
+    public List<TransactionResponse> getTransactionsByMemberIdAndDateBetween(TransactionRequest request) {
+        List<TransactionEntity> transactions = transactionRepository
+                .findByMemeberIdAndTransactionDateBetween(request.getMemberId(), request.getStartDate(), request.getEndDate());
+
+        return transactions.stream()
+                .map(this::entityToDto)
+                .collect(Collectors.toList());
+    }
+
+
 }

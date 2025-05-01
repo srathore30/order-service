@@ -1,6 +1,7 @@
 package sfa.order_service.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -10,6 +11,9 @@ import sfa.order_service.dto.request.TransactionRequest;
 import sfa.order_service.dto.response.TransactionResponse;
 import sfa.order_service.interceptor.UserAuthorization;
 import sfa.order_service.service.TransactionService;
+
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,6 +55,22 @@ public class TransactionController {
     public ResponseEntity<Void> deleteAllTransactions() {
         transactionService.deleteAllTransaction();
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/getTransactionsByMemberIdAndDateBetween")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByMemberIdAndDateBetween(
+            @RequestParam Long memberId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
+    ) {
+        TransactionRequest request = new TransactionRequest();
+        request.setMemberId(memberId);
+        request.setStartDate(startDate);
+        request.setEndDate(endDate);
+
+        List<TransactionResponse> response = transactionService.getTransactionsByMemberIdAndDateBetween(request);
+        return ResponseEntity.ok(response);
     }
 
 
