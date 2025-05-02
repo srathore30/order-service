@@ -10,6 +10,7 @@ import sfa.order_service.entity.TransactionEntity;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.TransactionRepository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class TransactionService {
         TransactionEntity entity = new TransactionEntity();
         entity.setTransactionAmount(request.getTransactionAmount());
         entity.setClientId(request.getClientId());
+        entity.setTransactionDate(new Date());
         entity.setTransactionType(request.getTransactionType());
         entity.setOrderId(request.getOrderId());
         return entity;
@@ -77,9 +79,9 @@ public class TransactionService {
         return entityToDto(transactionRepository.findById(id).get());
     }
 
-    public List<TransactionResponse> getTransactionsByMemberIdAndDateBetween(TransactionRequest request) {
+    public List<TransactionResponse> getTransactionsByMemberIdAndDateBetween(Long memberId, Date startDare, Date endDate) {
         List<TransactionEntity> transactions = transactionRepository
-                .findByMemeberIdAndTransactionDateBetween(request.getMemberId(), request.getStartDate(), request.getEndDate());
+                .findByMemeberIdAndTransactionDateBetween(memberId, startDare, endDate);
 
         return transactions.stream()
                 .map(this::entityToDto)

@@ -155,6 +155,7 @@ public class OrderService {
         transactionRequest.setTransactionAmount(finalPrice(request));
         transactionRequest.setTransactionType(TransactionType.DEBIT);
         transactionRequest.setOrderId(entity.getId());
+        transactionRequest.setMemberId(entity.getMemberId());
         log.info("create transaction after order creation");
         transactionController.createTransaction(transactionRequest);
         return entityToDto(entity, message);
@@ -202,6 +203,7 @@ public class OrderService {
             transactionRequest.setTransactionAmount(finalPrice(orderRequest));
             transactionRequest.setTransactionType(TransactionType.DEBIT);
             transactionRequest.setOrderId(entity.getId());
+            transactionRequest.setMemberId(entity.getMemberId());
             log.info("create transaction after order creation");
             transactionController.createTransaction(transactionRequest);
             orderResponseList.add(entityToDto(entity, message));
@@ -251,6 +253,7 @@ public class OrderService {
             transactionRequest.setTransactionAmount(finalPrice(orderRequest));
             transactionRequest.setTransactionType(TransactionType.DEBIT);
             transactionRequest.setOrderId(entity.getId());
+            transactionRequest.setMemberId(entity.getMemberId());
             log.info("create transaction after order creation");
             transactionController.createTransaction(transactionRequest);
             orderResponseList.add(entityToDto(entity, message));

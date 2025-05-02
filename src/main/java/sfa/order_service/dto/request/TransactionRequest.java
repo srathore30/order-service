@@ -17,6 +17,4 @@ public class TransactionRequest {
     private TransactionType transactionType;
     private Long orderId;
     private Long memberId;
-    private Date startDate;
-    private Date endDate;
 }

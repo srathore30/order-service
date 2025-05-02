@@ -64,12 +64,7 @@ public class TransactionController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
     ) {
-        TransactionRequest request = new TransactionRequest();
-        request.setMemberId(memberId);
-        request.setStartDate(startDate);
-        request.setEndDate(endDate);
-
-        List<TransactionResponse> response = transactionService.getTransactionsByMemberIdAndDateBetween(request);
+        List<TransactionResponse> response = transactionService.getTransactionsByMemberIdAndDateBetween(memberId, startDate, endDate);
         return ResponseEntity.ok(response);
     }
 
