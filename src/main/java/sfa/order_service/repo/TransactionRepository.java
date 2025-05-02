@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import sfa.order_service.entity.TransactionEntity;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -20,5 +21,6 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
    @Query("DELETE FROM TransactionEntity t WHERE t.orderId IN :ids")
    void deleteAllByOrderId(@Param("ids") List<Long> ids);
    TransactionEntity findByClientIdAndOrderId(Long clientId, Long orderId);
+   List<TransactionEntity> findByMemeberIdAndTransactionDateBetween(Long memeberId, Date startDate, Date endDate);
 
 }

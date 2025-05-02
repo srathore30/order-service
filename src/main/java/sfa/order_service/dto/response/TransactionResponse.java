@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.enums.TransactionType;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class TransactionResponse {
@@ -11,4 +13,7 @@ public class TransactionResponse {
     private Long clientId;
     private TransactionType transactionType;
     private Long orderId;
+    private Long memberId;
+    private Date transactionDate;
+
 }

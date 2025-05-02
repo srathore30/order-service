@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.enums.TransactionType;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class TransactionRequest {
@@ -14,4 +16,7 @@ public class TransactionRequest {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
     private Long orderId;
+    private Long memberId;
+    private Date startDate;
+    private Date endDate;
 }
