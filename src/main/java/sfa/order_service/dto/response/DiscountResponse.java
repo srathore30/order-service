@@ -19,6 +19,7 @@ public class DiscountResponse {
     private String discountCode;
     private String description;
     private Double percentage;
+    private Long discountId;
     private Double fixedAmount;
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;

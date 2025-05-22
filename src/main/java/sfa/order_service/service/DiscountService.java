@@ -114,6 +114,7 @@ public class DiscountService {
         discountResponse.setFixedAmount(discountEntity.getFixedAmount());
         discountResponse.setDiscountType(discountEntity.getDiscountType());
         discountResponse.setProductId(discountEntity.getProductId());
+        discountResponse.setDiscountId(discountEntity.getId());
         ProductRes product = productServiceClient.getProduct(discountEntity.getProductId());
         discountResponse.setProductName(product.getName());
         discountResponse.setValidFrom(discountEntity.getValidFrom());
