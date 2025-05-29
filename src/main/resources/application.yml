@@ -72,6 +72,10 @@ outlets:
   getOutForReport:
     url: http://localhost:8080/getOutletForReportById
 
+combineTourPlan:
+  updateBjpAndCjpOrderValue:
+    url: http://localhost:8080/combine-tour-plan/updateBjpAndCjpOrderValue
+
 beets:
   getAllBeets:
     url: http://localhost:8080/getAllBeetByIds

@@ -232,11 +232,11 @@ public class OrderService {
         }
         OrderInvoice orderInvoice = new OrderInvoice();
         orderInvoice.setInvoiceDate(new Date());
-        orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());
         orderInvoice.setBeetId(request.getOrderRequestList().get(0).getBeetId());
-        orderInvoice.setSalesLevel(request.getOrderRequestList().get(0).getSalesLevel());
+        orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());
         orderInvoice.setMemberId(request.getOrderRequestList().get(0).getMemberId());
         orderInvoice.setClientFmcgId(request.getOrderRequestList().get(0).getClientId());
+        orderInvoice.setSalesLevel(request.getOrderRequestList().get(0).getSalesLevel());
         orderInvoice.setInvoiceNumber(invoiceNumber);
         OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
         log.info("Creating order in bulk");
@@ -568,12 +568,19 @@ public class OrderService {
         if (orderUpdateRequest.getBundleType() !=  null) {
             orderEntity.setBundleType(orderUpdateRequest.getBundleType());
         }
+        Double oldPrice = orderEntity.getPrice();
         orderEntity.setQuantity(orderUpdateRequest.getQuantity());
         OrderRequest orderRequest = new OrderRequest();
         orderRequest.setQuantity(orderUpdateRequest.getQuantity());
         orderRequest.setProductId(orderEntity.getProductId());
         orderRequest.setSalesLevel(orderEntity.getSalesLevel());
         orderEntity.setPrice(finalPrice(orderRequest));
+        UpdateBjpAndDjpOrderValueReq updateBjpAndDjpOrderValueReq = new UpdateBjpAndDjpOrderValueReq();
+        updateBjpAndDjpOrderValueReq.setBjpId(orderEntity.getBeetLogId());
+        updateBjpAndDjpOrderValueReq.setCjpId(orderEntity.getClientLogId());
+        updateBjpAndDjpOrderValueReq.setOldPrice(oldPrice);
+        updateBjpAndDjpOrderValueReq.setNewPrice(orderEntity.getPrice());
+        externalRestService.updateBjpAndDjpOrderValue(updateBjpAndDjpOrderValueReq);
         orderRepository.save(orderEntity);
         OrderResponse orderResponse = entityToDto(orderEntity, "MSG");
         OrderUpdateResponse orderUpdateResponse = new OrderUpdateResponse();

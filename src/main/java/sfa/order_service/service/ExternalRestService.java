@@ -14,6 +14,7 @@ import sfa.order_service.Configs.TokenContext;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.request.ClientFMCGUpdateRequest;
 import sfa.order_service.dto.request.InventoryUpdateRequest;
+import sfa.order_service.dto.request.UpdateBjpAndDjpOrderValueReq;
 import sfa.order_service.dto.request.UpdateCustomInventoryReq;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.exception.BusinessServiceException;
@@ -51,6 +52,9 @@ public class ExternalRestService {
     private String inventoryUpdateUrl;
     @Value("${inventory.customUpdate.url}")
     private String customUpdateUrl;
+
+    @Value("${combineTourPlan.updateBjpAndCjpOrderValue.url}")
+    private String updateBjpAndCjpOrderValueUrl;
 
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
@@ -235,6 +239,19 @@ public class ExternalRestService {
             HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
             return response.getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+
+    public void updateBjpAndDjpOrderValue(UpdateBjpAndDjpOrderValueReq req) {
+        try {
+            log.info("While fetching updateBjpAndDjpOrderValue from external rest service");
+            String url = updateBjpAndCjpOrderValueUrl;
+            log.info("Async method to update client with authorization header");
+            HttpEntity<UpdateBjpAndDjpOrderValueReq> requestEntity = new HttpEntity<>(req, createHeaders());
+            restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Void.class);
         }catch (Exception e){
             log.info("Error occurred: " + e.getMessage());
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
