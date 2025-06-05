@@ -68,9 +68,4 @@ public class TransactionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/demo")
-    public void demo(){
-        
-    }
-
 }
