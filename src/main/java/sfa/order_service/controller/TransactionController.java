@@ -70,7 +70,7 @@ public class TransactionController {
 
     @GetMapping("/demo")
     public void demo(){
-        
+
     }
 
 }

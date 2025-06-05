@@ -15,7 +15,6 @@ pipeline {
         TEMP_PATH = "/home/ubuntu/sfa-service/order-service/temp"
         STARTUP_SCRIPT = "/tmp/orderStartUp.sh"
         WINSCP_PATH = "/root/sfa-service/order-service"
-        SERVICE_PORT = "9092"
     }
 
     stages {
@@ -61,7 +60,7 @@ pipeline {
 #!/bin/bash
 
 echo "[INFO] Checking for running service on port ${env.SERVICE_PORT}..."
-PID=\$(sudo lsof -t -i:${env.SERVICE_PORT})
+PID=\$(sudo lsof -t -i:9092)
 
 if [ -n "\$PID" ]; then
     echo "[INFO] Found running process with PID: \$PID. Killing it..."
