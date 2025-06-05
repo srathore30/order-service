@@ -67,10 +67,5 @@ public class TransactionController {
         List<TransactionResponse> response = transactionService.getTransactionsByMemberIdAndDateBetween(memberId, startDate, endDate);
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping("/demo")
-    public void demo(){
-
-    }
-
+    
 }
