@@ -56,10 +56,10 @@ pipeline {
                 sh """
                     echo "Generating startup script..."
 
-                    cat << EOF > ${env.STARTUP_SCRIPT}
+                    cat << 'EOF' > ${env.STARTUP_SCRIPT}
 #!/bin/bash
 
-echo "[INFO] Checking for running service on port ${env.SERVICE_PORT}..."
+echo "[INFO] Checking for running service on port 9093..."
 PID=\$(sudo lsof -t -i:9092)
 
 if [ -n "\$PID" ]; then
@@ -67,7 +67,7 @@ if [ -n "\$PID" ]; then
     sudo kill -9 \$PID
     echo "[INFO] Process killed."
 else
-    echo "[INFO] No process running on port ${env.SERVICE_PORT}."
+    echo "[INFO] No process running on port 9093."
 fi
 
 echo "[INFO] Starting new JAR..."
@@ -80,7 +80,7 @@ EOF
             }
         }
 
-        stage('Deploy & Upload') {
+        stage('Deploy to VPS') {
             steps {
                 sshagent([env.CREDENTIALS_ID]) {
                     sh """
@@ -113,15 +113,23 @@ EOF
 
                             echo "[INFO] Deployment complete."
                         '
-
-                        echo "[INFO] Creating WinSCP folder if needed..."
-                        ssh ${env.VPS_USER}@${env.VPS_HOST} 'mkdir -p ${WINSCP_PATH}'
-
-                        echo "[INFO] Uploading final JAR to WinSCP path..."
-                        scp target/${env.JAR_NAME} ${env.VPS_USER}@${env.VPS_HOST}:${WINSCP_PATH}/
                     """
                 }
             }
         }
+
+        stage('Upload for WinSCP Access') {
+                steps {
+                    sshagent(['vps-ssh-credentials-id-credentialsId']) {
+                        sh """
+                            echo "[INFO] Creating WinSCP folder if needed..."
+                            ssh ${env.VPS_USER}@${env.VPS_HOST} 'mkdir -p ${WINSCP_PATH}'
+
+                            echo "[INFO] Uploading final JAR to WinSCP path..."
+                            scp target/${env.JAR_NAME} ${env.VPS_USER}@${env.VPS_HOST}:${WINSCP_PATH}/
+                        """
+                    }
+                }
+            }
     }
 }
