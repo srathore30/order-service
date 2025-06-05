@@ -14,6 +14,8 @@ pipeline {
         REMOTE_PATH = "/home/ubuntu/sfa-service/order-service"
         TEMP_PATH = "/home/ubuntu/sfa-service/order-service/temp"
         STARTUP_SCRIPT = "/tmp/orderStartUp.sh"
+        WINSCP_PATH = "/root/sfa-service/order-service"
+        SERVICE_PORT = "9092"
     }
 
     stages {
@@ -55,18 +57,18 @@ pipeline {
                 sh """
                     echo "Generating startup script..."
 
-                    cat << 'EOF' > ${env.STARTUP_SCRIPT}
+                    cat << EOF > ${env.STARTUP_SCRIPT}
 #!/bin/bash
 
-echo "[INFO] Checking for running service on port 9093..."
-PID=\$(sudo lsof -t -i:9092)
+echo "[INFO] Checking for running service on port ${env.SERVICE_PORT}..."
+PID=\$(sudo lsof -t -i:${env.SERVICE_PORT})
 
 if [ -n "\$PID" ]; then
     echo "[INFO] Found running process with PID: \$PID. Killing it..."
     sudo kill -9 \$PID
     echo "[INFO] Process killed."
 else
-    echo "[INFO] No process running on port 9093."
+    echo "[INFO] No process running on port ${env.SERVICE_PORT}."
 fi
 
 echo "[INFO] Starting new JAR..."
@@ -79,7 +81,7 @@ EOF
             }
         }
 
-        stage('Deploy to VPS') {
+        stage('Deploy & Upload') {
             steps {
                 sshagent([env.CREDENTIALS_ID]) {
                     sh """
@@ -112,23 +114,15 @@ EOF
 
                             echo "[INFO] Deployment complete."
                         '
+
+                        echo "[INFO] Creating WinSCP folder if needed..."
+                        ssh ${env.VPS_USER}@${env.VPS_HOST} 'mkdir -p ${WINSCP_PATH}'
+
+                        echo "[INFO] Uploading final JAR to WinSCP path..."
+                        scp target/${env.JAR_NAME} ${env.VPS_USER}@${env.VPS_HOST}:${WINSCP_PATH}/
                     """
                 }
             }
         }
-
-        stage('Upload for WinSCP Access') {
-                steps {
-                    sshagent(['vps-ssh-credentials-id-credentialsId']) {
-                        sh """
-                            echo "[INFO] Creating WinSCP folder if needed..."
-                            ssh root@195.35.22.253 'mkdir -p /root/sfa-service/order-service'
-
-                            echo "[INFO] Uploading final JAR to WinSCP path..."
-                            scp target/order-0.0.1-SNAPSHOT.jar root@195.35.22.253:/root/sfa-service/order-service/
-                        """
-                    }
-                }
-            }
     }
 }
