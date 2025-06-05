@@ -107,7 +107,7 @@ EOF
                             rm -rf ${TEMP_PATH}
 
                             echo "[INFO] Starting service..."
-                            chmod +x productStartUp.sh
+                            chmod +x orderStartUp.sh
                             ./orderStartUp.sh
 
                             echo "[INFO] Deployment complete."
