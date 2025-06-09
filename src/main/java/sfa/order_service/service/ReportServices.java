@@ -198,6 +198,20 @@ public class ReportServices {
         return orderResponseList;
     }
 
+    public List<OrderResponse> byDateAndSalesLevelAndReportingManagerId(ReportsRequest reportsRequest, Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(reportsRequest.getStartDate(),reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(),  memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList) {
+            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            orderResponseList.add(orderResponse);
+        }
+        return orderResponseList;
+    }
+
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraph(ReportsRequest reportsRequest) {
         List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
 

@@ -16,4 +16,7 @@ public interface OrderInvoicesRepo extends JpaRepository<OrderInvoice, Long> {
     Page<OrderInvoice> findByClientFmcgIdAndSalesLevel(Long clientFmcgId, SalesLevel salesLevel, Pageable pageable);
     @Query("SELECT o FROM OrderInvoice o " + "WHERE o.salesLevel = :salesLevel " + "AND o.memberId IN :memberIds ")
     Page<OrderInvoice> findByReportingManagerMembersAndSalesLevel(@Param("salesLevel") SalesLevel salesLevel, @Param("memberIds") Set<Long> memberIds, Pageable pageable);
+
+    @Query("SELECT o FROM OrderInvoice o " + "WHERE o.salesLevel = :salesLevel")
+    Page<OrderInvoice> findBySalesLevel(@Param("salesLevel") SalesLevel salesLevel, Pageable pageable);
 }
