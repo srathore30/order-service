@@ -145,6 +145,7 @@ public class ReportController {
         ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
         List<OrderResponse> reportsResponse = reportServices.byDateAndSalesLevelAndMemberId(reportsRequest, memberId);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+
     }
     @GetMapping("/overall-sales/byDateAndSalesLevelAndReportingManagerId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
