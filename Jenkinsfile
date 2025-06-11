@@ -59,7 +59,7 @@ pipeline {
                     cat << 'EOF' > ${env.STARTUP_SCRIPT}
 #!/bin/bash
 
-echo "[INFO] Checking for running service on port 9093..."
+echo "[INFO] Checking for running service on port 9092..."
 PID=\$(sudo lsof -t -i:9092)
 
 if [ -n "\$PID" ]; then
@@ -67,7 +67,7 @@ if [ -n "\$PID" ]; then
     sudo kill -9 \$PID
     echo "[INFO] Process killed."
 else
-    echo "[INFO] No process running on port 9093."
+    echo "[INFO] No process running on port 9092."
 fi
 
 echo "[INFO] Starting new JAR..."
