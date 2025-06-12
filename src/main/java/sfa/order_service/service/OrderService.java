@@ -461,6 +461,7 @@ public class OrderService {
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());
         orderResponse.setBeetLogId(orderEntity.getBeetLogId());
+        orderResponse.setSalesLevel(orderEntity.getSalesLevel());
         orderResponse.setClientLogId(orderEntity.getClientLogId());
         orderResponse.setDoctorLogId(orderEntity.getDoctorLogId());
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
