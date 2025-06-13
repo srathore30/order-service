@@ -363,7 +363,11 @@ public class OrderService {
         orderEntity.setBundleType(request.getBundleType());
         orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
-        orderEntity.setStatus(OrderStatus.CREATED);
+        if(request.getSalesLevel() == SalesLevel.WAREHOUSE) {
+            orderEntity.setStatus(OrderStatus.CREATED);
+        }else{
+            orderEntity.setStatus(OrderStatus.DELIVERED);
+        }
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setRegionId(clientFMCGResponse.getRegion());
