@@ -363,6 +363,7 @@ public class OrderService {
         orderEntity.setBundleType(request.getBundleType());
         orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
+        orderEntity.setStatus(OrderStatus.CREATED);
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setRegionId(clientFMCGResponse.getRegion());
