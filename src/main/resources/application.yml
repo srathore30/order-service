@@ -47,42 +47,42 @@ product:
     url: http://localhost:9093/product-service/products/
 doctor:
   getDoctor:
-    url: http://localhost:8080/doctors
+    url: http://localhost:9090/doctors
 products:
   service:
     url: http://localhost:9093/product-service
 
 clients:
   service:
-    url: http://localhost:8080/client-fmcg/getClientFMCGById
+    url: http://localhost:9090/client-fmcg/getClientFMCGById
   updateClient:
-    url: http://localhost:8080/client-fmcg/updateClientFMCGById
+    url: http://localhost:9090/client-fmcg/updateClientFMCGById
 
 members:
   memberIds:
-    url: http://localhost:8080/getAllMemberIdsByReportingManager
+    url: http://localhost:9090/getAllMemberIdsByReportingManager
   service:
-    url: http://localhost:8080/getMemberById
+    url: http://localhost:9090/getMemberById
 
 outlets:
   getAllOutlet:
-    url: http://localhost:8080/getAllOutletByIds
+    url: http://localhost:9090/getAllOutletByIds
   getOutlet:
-    url: http://localhost:8080/getOutletById
+    url: http://localhost:9090/getOutletById
   getOutForReport:
-    url: http://localhost:8080/getOutletForReportById
+    url: http://localhost:9090/getOutletForReportById
 
 combineTourPlan:
   updateBjpAndCjpOrderValue:
-    url: http://localhost:8080/combine-tour-plan/updateBjpAndCjpOrderValue
+    url: http://localhost:9090/combine-tour-plan/updateBjpAndCjpOrderValue
 
 beets:
   getAllBeets:
-    url: http://localhost:8080/getAllBeetByIds
+    url: http://localhost:9090/getAllBeetByIds
   getBeet:
-    url: http://localhost:8080/getBeetById
+    url: http://localhost:9090/getBeetById
   getBeetForReport:
-    url: http://localhost:8080/getBeetByIdForReport
+    url: http://localhost:9090/getBeetByIdForReport
 
 sampleInventory:
   getInventory:
@@ -100,11 +100,11 @@ inventory:
 
 name:
   state:
-    url: http://localhost:8080/states/getStateNameById
+    url: http://localhost:9090/states/getStateNameById
   city:
-    url: http://localhost:8080/getCityNameById
+    url: http://localhost:9090/getCityNameById
   region:
-    url: http://localhost:8080/getRegionNameById
+    url: http://localhost:9090/getRegionNameById
 
   # CORS Configuration
   spring:
