@@ -363,6 +363,11 @@ public class OrderService {
         orderEntity.setBundleType(request.getBundleType());
         orderEntity.setOrderCallStatus(OrderCallStatus.Productive);
         orderEntity.setProductId(request.getProductId());
+        if(request.getSalesLevel() == SalesLevel.WAREHOUSE) {
+            orderEntity.setStatus(OrderStatus.CREATED);
+        }else{
+            orderEntity.setStatus(OrderStatus.DELIVERED);
+        }
         orderEntity.setMemberId(request.getMemberId());
         orderEntity.setPrice(finalPrice);
         orderEntity.setRegionId(clientFMCGResponse.getRegion());
@@ -461,6 +466,7 @@ public class OrderService {
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());
         orderResponse.setBeetLogId(orderEntity.getBeetLogId());
+        orderResponse.setSalesLevel(orderEntity.getSalesLevel());
         orderResponse.setClientLogId(orderEntity.getClientLogId());
         orderResponse.setDoctorLogId(orderEntity.getDoctorLogId());
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
@@ -696,6 +702,19 @@ public class OrderService {
         return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
     }
 
+    public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin(SalesLevel salesLevel, int page, int pageSize, String sortBy, String sortDirection) {
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+         Pageable pageable = PageRequest.of(page, pageSize, sort);
+            Page<OrderInvoice> orderInvoicePage = orderInvoicesRepo.findBySalesLevel(salesLevel, pageable);
+            List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
+            for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
+                List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
+                groupedResponses.add(orders);
+            }
+            return new PaginatedResp<>(orderInvoicePage.getTotalElements(), orderInvoicePage.getTotalPages(), page, groupedResponses);
+    }
     public PaginatedResp<OrdersWithInvoiceGroupingResp> getOrdersGroupedByInvoiceByReportingManagerId(Long reportingManagerId, SalesLevel salesLevel, boolean isManagerSaleIncluded, int page, int pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
          Pageable pageable = PageRequest.of(page, pageSize, sort);

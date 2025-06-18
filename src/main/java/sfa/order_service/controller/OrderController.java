@@ -84,6 +84,11 @@ public class OrderController {
     public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoice(@RequestParam Long clientFmcgId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
         return new ResponseEntity<>(orderService.getOrdersGroupedByInvoice(clientFmcgId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
+    @GetMapping("/getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin(@RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin(salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
 
     @GetMapping("/getOrdersGroupedByInvoiceByReportingManagerId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
