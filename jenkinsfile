@@ -10,11 +10,11 @@ pipeline {
         VPS_HOST = '195.35.22.253'
         VPS_USER = 'root'
         CREDENTIALS_ID = 'vps-ssh-credentials-id-credentialsId'
-        JAR_NAME = 'member-0.0.1-SNAPSHOT.jar'
-        REMOTE_PATH = "/home/ubuntu/sfa-service/sfa-dev-service"
-        TEMP_PATH = "/home/ubuntu/sfa-service/sfa-dev-service/temp"
-        STARTUP_SCRIPT = "/tmp/prismStartUp.sh"
-        WINSCP_PATH = "/root/sfa-service/sfa-dev-service"
+        JAR_NAME = 'order-0.0.1-SNAPSHOT.jar'
+        REMOTE_PATH = "/home/ubuntu/sfa-service/order-service"
+        TEMP_PATH = "/home/ubuntu/sfa-service/order-service/temp"
+        STARTUP_SCRIPT = "/tmp/orderStartUp.sh"
+        WINSCP_PATH = "/root/sfa-service/order-service"
     }
 
     stages {
@@ -23,7 +23,7 @@ pipeline {
                 checkout scm: [$class: 'GitSCM',
                     branches: [[name: '*/deployjenkins']],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/srathore30/prism_mr_member_service.git',
+                        url: 'https://github.com/srathore30/order-service.git',
                         credentialsId: 'github-token-pipeline'
                     ]]
                 ]
@@ -59,15 +59,15 @@ pipeline {
                     cat << 'EOF' > ${env.STARTUP_SCRIPT}
 #!/bin/bash
 
-echo "[INFO] Checking for running service on port 9090..."
-PID=\$(sudo lsof -t -i:9090)
+echo "[INFO] Checking for running service on port 9092..."
+PID=\$(sudo lsof -t -i:9092)
 
 if [ -n "\$PID" ]; then
     echo "[INFO] Found running process with PID: \$PID. Killing it..."
     sudo kill -9 \$PID
     echo "[INFO] Process killed."
 else
-    echo "[INFO] No process running on port 9090."
+    echo "[INFO] No process running on port 9092."
 fi
 
 echo "[INFO] Starting new JAR..."
@@ -108,8 +108,8 @@ EOF
                             rm -rf ${TEMP_PATH}
 
                             echo "[INFO] Starting service..."
-                            chmod +x prismStartUp.sh
-                            ./prismStartUp.sh
+                            chmod +x orderStartUp.sh
+                            ./orderStartUp.sh
 
                             echo "[INFO] Deployment complete."
                         '
@@ -123,10 +123,10 @@ EOF
                     sshagent(['vps-ssh-credentials-id-credentialsId']) {
                         sh """
                             echo "[INFO] Creating WinSCP folder if needed..."
-                            ssh ${env.VPS_USER}@${env.VPS_HOST} 'mkdir -p ${env.WINSCP_PATH}'
+                            ssh ${env.VPS_USER}@${env.VPS_HOST} 'mkdir -p ${WINSCP_PATH}'
 
                             echo "[INFO] Uploading final JAR to WinSCP path..."
-                            scp target/${env.JAR_NAME} ${env.VPS_USER}@${env.VPS_HOST}:${env.WINSCP_PATH}/
+                            scp target/${env.JAR_NAME} ${env.VPS_USER}@${env.VPS_HOST}:${WINSCP_PATH}/
                         """
                     }
                 }
