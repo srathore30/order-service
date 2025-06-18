@@ -23,6 +23,10 @@ public class SamplesEntity extends BaseEntity{
     Long outletId;
     Long clientFmcgId;
     BundleType bundleType;
+    Long beetLogId;
+    Long doctorLogId;
+    Long clientLogId;
+
     @Temporal(TemporalType.DATE)
     @CreatedDate
     Date sampleDate;

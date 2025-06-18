@@ -24,7 +24,11 @@ public enum ApiErrorCodes implements Error {
     RETURN_ALREADY_CREATED(10045, "return already created for this order"),
     DISCOUNT_CODE_ALREADY_EXIST(665956, "discount code already exist"),
     DISCOUNT_NOT_FOUND(1016,"discount not found "),
-    SAMPLE_NOT_FOUND(42458, "Sample not found");
+    SAMPLE_NOT_FOUND(42458, "Sample not found"),
+    COLLECTION_NOT_FOUND(1017, "Collection not found" ),
+    COLLECTION_ORDER_MAP_NOT_FOUND(1018,"Collection order map not found" ),
+    COMPETITOR_ACTIVITY_NOT_FOUND(1019,"competitor activity not found"),
+    COMPETITOR_ACTIVITY_COMPETITOR_NOT_FOUND(1020, "competitor activity competitor not found");
 
     private int errorCode;
     private String errorMessage;

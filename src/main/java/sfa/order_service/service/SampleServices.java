@@ -1,6 +1,6 @@
 package sfa.order_service.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -11,14 +11,17 @@ import org.springframework.stereotype.Service;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.Status;
 import sfa.order_service.dto.request.SampleReq;
+import sfa.order_service.dto.request.UpdateCustomInventoryReq;
 import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.dto.response.SampleInventoryResponse;
 import sfa.order_service.dto.response.SampleRes;
+import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.SamplesRepo;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -61,6 +64,26 @@ public class SampleServices {
             externalRestService.deductSampleInventory(sampleInventoryResponse.getId(), newQuantity);
         }
         return mapToDto(samplesRepo.save(optionalSamplesEntity.get()));
+    }
+
+
+    @Transactional
+    public void rollBackSampleAndInventory(List<Long> sampleIds){
+        log.info("inside of rollBackSampleAndInventory");
+        List<SamplesEntity> samplesEntityList = samplesRepo.findAllById(sampleIds);
+        List<UpdateCustomInventoryReq> updateCustomInventoryReqList = new ArrayList<>();
+        for(SamplesEntity samplesEntity : samplesEntityList){
+            UpdateCustomInventoryReq updateCustomInventoryReq = new UpdateCustomInventoryReq();
+            updateCustomInventoryReq.setQuantity(samplesEntity.getQuantity());
+            updateCustomInventoryReq.setProductId(samplesEntity.getProductId());
+            updateCustomInventoryReq.setMemberId(samplesEntity.getMemberId());
+            updateCustomInventoryReqList.add(updateCustomInventoryReq);
+        }
+        log.info("reverting inventory");
+        externalRestService.rollBackInventoryForSample(updateCustomInventoryReqList);
+        log.info("reverting samples");
+        Set<Long> uniqueSampleIds = new HashSet<>(sampleIds);
+        samplesRepo.deleteAllById(uniqueSampleIds);
     }
 
     public SampleRes getSampleById(Long sampleId){
@@ -125,6 +148,9 @@ public class SampleServices {
     private SampleRes mapToDto(SamplesEntity sample){
         SampleRes sampleRes = new SampleRes();
         sampleRes.setId(sample.getId());
+        sampleRes.setBeetLogId(sample.getBeetLogId());
+        sampleRes.setClientLogId(sample.getClientLogId());
+        sampleRes.setDoctorLogId(sample.getDoctorLogId());
         sampleRes.setBundleType(sample.getBundleType());
         sampleRes.setSampleDate(sample.getSampleDate());
         sampleRes.setProductRes(productServiceClient.getProduct(sample.getProductId()));
@@ -132,9 +158,9 @@ public class SampleServices {
         sampleRes.setMemberResponse(externalRestService.getMember(sample.getMemberId()));
         if(sample.getDoctorId() != null){
             sampleRes.setDoctorRes(externalRestService.getDoctor(sample.getDoctorId()));
-        } else if (sample.getClientFmcgId() != null) {
+        } if (sample.getClientFmcgId() != null) {
             sampleRes.setClientFMCGResponse(externalRestService.getClient(sample.getClientFmcgId()));
-        }else if(sample.getOutletId() != null){
+        } if(sample.getOutletId() != null){
             sampleRes.setOutletRespForOrderDto(externalRestService.getOutletByIdWithResp(sample.getOutletId()));
         }
         return sampleRes;
@@ -144,6 +170,9 @@ public class SampleServices {
         SamplesEntity samplesEntity = new SamplesEntity();
         samplesEntity.setQuantity(sampleReq.getQuantity());
         samplesEntity.setStatus(Status.Active);
+        samplesEntity.setBeetLogId(sampleReq.getBeetLogId());
+        samplesEntity.setClientLogId(sampleReq.getClientLogId());
+        samplesEntity.setDoctorLogId(sampleReq.getDoctorLogId());
         samplesEntity.setSampleDate(new Date());
         samplesEntity.setClientFmcgId(sampleReq.getClientFmcgId());
         samplesEntity.setOutletId(sampleReq.getOutletId());

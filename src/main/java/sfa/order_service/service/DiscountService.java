@@ -1,6 +1,5 @@
 package sfa.order_service.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.DiscountType;
 import sfa.order_service.dto.request.DiscountBulkReq;
@@ -40,6 +40,8 @@ public class DiscountService {
         discountEntity.setValidTo(request.getValidTo());
         discountEntity.setProductId(request.getProductId());
         discountEntity.setStatus(request.getStatus());
+        discountEntity.setCity(request.getCity());
+        discountEntity.setState(request.getState());
 
         // Conditional fields based on DiscountType
         switch (request.getDiscountType()) {
@@ -112,6 +114,7 @@ public class DiscountService {
         discountResponse.setFixedAmount(discountEntity.getFixedAmount());
         discountResponse.setDiscountType(discountEntity.getDiscountType());
         discountResponse.setProductId(discountEntity.getProductId());
+        discountResponse.setDiscountId(discountEntity.getId());
         ProductRes product = productServiceClient.getProduct(discountEntity.getProductId());
         discountResponse.setProductName(product.getName());
         discountResponse.setValidFrom(discountEntity.getValidFrom());
@@ -120,6 +123,8 @@ public class DiscountService {
         discountResponse.setBogoOfferQuantity(discountEntity.getBogoOfferQuantity());
         discountResponse.setBogoFreeQuantity(discountEntity.getBogoFreeQuantity());
         discountResponse.setStatus(discountEntity.getStatus());
+        discountResponse.setCity(discountEntity.getCity());
+        discountResponse.setState(discountEntity.getState());
         return discountResponse;
     }
 
@@ -282,7 +287,6 @@ public class DiscountService {
     public DiscountResponse updateDiscountById(Long discountId, DiscountRequest discountRequest) {
         log.info("Retrieve discount by ID: {}", discountId);
         Optional<DiscountEntity> optionalDiscount = discountRepo.findById(discountId);
-
         if (optionalDiscount.isEmpty()) {
             throw new InvalidInputException(ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorCode(),
                     ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorMessage());
@@ -298,10 +302,13 @@ public class DiscountService {
         existingDiscount.setValidTo(discountRequest.getValidTo());
         existingDiscount.setStatus(discountRequest.getStatus());
 
+        if (discountRequest.getProductId() != null) {
+            existingDiscount.setProductId(discountRequest.getProductId());
+        }
         switch (discountRequest.getDiscountType()) {
             case PROMOTIONAL:
                 existingDiscount.setFixedAmount(discountRequest.getFixedAmount());
-                existingDiscount.setPercentage(null);
+                existingDiscount.setPercentage(discountRequest.getPercentage());
                 existingDiscount.setMinQuantity(null);
                 existingDiscount.setBogoOfferQuantity(null);
                 existingDiscount.setBogoFreeQuantity(null);

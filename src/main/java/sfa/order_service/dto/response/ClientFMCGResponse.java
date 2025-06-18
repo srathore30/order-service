@@ -16,6 +16,7 @@ public class ClientFMCGResponse {
     private String email;
     private Long mobile;
     private String address;
+    private Long id;
     private Long region;
     private Long state;
     private Long city;

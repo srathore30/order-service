@@ -11,9 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import sfa.order_service.Configs.TokenContext;
+import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.dto.response.BeetRespForOrderDto;
 import sfa.order_service.dto.response.OutletRespForOrderDto;
 import sfa.order_service.dto.response.ProductRes;
+import sfa.order_service.exception.BusinessServiceException;
 
 import java.util.List;
 import java.util.Set;
@@ -57,61 +59,124 @@ public class ProductServiceClient {
     }
 
     public Double getProductPrice(Long productId, String priceType) {
-        String url = productServiceUrl + "/products/getByIdAndPriceType/" + productId + "?priceType=" + priceType;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        log.info("Fetch product details with authorization header");
-        ResponseEntity<Double> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Double.class);
-        return response.getBody();
+        try {
+            log.info("While calling getProductPrice from product service client");
+            String url = productServiceUrl + "/products/getByIdAndPriceType/" + productId + "?priceType=" + priceType;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            log.info("Fetch product details with authorization header");
+            ResponseEntity<Double> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, Double.class);
+            return response.getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
 
     public ProductRes getProduct(Long productId) {
-        String url = productUrl + productId;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        log.info("Fetch product details with authorization header");
-        ResponseEntity<ProductRes> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ProductRes.class);
-        return response.getBody();
+        try {
+            log.info("While calling getProduct from product service client");
+            String url = productUrl + productId;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            log.info("Fetch product details with authorization header");
+            ResponseEntity<ProductRes> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, ProductRes.class);
+            return response.getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
 
     public List<BeetRespForOrderDto> getBeets(Set<Long> beetIds) {
-        String url = beetUrl;
-        HttpEntity<Set<Long>> requestEntity = new HttpEntity<>(beetIds, createHeaders());
-        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<BeetRespForOrderDto>>() {}).getBody();
+        try {
+            log.info("While calling getBeets from product service client");
+            String url = beetUrl;
+            HttpEntity<Set<Long>> requestEntity = new HttpEntity<>(beetIds, createHeaders());
+            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<BeetRespForOrderDto>>() {
+            }).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
 
     public List<OutletRespForOrderDto> getOutlets(Set<Long> outletIds) {
-        String url = outletUrl;
-        HttpEntity<Set<Long>> requestEntity = new HttpEntity<>(outletIds, createHeaders());
-        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<OutletRespForOrderDto>>() {}).getBody();
+        try {
+            log.info("While calling getOutlets from product service client");
+            String url = outletUrl;
+            HttpEntity<Set<Long>> requestEntity = new HttpEntity<>(outletIds, createHeaders());
+            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<OutletRespForOrderDto>>() {
+            }).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
 
     public Set<Long> getAllMemberIdsByReportingManager(Long reportingManager) {
-        String url = memberIdsUrl + "/" + reportingManager;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<Set<Long>>() {}).getBody();
+        try {
+            log.info("While calling getAllMemberIdsByReportingManager from product service client");
+            String url = memberIdsUrl + "/" + reportingManager;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<Set<Long>>() {
+            }).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
     public BeetRespForOrderDto getBeetForReport(Long beetId) {
-        String url = beetReportUrl + "/" + beetId;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, BeetRespForOrderDto.class).getBody();
+        try {
+            log.info("While calling getBeetForReport from product service client");
+            String url = beetReportUrl + "/" + beetId;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, BeetRespForOrderDto.class).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
     public OutletRespForOrderDto getOutletForReport(Long outletId) {
-        String url = outletReportUrl + "/" + outletId;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, OutletRespForOrderDto.class).getBody();
+        try {
+            log.info("While calling getOutletForReport from product service client");
+            String url = outletReportUrl + "/" + outletId;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, OutletRespForOrderDto.class).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
     public String getStateNameById(Long id) {
-        String url = stateUrl + "/" + id;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        try {
+            log.info("While calling getStateNameById from product service client");
+            String url = stateUrl + "/" + id;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
     public String getCityNameById(Long id) {
-        String url = cityUrl + "/" + id;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        try {
+            log.info("While calling getCityNameById from product service client");
+            String url = cityUrl + "/" + id;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
     public String getRegionNameById(Long id) {
-        String url = regionUrl + "/" + id;
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
-        return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        try {
+            log.info("While calling getRegionNameById from product service client");
+            String url = regionUrl + "/" + id;
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            return restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
     }
 }

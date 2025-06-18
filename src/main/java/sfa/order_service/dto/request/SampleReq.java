@@ -18,6 +18,9 @@ public class SampleReq{
     Long memberId;
     Long doctorId;
     Integer quantity;
+    Long beetLogId;
+    Long doctorLogId;
+    Long clientLogId;
     Long clientFmcgId;
     Long outletId;
     BundleType bundleType;

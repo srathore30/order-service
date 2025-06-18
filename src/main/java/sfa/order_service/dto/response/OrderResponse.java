@@ -10,6 +10,7 @@ import sfa.order_service.constant.BundleType;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.enums.OrderStatus;
+import sfa.order_service.enums.SalesLevel;
 
 import java.util.Date;
 
@@ -21,10 +22,12 @@ public class OrderResponse {
     private Long orderId;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+    private SalesLevel salesLevel;
     private Double totalPrice;
     private BundleType bundleType;
     private Long productId;
     private ProductRes productRes;
+    private String clientCityName;
     private Integer quantity;
     private Double gstAmount;
     private String invoiceNumber;
@@ -44,4 +47,6 @@ public class OrderResponse {
     private String remarks;
     private String discountCode;
     private Double priceAfterDiscount;
-}
+    private Long beetLogId;
+    private Long doctorLogId;
+    private Long clientLogId;}

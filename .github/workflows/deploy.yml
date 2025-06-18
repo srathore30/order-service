@@ -1,17 +1,26 @@
-name: Deploy Order Service
+name: Deploy Order Service to VPS
 
 on:
   push:
     branches:
-      - devsss
+      - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      USERNAME: ${{ secrets.USERNAME }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Print working directory
+        run: |
+          pwd
+          ls -la
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -19,16 +28,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build Order Service
-        run: |
-          mvn clean package
+      - name: Build Order Service (Maven)
+        run: mvn clean package -DskipTests
+
+      - name: List built artifacts
+        run: ls -la target/
 
       - name: Upload JAR as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jar-file
           path: target/*.jar
-          if-no-files-found: warn
 
   deploy:
     runs-on: ubuntu-latest
@@ -36,55 +46,56 @@ jobs:
 
     steps:
       - name: Download JAR artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: jar-file
+          path: jar-file/
 
-      - name: Copy JAR to VPS using SCP with Password
+      - name: Deploy JAR to VPS
         uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}  # Use password for authentication
-          source: "*.jar"
+          password: ${{ secrets.VPS_PASSWORD }}
+          source: "jar-file/*.jar"
           target: "~/sfa-service/order-service/"
-          debug: true
 
-      - name: Run Deployment Script on VPS with Increased Timeout
+      - name: Remove Old JAR and Deploy New One
         uses: appleboy/ssh-action@v0.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}  # Use password for SSH access
+          password: ${{ secrets.VPS_PASSWORD }}
           script: |
-            # Ensure the JAR exists
-            if [ ! -f ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar ]; then
-            echo "Error: JAR file not found!"
-            exit 1
-            fi
-          
-  
-          
-            # Remove nohup.out if it exists
-            if [ -f ~/sfa-service/order-service/nohup.out ]; then
-            echo "Removing old nohup.out..."
-            rm ~/sfa-service/order-service/nohup.out
-            else
-            echo "No existing nohup.out file found."
-            fi
-          
-            # Log the JAR path to confirm it exists
-            echo "Running JAR: $(ls -l ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar)"
-          
-            # Start the new JAR with nohup
-            echo "Starting new JAR..."
-            nohup java -jar ~/sfa-service/order-service/order-0.0.1-SNAPSHOT.jar > ~/sfa-service/order-service/nohup.out 2>&1 &
-          
-            # Log the process to ensure it's running
-            ps aux | grep 'java -jar'
-          
-            # Optional: Tail the nohup output to see logs live
-            echo "Tailing logs..."
-            tail -f ~/sfa-service/order-service/nohup.out
-            
+            cd ~/sfa-service/order-service/
+            echo "Removing old JAR..."
+            rm -f *.jar
+            echo "Moving new JAR..."
+            mv ~/sfa-service/order-service/jar-file/*.jar ~/sfa-service/order-service/
+            rm -rf ~/sfa-service/order-service/jar-file/
 
+      - name: Run Deployment Script on VPS
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd ~/sfa-service/order-service/
+            PID=$(sudo lsof -n -i:9092 | awk 'NR==2 {print $2}')
+            if [ -n "$PID" ]; then
+              echo "Killing running service with PID: $PID"
+              sudo kill -9 $PID
+            fi
+            chmod +x orderStartUp.sh
+            ./orderStartUp.sh
+            echo "Service started. Monitoring logs..."
+            
+            # Monitor the log line by line
+            while read LINE; do
+            echo "$LINE"
+            if [[ "$LINE" == *"Tomcat started on port 9092 (http) with context path '/order-service'"* ]]; then
+            echo "✅ Detected Tomcat startup — exiting log monitor"
+            break
+            fi
+            done < <(tail -f nohup.out)

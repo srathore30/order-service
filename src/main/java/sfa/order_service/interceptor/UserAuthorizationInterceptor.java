@@ -68,7 +68,7 @@ public class UserAuthorizationInterceptor implements HandlerInterceptor {
     }
     public boolean validateToken(String token){
         try {
-            jwtHelper.validateOnlyToken(token);
+            boolean resp = jwtHelper.validateOnlyToken(token);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Exception occurred in UserAuthorizationInterceptor due to invalid token ", e);
             return false;

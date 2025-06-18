@@ -84,6 +84,11 @@ public class OrderController {
     public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoice(@RequestParam Long clientFmcgId, @RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
         return new ResponseEntity<>(orderService.getOrdersGroupedByInvoice(clientFmcgId, salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
     }
+    @GetMapping("/getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<PaginatedResp<OrdersWithInvoiceGroupingResp>> getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin(@RequestParam SalesLevel salesLevel, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+        return new ResponseEntity<>(orderService.getOrdersGroupedByInvoiceWithSalesLevelSuperAdmin(salesLevel, page, pageSize, sortBy, sortDirection), HttpStatus.OK);
+    }
 
     @GetMapping("/getOrdersGroupedByInvoiceByReportingManagerId")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
@@ -95,6 +100,41 @@ public class OrderController {
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OrderResponse>> createOrderInBulk(@RequestBody OrderBulkReq orderBulkReq, @RequestParam String salesType){
         List<OrderResponse> orderResponseList = orderService.createOrderInBulk(orderBulkReq, salesType);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @PostMapping("/createOrderInBulkWithInventoryUpdate")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> createOrderInBulkWithInventoryUpdate(@RequestBody OrderBulkReq orderBulkReq, @RequestParam String salesType){
+        List<OrderResponse> orderResponseList = orderService.createOrderInBulkWithInventoryUpdate(orderBulkReq, salesType);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllOrderAndSampleByBeetLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllOrderAndSampleByBeetLogId(@RequestParam Long beetLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllOrderAndSampleByBeetLogId(beetLogId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/rollBackOrderAndInventory")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<Void> rollBackOrderAndInventory(@RequestBody List<Long> orderIds){
+        orderService.rollBackOrderAndInventory(orderIds);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllOrderAndSampleByClientLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllOrderAndSampleByClientLogId(@RequestParam Long clientLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllOrderAndSampleByClientLogId(clientLogId);
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllSampleByDoctorLogId")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<OrderAndSampleRes> getAllSampleByDoctorLogId(@RequestParam Long doctorLogId){
+        OrderAndSampleRes orderResponseList = orderService.getAllSampleByDoctorLogId(doctorLogId);
         return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 

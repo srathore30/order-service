@@ -19,6 +19,7 @@ public class DiscountResponse {
     private String discountCode;
     private String description;
     private Double percentage;
+    private Long discountId;
     private Double fixedAmount;
     @Enumerated(EnumType.STRING)
     private DiscountType discountType;
@@ -30,4 +31,6 @@ public class DiscountResponse {
     private Integer bogoFreeQuantity;
     private String productName;
     private Status status;
+    private String  state;
+    private String  city;
 }

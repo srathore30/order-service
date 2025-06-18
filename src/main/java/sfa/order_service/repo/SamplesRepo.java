@@ -10,13 +10,21 @@ import sfa.order_service.entity.OrderEntity;
 import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.enums.SalesLevel;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 @Repository
 public interface SamplesRepo extends JpaRepository<SamplesEntity, Long> {
     Page<SamplesEntity> findByMemberId(Long memberId, Pageable pageable);
+    List<SamplesEntity> findByBeetLogId(Long beetLogId);
+    List<SamplesEntity> findByDoctorLogId(Long doctorLogId);
+    List<SamplesEntity> findByClientLogId(Long clientLogId);
     @Query("SELECT o FROM SamplesEntity o WHERE o.memberId IN :memberIds")
     Page<SamplesEntity> findByMembersIdList(@Param("memberIds") Set<Long> memberIds, Pageable pageable);
+    List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndOutletId(Date startDate, Date endDate, Long memberId, Long outletId);
+    List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndDoctorId(Date startDate, Date endDate, Long memberId, Long doctorId);
+    List<SamplesEntity> findAllBySampleDateBetweenAndMemberIdAndClientFmcgId(Date startDate, Date endDate, Long memberId, Long clientFmcgId);
+
 
 }

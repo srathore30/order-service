@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import sfa.order_service.constant.OrderCallStatus;
 import sfa.order_service.constant.OrderMedium;
 import sfa.order_service.entity.OrderEntity;
+import sfa.order_service.entity.SamplesEntity;
 import sfa.order_service.enums.SalesLevel;
 
 import java.util.Date;
@@ -17,6 +18,8 @@ import java.util.Set;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+   List<OrderEntity> findByBeetLogId(Long beetLogId);
+   List<OrderEntity> findByClientLogId(Long clientLogId);
    Page<OrderEntity> findById(Long orderId, Pageable pageable);
 
    @Query("SELECT o FROM OrderEntity o WHERE o.invoiceNumber = :invoiceNumber")
@@ -58,8 +61,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.memberId = :memberId")
    Page<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberId(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("memberId") Long memberId, Pageable pageable);
 
-   List<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberIdAndOutletId(Date startDate, Date endDate, Long memberId, Long outletId);
-   List<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgId(Date startDate, Date endDate, Long memberId, Long clientFmcgId);
+   List<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberIdAndOutletIdAndSalesLevel(Date startDate, Date endDate, Long memberId, Long outletId, SalesLevel salesLevel);
+   List<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberIdAndClientFmcgIdAndSalesLevel(Date startDate, Date endDate, Long memberId, Long clientFmcgId, SalesLevel salesLevel);
 
    @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate AND o.memberId = :memberId AND o.beetId = :beetId")
    List<OrderEntity> findAllByOrderCreatedDateBetweenAndMemberIdAndBeetId(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("memberId") Long memberId, @Param("beetId") Long beetId);
@@ -97,5 +100,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
    long countByOutletIdAndClientFmcgIdAndOrderCallStatus(Long outLetId, Long clientFmcgId, OrderCallStatus orderCallStatus);
    long countByBeetIdAndClientFmcgIdAndOrderCallStatus(Long beetId, Long clientFmcgId, OrderCallStatus orderCallStatus);
    long countByBeetIdAndClientFmcgIdAndOrderMedium(Long beetId, Long clientFmcgId, OrderMedium orderMedium);
+
+   @Query("SELECT o FROM OrderEntity o WHERE o.orderCreatedDate BETWEEN :startDate AND :endDate " + "AND o.memberId IN :memberIds AND o.salesLevel = :salesLevel")
+   List<OrderEntity> findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(@Param("startDate") Date startDate, @Param("salesLevel") SalesLevel salesLevel, @Param("endDate") Date endDate,@Param("memberIds") Set<Long> memberIds);
 
 }
