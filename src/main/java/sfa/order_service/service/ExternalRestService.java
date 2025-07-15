@@ -85,7 +85,7 @@ public class ExternalRestService {
     }
     public CombineRes getCombineResForBeetAndOutletAndMemberAndClient(Long outletId,Long beetId,Long memberId,Long clientFmcgId) {
         try{
-            String url = "http://localhost:9090/combine-tour-plan/getCombineResForBeetAndOutletAndMemberAndClient";
+            String url = "http://localhost:9090/combine-tour-plan/getCombineResForBeetAndOutletAndMemberAndClient/?outletId=" + outletId + "?beetId=" + beetId + "?memberId=" + memberId + "?clientFmcgId=" + clientFmcgId;
             log.info("URL: {}", url);
             HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
             log.info("Fetch client details with authorization header");
