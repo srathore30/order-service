@@ -83,6 +83,19 @@ public class ExternalRestService {
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }
+    public CombineRes getCombineResForBeetAndOutletAndMemberAndClient(Long outletId,Long beetId,Long memberId,Long clientFmcgId) {
+        try{
+            String url = "http://localhost:9090/combine-tour-plan/getCombineResForBeetAndOutletAndMemberAndClient";
+            log.info("URL: {}", url);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+            log.info("Fetch client details with authorization header");
+            ResponseEntity<CombineRes> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, CombineRes.class);
+            return response.getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
 
     public SampleInventoryResponse getSampleInventory(Long memberId, Long productId) {
         try{
