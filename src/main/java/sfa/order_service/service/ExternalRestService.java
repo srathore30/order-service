@@ -85,17 +85,16 @@ public class ExternalRestService {
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }
-    public CombineRes getCombineResForBeetAndOutletAndMemberAndClient(Long outletId, Long beetId, Long memberId, Long clientFmcgId) {
+    public CombineRes getCombineResForBeetAndOutletAndMemberAndClient(Long outletId, Long memberId,  Long clientFmcgId) {
         try {
             String url = "http://localhost:9090/combine-tour-plan/getCombineResForBeetAndOutletAndMemberAndClient" +
-                    "?outletId={outletId}&beetId={beetId}&memberId={memberId}&clientFmcgId={clientFmcgId}";
+                    "?outletId={outletId}&memberId={memberId}&clientFmcgId={clientFmcgId}";
 
             log.info("URL: {}", url);
             HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
 
             Map<String, Object> uriParams = new HashMap<>();
             uriParams.put("outletId", outletId);
-            uriParams.put("beetId", beetId);
             uriParams.put("memberId", memberId);
             uriParams.put("clientFmcgId", clientFmcgId);
 

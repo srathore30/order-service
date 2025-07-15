@@ -789,7 +789,7 @@ public class ReportServices {
 
     public OrderResponse mapToOrderResponse(OrderEntity orderEntity) {
         OrderResponse orderResponse = new OrderResponse();
-        CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getBeetId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
+        CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
         orderResponse.setOrderId(orderEntity.getId());
         orderResponse.setBeetRespForOrderDto(combineRes.getBeetRespForOrderDto());
         orderResponse.setOutletRespForOrderDto(combineRes.getOutletRespForOrderDto());
