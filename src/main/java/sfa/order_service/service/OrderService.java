@@ -98,6 +98,18 @@ public class OrderService {
         log.info("Get product price with product id: {} and price type: {}", productId, priceType);
         return productServiceClient.getProductPrice(productId, priceType);
     }
+public Double getProductPriceType2(ProductRes productRes, String priceType) {
+//        log.info("Get product price with product id: {} and price type: {}", productId, priceType);
+//        return productServiceClient.getProductPrice(productId, priceType);
+    return switch (priceType.toLowerCase()) {
+        case "warehouse" -> productRes.getProductPriceRes().getWarehousePrice();
+        case "stocklist" -> productRes.getProductPriceRes().getStockListPrice();
+        case "retailer" -> productRes.getProductPriceRes().getRetailerPrice();
+        case "gst" -> productRes.getProductPriceRes().getGstPercentage();
+        default ->
+                throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+    };
+}
 
     @Transactional
     public OrderResponse getOrderDetailBySalesTypeById(Long orderId, String salesType) {
@@ -451,17 +463,21 @@ public class OrderService {
 
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
+        CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
+        orderResponse.setBeetRespForOrderDto(combineRes.getBeetRespForOrderDto());
+        orderResponse.setOutletRespForOrderDto(combineRes.getOutletRespForOrderDto());
         orderResponse.setOrderId(orderEntity.getId());
-        if (orderEntity.getOutletId() != null) {
-            log.info("fetch details from SFA Outlet controller");
-            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
-        }
-        if (orderEntity.getBeetId() != null) {
-            log.info("fetch details from SFA ");
-            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
-        }
+//        if (orderEntity.getOutletId() != null) {
+//            log.info("fetch details from SFA Outlet controller");
+//            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
+//        }
+//        if (orderEntity.getBeetId() != null) {
+//            log.info("fetch details from SFA ");
+//            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
+//        }
         orderResponse.setBundleType(orderEntity.getBundleType());
-        orderResponse.setClientCityName(productServiceClient.getCityNameById(orderEntity.getCityId()));
+        orderResponse.setClientCityName(combineRes.getBeetRespForOrderDto().getCity());
+//        orderResponse.setClientCityName(productServiceClient.getCityNameById(orderEntity.getCityId()));
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
         orderResponse.setProductId(orderEntity.getProductId());
@@ -472,21 +488,21 @@ public class OrderService {
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
-        Double gstOnOrder = getProductPrice(orderEntity.getProductId(), "gst");
+        Double gstOnOrder = getProductPriceType2(orderResponse.getProductRes(), "gst");
         orderResponse.setGstAmount(gstOnOrder);
         orderResponse.setOrderMedium(orderEntity.getOrderMedium());
         orderResponse.setOrderCallStatus(orderEntity.getOrderCallStatus());
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
-        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
+        Double priceOfOrderWithRespectedSalesLevel = getProductPriceType2(orderResponse.getProductRes(), getPriceType(orderEntity.getSalesLevel()));
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
-        MemberGetDto member = externalRestService.getMember(orderEntity.getMemberId());
+        MemberGetDto member = combineRes.getMemberGetDto();
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberResponse(member);
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
-        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
+        ClientFMCGResponse client = combineRes.getClientFMCGResponse();
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         orderResponse.setClientFMCGResponse(client);

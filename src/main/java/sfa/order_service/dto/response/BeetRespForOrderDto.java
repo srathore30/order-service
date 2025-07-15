@@ -10,9 +10,10 @@ public class BeetRespForOrderDto {
     private Long id;
     private String beet;
     private String address;
+    private String approvalStatusRemark;
+    private CityType cityType;
     private Long postalCode;
     private String state;
-    private CityType cityType;
     private Long regionId;
     private Long stateId;
     private Long cityId;

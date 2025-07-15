@@ -790,9 +790,9 @@ public class ReportServices {
     public OrderResponse mapToOrderResponse(OrderEntity orderEntity) {
         OrderResponse orderResponse = new OrderResponse();
         CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
-        orderResponse.setOrderId(orderEntity.getId());
         orderResponse.setBeetRespForOrderDto(combineRes.getBeetRespForOrderDto());
         orderResponse.setOutletRespForOrderDto(combineRes.getOutletRespForOrderDto());
+        orderResponse.setOrderId(orderEntity.getId());
 //        if (orderEntity.getOutletId() != null) {
 //            log.info("fetch details from SFA Outlet controller");
 //            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
@@ -845,6 +845,7 @@ public class ReportServices {
             case "warehouse" -> productRes.getProductPriceRes().getWarehousePrice();
             case "stocklist" -> productRes.getProductPriceRes().getStockListPrice();
             case "retailer" -> productRes.getProductPriceRes().getRetailerPrice();
+            case "gst" -> productRes.getProductPriceRes().getGstPercentage();
             default ->
                     throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
         };
