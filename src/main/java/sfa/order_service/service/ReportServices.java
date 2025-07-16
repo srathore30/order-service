@@ -789,15 +789,18 @@ public class ReportServices {
 
     public OrderResponse mapToOrderResponse(OrderEntity orderEntity) {
         OrderResponse orderResponse = new OrderResponse();
+        CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
+        orderResponse.setBeetRespForOrderDto(combineRes.getBeetRespForOrderDto());
+        orderResponse.setOutletRespForOrderDto(combineRes.getOutletRespForOrderDto());
         orderResponse.setOrderId(orderEntity.getId());
-        if (orderEntity.getOutletId() != null) {
-            log.info("fetch details from SFA Outlet controller");
-            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
-        }
-        if (orderEntity.getBeetId() != null) {
-            log.info("fetch details from SFA ");
-            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
-        }
+//        if (orderEntity.getOutletId() != null) {
+//            log.info("fetch details from SFA Outlet controller");
+//            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
+//        }
+//        if (orderEntity.getBeetId() != null) {
+//            log.info("fetch details from SFA ");
+//            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
+//        }
         orderResponse.setBundleType(orderEntity.getBundleType());
         orderResponse.setQuantity(orderEntity.getQuantity());
         orderResponse.setProductRes(productServiceClient.getProduct(orderEntity.getProductId()));
@@ -807,15 +810,15 @@ public class ReportServices {
         orderResponse.setOrderMedium(orderEntity.getOrderMedium());
         orderResponse.setOrderCallStatus(orderEntity.getOrderCallStatus());
         orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
-        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderEntity.getProductId(), getPriceType(orderEntity.getSalesLevel()));
+        Double priceOfOrderWithRespectedSalesLevel = getProductPrice(orderResponse.getProductRes(), getPriceType(orderEntity.getSalesLevel()));
         orderResponse.setTotalPrice(priceOfOrderWithRespectedSalesLevel * orderEntity.getQuantity());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
         orderResponse.setClientId(orderEntity.getClientFmcgId());
         orderResponse.setRemarks(orderEntity.getRemarks());
-        MemberGetDto member = externalRestService.getMember(orderEntity.getMemberId());
+        MemberGetDto member = combineRes.getMemberGetDto();
         orderResponse.setMemberId(orderEntity.getMemberId());
         orderResponse.setMemberName(member.getFirstName() + " " + member.getLastName());
-        ClientFMCGResponse client = externalRestService.getClient(orderEntity.getClientFmcgId());
+        ClientFMCGResponse client = combineRes.getClientFMCGResponse();
         orderResponse.setClientName(client.getClientFirstName() + " " + client.getClientLastName());
         orderResponse.setClientBalanceAmount(client.getTopUpBalance());
         orderResponse.setDiscountCode(orderEntity.getDiscountCode());
@@ -835,9 +838,17 @@ public class ReportServices {
         };
     }
 
-    public Double getProductPrice(Long productId, String priceType) {
-        log.info("Get product price with product id: {} and price type: {}", productId, priceType);
-        return productServiceClient.getProductPrice(productId, priceType);
+    public Double getProductPrice(ProductRes productRes, String priceType) {
+//        log.info("Get product price with product id: {} and price type: {}", productId, priceType);
+//        return productServiceClient.getProductPrice(productId, priceType);
+        return switch (priceType.toLowerCase()) {
+            case "warehouse" -> productRes.getProductPriceRes().getWarehousePrice();
+            case "stocklist" -> productRes.getProductPriceRes().getStockListPrice();
+            case "retailer" -> productRes.getProductPriceRes().getRetailerPrice();
+            case "gst" -> productRes.getProductPriceRes().getGstPercentage();
+            default ->
+                    throw new InvalidInputException(ApiErrorCodes.INVALID_INPUT.getErrorCode(), ApiErrorCodes.INVALID_INPUT.getErrorMessage());
+        };
     }
 
     private SampleRes mapToSampleRes(SamplesEntity sample) {

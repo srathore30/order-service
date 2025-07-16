@@ -19,7 +19,9 @@ import sfa.order_service.dto.request.UpdateCustomInventoryReq;
 import sfa.order_service.dto.response.*;
 import sfa.order_service.exception.BusinessServiceException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -80,6 +82,30 @@ public class ExternalRestService {
             return response.getBody();
         }catch (Exception e){
             log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+    public CombineRes getCombineResForBeetAndOutletAndMemberAndClient(Long outletId, Long memberId,  Long clientFmcgId) {
+        try {
+            String url = "http://localhost:9090/combine-tour-plan/getCombineResForBeetAndOutletAndMemberAndClient" +
+                    "?outletId={outletId}&memberId={memberId}&clientFmcgId={clientFmcgId}";
+
+            log.info("URL: {}", url);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createHeaders());
+
+            Map<String, Object> uriParams = new HashMap<>();
+            uriParams.put("outletId", outletId);
+            uriParams.put("memberId", memberId);
+            uriParams.put("clientFmcgId", clientFmcgId);
+
+            log.info("Fetching client details with authorization header");
+
+            ResponseEntity<CombineRes> response = restTemplate.exchange(
+                    url, HttpMethod.GET, requestEntity, CombineRes.class, uriParams);
+
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error occurred while fetching combine response: {}", e.getMessage(), e);
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }
