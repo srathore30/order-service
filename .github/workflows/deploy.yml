@@ -3,7 +3,8 @@ name: Deploy Order Service to VPS
 on:
   push:
     branches:
-      - fixer
+      - develop
+
 
 jobs:
   build:
