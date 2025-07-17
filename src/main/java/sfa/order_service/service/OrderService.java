@@ -463,18 +463,16 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
 
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
+        if (orderEntity.getOutletId() != null) {
+            orderEntity.setOutletId(0L);
+        }
+        if (orderEntity.getBeetId() != null) {
+            orderEntity.setBeetId(0L);
+        }
         CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
         orderResponse.setBeetRespForOrderDto(combineRes.getBeetRespForOrderDto());
         orderResponse.setOutletRespForOrderDto(combineRes.getOutletRespForOrderDto());
         orderResponse.setOrderId(orderEntity.getId());
-//        if (orderEntity.getOutletId() != null) {
-//            log.info("fetch details from SFA Outlet controller");
-//            orderResponse.setOutletRespForOrderDto(productServiceClient.getOutletForReport(orderEntity.getOutletId()));
-//        }
-//        if (orderEntity.getBeetId() != null) {
-//            log.info("fetch details from SFA ");
-//            orderResponse.setBeetRespForOrderDto(productServiceClient.getBeetForReport(orderEntity.getBeetId()));
-//        }
         orderResponse.setBundleType(orderEntity.getBundleType());
         orderResponse.setClientCityName(combineRes.getBeetRespForOrderDto().getCity());
 //        orderResponse.setClientCityName(productServiceClient.getCityNameById(orderEntity.getCityId()));
