@@ -34,6 +34,9 @@ public class DiscountService {
         DiscountEntity discountEntity = new DiscountEntity();
         log.info("Common fields for discount payload");
         discountEntity.setDiscountCode(request.getDiscountCode());
+        discountEntity.setBogoOfferQuantity(request.getBogoOfferQuantity());
+        discountEntity.setBogoFreeQuantity(request.getBogoFreeQuantity());
+        discountEntity.setFixedAmount(request.getFixedAmount());
         discountEntity.setDescription(request.getDescription());
         discountEntity.setDiscountType(request.getDiscountType());
         discountEntity.setValidFrom(request.getValidFrom());
