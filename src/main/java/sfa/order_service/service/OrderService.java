@@ -463,7 +463,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
 
     public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
         OrderResponse orderResponse = new OrderResponse();
-        if (orderEntity.getOutletId() != null) {
+        if (orderEntity.getOutletId() == null) {
             orderEntity.setOutletId(0L);
         }
         CombineRes combineRes = externalRestService.getCombineResForBeetAndOutletAndMemberAndClient(orderEntity.getOutletId(), orderEntity.getMemberId(), orderEntity.getClientFmcgId());
