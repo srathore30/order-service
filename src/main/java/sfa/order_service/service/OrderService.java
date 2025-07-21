@@ -59,7 +59,7 @@ public class OrderService {
     public OrderAndSampleRes getAllOrderAndSampleByBeetLogId(Long beetLogId){
         List<OrderEntity> orderEntityList = orderRepository.findByBeetLogId(beetLogId);
         List<SamplesEntity> samplesEntityList = samplesRepo.findByBeetLogId(beetLogId);
-        List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+        List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
         List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
         return new OrderAndSampleRes(orderResponseList, sampleResList);
     }
@@ -83,7 +83,7 @@ public class OrderService {
     public OrderAndSampleRes getAllOrderAndSampleByClientLogId(Long clientLogId){
         List<OrderEntity> orderEntityList = orderRepository.findByClientLogId(clientLogId);
         List<SamplesEntity> samplesEntityList = samplesRepo.findByClientLogId(clientLogId);
-        List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+        List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
         List<SampleRes> sampleResList = samplesEntityList.stream().map(this::mapToSampleDto).toList();
         return new OrderAndSampleRes(orderResponseList, sampleResList);
     }
@@ -118,7 +118,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
         }
         OrderResponse orderResponse = new OrderResponse();
-        orderResponse = entityToDto(optionalOrderEntity.get(), "Message");
+        orderResponse = entityToDto(optionalOrderEntity.get());
         orderResponse.setMemberResponse(externalRestService.getMember(optionalOrderEntity.get().getMemberId()));
         if (salesType.equalsIgnoreCase("primary")) {
             orderResponse.setClientFMCGResponse(externalRestService.getClient(optionalOrderEntity.get().getClientFmcgId()));
@@ -131,7 +131,6 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request, String salesType) {
-        String message = "create order";
         List<InvoiceMaster> invoiceMastersList = invoiceMasterRepo.findAll();
         if(invoiceMastersList.isEmpty()){
             throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
@@ -170,7 +169,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         transactionRequest.setMemberId(entity.getMemberId());
         log.info("create transaction after order creation");
         transactionController.createTransaction(transactionRequest);
-        return entityToDto(entity, message);
+        return entityToDto(entity);
     }
 
     @Transactional
@@ -203,7 +202,6 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
         log.info("Creating order in bulk");
         for (OrderRequest orderRequest : request.getOrderRequestList()) {
-            String message = "create order";
             log.info("Creating order: {}", request);
             OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
             orderEntity.setOrderInvoice(generatedInvoice);
@@ -218,7 +216,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             transactionRequest.setMemberId(entity.getMemberId());
             log.info("create transaction after order creation");
             transactionController.createTransaction(transactionRequest);
-            orderResponseList.add(entityToDto(entity, message));
+            orderResponseList.add(entityToDto(entity));
         }
         return orderResponseList;
     }
@@ -253,7 +251,6 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
         log.info("Creating order in bulk");
         for (OrderRequest orderRequest : request.getOrderRequestList()) {
-            String message = "create order";
             log.info("Creating order: {}", request);
             OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
             orderEntity.setOrderInvoice(generatedInvoice);
@@ -268,7 +265,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             transactionRequest.setMemberId(entity.getMemberId());
             log.info("create transaction after order creation");
             transactionController.createTransaction(transactionRequest);
-            orderResponseList.add(entityToDto(entity, message));
+            orderResponseList.add(entityToDto(entity));
             InventoryUpdateRequest inventoryUpdateRequest = new InventoryUpdateRequest();
             inventoryUpdateRequest.setQuantitySold((long) orderRequest.getQuantity());
             inventoryUpdateRequest.setSalesLevel(orderRequest.getSalesLevel());
@@ -280,7 +277,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
 
     public List<OrderResponse> getAllOrderByInvoiceNumber(String invoiceNumber) {
         List<OrderEntity> orderEntityList = orderRepository.findByInvoiceNumber(invoiceNumber);
-        return orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "MSG")).toList();
+        return orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity)).toList();
     }
 
     public Double finalPrice(OrderRequest request) {
@@ -387,6 +384,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         orderEntity.setCityId(clientFMCGResponse.getCity());
         orderEntity.setPriceAfterDiscount(priceAfterDiscount);
         orderEntity.setOrderCreatedDate(new Date());
+        orderEntity.setStatus(OrderStatus.CREATED);
         orderEntity.setRemarks(request.getRemarks());
 
         if (salesType.equalsIgnoreCase("secondary")) {
@@ -461,7 +459,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         return "Recharge successful";
     }
 
-    public OrderResponse entityToDto(OrderEntity orderEntity, String message) {
+    public OrderResponse entityToDto(OrderEntity orderEntity) {
         OrderResponse orderResponse = new OrderResponse();
         if (orderEntity.getOutletId() == null) {
             orderEntity.setOutletId(0L);
@@ -482,7 +480,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         orderResponse.setDoctorLogId(orderEntity.getDoctorLogId());
         orderResponse.setInvoiceNumber(orderEntity.getInvoiceNumber());
         orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
-        orderResponse.setStatus("create order".equals(message) ? OrderStatus.CREATED : orderEntity.getStatus());
+        orderResponse.setStatus(orderEntity.getStatus());
         Double gstOnOrder = getProductPriceType2(orderResponse.getProductRes(), "gst");
         orderResponse.setGstAmount(gstOnOrder);
         orderResponse.setOrderMedium(orderEntity.getOrderMedium());
@@ -514,7 +512,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         if (orderById.isEmpty()) {
             throw new NoSuchElementFoundException(ApiErrorCodes.ORDER_NOT_FOUND.getErrorCode(), ApiErrorCodes.ORDER_NOT_FOUND.getErrorMessage());
         }
-        List<OrderResponse> collect = orderById.getContent().stream().map(orderEntity -> entityToDto(orderEntity, "")).collect(Collectors.toList());
+        List<OrderResponse> collect = orderById.getContent().stream().map(this::entityToDto).collect(Collectors.toList());
         return PaginatedResp.<OrderResponse>builder().totalElements(orderById.getTotalElements()).totalPages(orderById.getTotalPages()).page(page).content(collect).build();
     }
 
@@ -552,7 +550,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             orderResponse.setOrderId(updatedOrder.getId());
             orderResponse.setStatus(updatedOrder.getStatus());
             orderResponse.setTotalPrice(orderEntity.getPrice());
-            orderResponse.setTotalPriceWithGst(entityToDto(orderEntity, "MSG").getTotalPriceWithGst());
+            orderResponse.setTotalPriceWithGst(entityToDto(orderEntity).getTotalPriceWithGst());
             orderResponse.setQuantity(String.valueOf(updatedOrder.getQuantity()));
             orderResponse.setMessage("Order status updated to delivered!!");
             orderResponse.setRemarks(updatedOrder.getRemarks());
@@ -569,8 +567,8 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             orderResponse.setOrderId(updatedOrder.getId());
             orderResponse.setQuantity(String.valueOf(updatedOrder.getQuantity()));
             orderResponse.setStatus(updatedOrder.getStatus());
-            orderResponse.setTotalPrice(entityToDto(orderEntity, "MSG").getTotalPrice());
-            orderResponse.setTotalPriceWithGst(entityToDto(orderEntity, "MSG").getTotalPriceWithGst());
+            orderResponse.setTotalPrice(entityToDto(orderEntity).getTotalPrice());
+            orderResponse.setTotalPriceWithGst(entityToDto(orderEntity).getTotalPriceWithGst());
             orderResponse.setMessage("Order status updated to delivered!!");
             orderResponse.setRemarks(updatedOrder.getRemarks());
             return orderResponse;
@@ -599,7 +597,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         updateBjpAndDjpOrderValueReq.setNewPrice(orderEntity.getPrice());
         externalRestService.updateBjpAndDjpOrderValue(updateBjpAndDjpOrderValueReq);
         orderRepository.save(orderEntity);
-        OrderResponse orderResponse = entityToDto(orderEntity, "MSG");
+        OrderResponse orderResponse = entityToDto(orderEntity);
         OrderUpdateResponse orderUpdateResponse = new OrderUpdateResponse();
         orderUpdateResponse.setQuantity(String.valueOf(orderEntity.getQuantity()));
         orderUpdateResponse.setStatus(orderEntity.getStatus());
@@ -676,7 +674,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByClientFmcgId");
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgId(clientFmcgId, pageable);
-        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity)).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }
 
@@ -685,7 +683,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         Pageable pageable = PageRequest.of(page, pageSize, sort);
         log.info("inside of getAllOrderByMemberId");
         Page<OrderEntity> orderEntityPage = orderRepository.findByMemberId(memberId, pageable);
-        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity)).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }
 
@@ -695,7 +693,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         log.info("inside of getAllOrderByClientFmcgIdAndSalesLevel");
         Page<OrderEntity> orderEntityPage = orderRepository.findByClientFmcgIdAndSalesLevel(clientFmcgId, SalesLevel.valueOf(salesLevel), pageable);
         log.info("Paged data returned successfully");
-        List<OrderResponse> collect = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        List<OrderResponse> collect = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity)).toList();
         return PaginatedResp.<OrderResponse>builder().totalElements(orderEntityPage.getTotalElements()).totalPages(orderEntityPage.getTotalPages()).page(page).content(collect).build();
     }
 
@@ -706,7 +704,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
         for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
             List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
-            List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+            List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
             OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
             groupedResponses.add(orders);
         }
@@ -720,7 +718,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
             for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
                 List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
-                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
                 OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
                 groupedResponses.add(orders);
             }
@@ -736,7 +734,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
             for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
                 List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
-                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
                 OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
                 groupedResponses.add(orders);
             }
@@ -746,7 +744,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
             List<OrdersWithInvoiceGroupingResp> groupedResponses = new ArrayList<>();
             for (OrderInvoice orderInvoice : orderInvoicePage.getContent()) {
                 List<OrderEntity> orderEntityList = orderRepository.findOrdersByInvoiceNumber(orderInvoice.getInvoiceNumber());
-                List<OrderResponse> orderResponseList = orderEntityList.stream().map(orderEntity -> entityToDto(orderEntity, "mg")).toList();
+                List<OrderResponse> orderResponseList = orderEntityList.stream().map(this::entityToDto).toList();
                 OrdersWithInvoiceGroupingResp orders = new OrdersWithInvoiceGroupingResp(orderInvoice.getInvoiceNumber(), orderResponseList);
                 groupedResponses.add(orders);
             }
@@ -760,7 +758,7 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         log.info("inside of getAllOrderByMemberId");
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(memberId);
         Page<OrderEntity> orderEntityPage = orderRepository.findByMembersIdList(memberIds, salesLevel, pageable);
-        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity, "Message")).toList();
+        List<OrderResponse> orderResponseList = orderEntityPage.stream().map(orderEntity -> entityToDto(orderEntity)).toList();
         return new PaginatedResp<>(orderEntityPage.getTotalElements(), orderEntityPage.getTotalPages(), page, orderResponseList);
     }
 
