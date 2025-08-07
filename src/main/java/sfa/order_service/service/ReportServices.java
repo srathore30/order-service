@@ -925,4 +925,30 @@ public class ReportServices {
         return memberSalesMap.entrySet().stream().map(entry -> buildMemberSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(MemberSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
                 .collect(Collectors.toList());
     }
+
+    public List<ProductSalesResponse> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByProduct(ReportsRequest reportsRequest, Long reportingManagerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
+        log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberIdIn(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getProductId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        return productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
+                .collect(Collectors.toList());
+    }
+    public List<ProductSalesResponse> totalSalesByDateAndSalesLevelWithGroupByProduct(ReportsRequest reportsRequest) {
+        log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getProductId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        return productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
+                .collect(Collectors.toList());
+    }
 }

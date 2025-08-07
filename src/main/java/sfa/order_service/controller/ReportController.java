@@ -264,10 +264,7 @@ public class ReportController {
     }
     @GetMapping("/totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers")
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
-    public ResponseEntity<List<MemberSalesResponse>> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-                                                                                                                          @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
-                                                                                                                          @RequestParam SalesLevel salesLevel,
-                                                                                                                          @RequestParam Long reportingManagerId) throws ParseException {
+    public ResponseEntity<List<MemberSalesResponse>> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, @RequestParam SalesLevel salesLevel, @RequestParam Long reportingManagerId) throws ParseException {
         ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
         List<MemberSalesResponse> reportsResponse = reportServices.totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers(reportsRequest,reportingManagerId);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
@@ -279,4 +276,23 @@ public class ReportController {
         List<ProductSalesResponse> reportsResponse = reportServices.totalSalesByDateAndSalesLevelWithGroupByProduct(reportsRequest, memberId);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
     }
+
+
+    //New Api
+    @GetMapping("/totalSalesByDateAndSalesLevelAnReportingManagerIdWithGroupByProduct")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<ProductSalesResponse>> totalSalesByDateAndSalesLevelAnReportingManagerIdWithGroupByProduct(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, @RequestParam SalesLevel salesLevel, @RequestParam Long reportingManagerId) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<ProductSalesResponse> reportsResponse = reportServices.totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByProduct(reportsRequest, reportingManagerId);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+    @GetMapping("/totalSalesByDateAndSalesLevelWithGroupByProduct")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<ProductSalesResponse>> totalSalesByDateAndSalesLevelWithGroupByProduct(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, @RequestParam SalesLevel salesLevel) throws ParseException {
+        ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
+        List<ProductSalesResponse> reportsResponse = reportServices.totalSalesByDateAndSalesLevelWithGroupByProduct(reportsRequest);
+        return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+
 }
