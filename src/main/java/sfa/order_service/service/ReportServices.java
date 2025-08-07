@@ -929,7 +929,7 @@ public class ReportServices {
     public List<ProductSalesResponse> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByProduct(ReportsRequest reportsRequest, Long reportingManagerId) {
         Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(reportingManagerId);
         log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberIdIn(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberIds);
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndMemberIdIn(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberIds);
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -941,7 +941,7 @@ public class ReportServices {
     }
     public List<ProductSalesResponse> totalSalesByDateAndSalesLevelWithGroupByProduct(ReportsRequest reportsRequest) {
         log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
-        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
         if (orderEntityList.isEmpty()) {
             return Collections.emptyList();
         }
