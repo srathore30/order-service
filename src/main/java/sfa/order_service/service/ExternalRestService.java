@@ -3,6 +3,7 @@ package sfa.order_service.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -54,6 +55,9 @@ public class ExternalRestService {
     private String inventoryUpdateUrl;
     @Value("${inventory.customUpdate.url}")
     private String customUpdateUrl;
+
+    @Value("${products.getAllProductByIds.url}")
+    private String getAllProductByIdsUrl;
 
     @Value("${combineTourPlan.updateBjpAndCjpOrderValue.url}")
     private String updateBjpAndCjpOrderValueUrl;
@@ -137,6 +141,21 @@ public class ExternalRestService {
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }
+
+    public List<ProductRes> getAllProductByIds(List<Long> productIds) {
+        try{
+            log.info("getAllProductByIds from external rest service");
+            String url = getAllProductByIdsUrl;
+            log.info("URL: {}", url);
+            HttpEntity<List<Long>> requestEntity = new HttpEntity<>(productIds, createHeaders());
+            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<ProductRes>>() {
+            }).getBody();
+        }catch (Exception e){
+            log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+
 
     public void rollBackInventoryForSample(List<UpdateCustomInventoryReq> updateCustomInventoryReqList) {
         try{

@@ -1,16 +1,17 @@
 package sfa.order_service.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductSalesResponse {
-    private Long productId;
-    private String productName;
-    private Double totalSales;
+    Long productId;
+    String productName;
+    Double totalSales;
+    String sku;
+    String productImageUrl;
 }

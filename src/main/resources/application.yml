@@ -49,6 +49,8 @@ doctor:
   getDoctor:
     url: http://localhost:9090/doctors
 products:
+  getAllProductByIds:
+    url: http://localhost:9093/product-service/products/getAllProductByIds
   service:
     url: http://localhost:9093/product-service
 
