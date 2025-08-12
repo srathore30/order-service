@@ -917,6 +917,155 @@ public class ReportServices {
         }
         return updatedProductSaleResponseList;
     }
+
+    //Beet Report For member by sale
+    public List<BeetSalesResponse> totalSalesByDateWithGroupByBeetAndMemberId(ReportsRequest reportsRequest, Long memberId) {
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getBeetId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<BeetSalesResponse> beetSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildBeetSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(BeetSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> beetIds = new HashSet<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            beetIds.add(beetSalesResponse.getBeetRespForOrderDto().getId());
+        }
+        List<BeetRespForOrderDto> beetResList = productServiceClient.getBeets(beetIds);
+        List<BeetSalesResponse> updatedBeetSaleResponseList = new ArrayList<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            BeetRespForOrderDto beetRespForOrderDto = fetchBeetResFromList(beetResList, beetSalesResponse.getBeetRespForOrderDto().getId());
+            beetSalesResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+            updatedBeetSaleResponseList.add(beetSalesResponse);
+        }
+        return updatedBeetSaleResponseList;
+    }
+    //Beet Report For super admin by sale
+    public List<BeetSalesResponse> totalSalesByDateWithGroupByBeetForSuperAdmin(ReportsRequest reportsRequest) {
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getBeetId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<BeetSalesResponse> beetSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildBeetSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(BeetSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> beetIds = new HashSet<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            beetIds.add(beetSalesResponse.getBeetRespForOrderDto().getId());
+        }
+        List<BeetRespForOrderDto> beetResList = productServiceClient.getBeets(beetIds);
+        List<BeetSalesResponse> updatedBeetSaleResponseList = new ArrayList<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            BeetRespForOrderDto beetRespForOrderDto = fetchBeetResFromList(beetResList, beetSalesResponse.getBeetRespForOrderDto().getId());
+            beetSalesResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+            updatedBeetSaleResponseList.add(beetSalesResponse);
+        }
+        return updatedBeetSaleResponseList;
+    }
+    //Beet Report For reporting manager by sale
+    public List<BeetSalesResponse> totalSalesByDateWithGroupByBeetForReportingManager(ReportsRequest reportsRequest, Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getBeetId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<BeetSalesResponse> beetSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildBeetSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(BeetSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> beetIds = new HashSet<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            beetIds.add(beetSalesResponse.getBeetRespForOrderDto().getId());
+        }
+        List<BeetRespForOrderDto> beetResList = productServiceClient.getBeets(beetIds);
+        List<BeetSalesResponse> updatedBeetSaleResponseList = new ArrayList<>();
+        for(BeetSalesResponse beetSalesResponse : beetSalesResponseList){
+            BeetRespForOrderDto beetRespForOrderDto = fetchBeetResFromList(beetResList, beetSalesResponse.getBeetRespForOrderDto().getId());
+            beetSalesResponse.setBeetRespForOrderDto(beetRespForOrderDto);
+            updatedBeetSaleResponseList.add(beetSalesResponse);
+        }
+        return updatedBeetSaleResponseList;
+    }
+
+    //Outlet Report For member by sale
+    public List<OutletSalesResponse> totalSalesByDateWithGroupByOutletAndMemberId(ReportsRequest reportsRequest, Long memberId) {
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevelAndMemberId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), memberId);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getOutletId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<OutletSalesResponse> outletSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildOutletSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(OutletSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> outletIds = new HashSet<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            outletIds.add(outletSalesResponse.getOutletRespForOrderDto().getId());
+        }
+        List<OutletRespForOrderDto> outletResList = productServiceClient.getOutlets(outletIds);
+        List<OutletSalesResponse> updatedOutletSaleResponseList = new ArrayList<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            OutletRespForOrderDto outletRespForOrderDto = fetchOutletResFromList(outletResList, outletSalesResponse.getOutletRespForOrderDto().getId());
+            outletSalesResponse.setOutletRespForOrderDto(outletRespForOrderDto);
+            updatedOutletSaleResponseList.add(outletSalesResponse);
+        }
+        return updatedOutletSaleResponseList;
+    }
+    //Outlet Report For super admin by sale
+    public List<OutletSalesResponse> totalSalesByDateWithGroupByOutletForSuperAdmin(ReportsRequest reportsRequest) {
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findAllByCreatedDateBetweenAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant());
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getOutletId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<OutletSalesResponse> outletSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildOutletSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(OutletSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> outletIds = new HashSet<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            outletIds.add(outletSalesResponse.getOutletRespForOrderDto().getId());
+        }
+        List<OutletRespForOrderDto> outletResList = productServiceClient.getOutlets(outletIds);
+        List<OutletSalesResponse> updatedOutletSaleResponseList = new ArrayList<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            OutletRespForOrderDto outletRespForOrderDto = fetchOutletResFromList(outletResList, outletSalesResponse.getOutletRespForOrderDto().getId());
+            outletSalesResponse.setOutletRespForOrderDto(outletRespForOrderDto);
+            updatedOutletSaleResponseList.add(outletSalesResponse);
+        }
+        return updatedOutletSaleResponseList;
+    }
+    //Outlet Report For reporting manager by sale
+    public List<OutletSalesResponse> totalSalesByDateWithGroupByOutletForReportingManager(ReportsRequest reportsRequest,Long managerId) {
+        Set<Long> memberIds = productServiceClient.getAllMemberIdsByReportingManager(managerId);
+        log.info("Get sales by beet filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
+        List<OrderEntity> orderEntityList = orderRepository.findOrdersByStartDateAndEndDateAndMembersAndSalesLevel(reportsRequest.getStartDate(), reportsRequest.getSalesLevelConstant(), reportsRequest.getEndDate(), memberIds);
+        if (orderEntityList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        log.info("Group orders by productId and calculate total sales per product");
+        Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getOutletId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
+        log.info(" Prepare the response list with sorted sales data");
+        List<OutletSalesResponse> outletSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildOutletSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(OutletSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        Set<Long> outletIds = new HashSet<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            outletIds.add(outletSalesResponse.getOutletRespForOrderDto().getId());
+        }
+        List<OutletRespForOrderDto> outletResList = productServiceClient.getOutlets(outletIds);
+        List<OutletSalesResponse> updatedOutletSaleResponseList = new ArrayList<>();
+        for(OutletSalesResponse outletSalesResponse : outletSalesResponseList){
+            OutletRespForOrderDto outletRespForOrderDto = fetchOutletResFromList(outletResList, outletSalesResponse.getOutletRespForOrderDto().getId());
+            outletSalesResponse.setOutletRespForOrderDto(outletRespForOrderDto);
+            updatedOutletSaleResponseList.add(outletSalesResponse);
+        }
+        return updatedOutletSaleResponseList;
+    }
+
     private ProductRes fetchProductResFromList(List<ProductRes> productResList, Long productId){
         for(ProductRes productRes : productResList){
             if(Objects.equals(productRes.getProductId(), productId)){
@@ -925,11 +1074,39 @@ public class ReportServices {
         }
         return new ProductRes();
     }
+    private BeetRespForOrderDto fetchBeetResFromList(List<BeetRespForOrderDto> beetRespForOrderDtoList, Long beetId){
+        for(BeetRespForOrderDto beetRespForOrderDto : beetRespForOrderDtoList){
+            if(Objects.equals(beetRespForOrderDto.getId(), beetId)){
+                return beetRespForOrderDto;
+            }
+        }
+        return new BeetRespForOrderDto();
+    }
+    private OutletRespForOrderDto fetchOutletResFromList(List<OutletRespForOrderDto> outletRespForOrderDtoList, Long beetId){
+        for(OutletRespForOrderDto outletRespForOrderDto : outletRespForOrderDtoList){
+            if(Objects.equals(outletRespForOrderDto.getId(), beetId)){
+                return outletRespForOrderDto;
+            }
+        }
+        return new OutletRespForOrderDto();
+    }
     private ProductSalesResponse buildProductSalesResponse(Long productId, Double totalSales) {
         log.info("Get product with product id: {}", productId);
-        ProductRes product = productServiceClient.getProduct(productId);
+        ProductSalesResponse productSalesResponse = new ProductSalesResponse();
+        productSalesResponse.setProductId(productId);
+        productSalesResponse.setTotalSales(totalSales);
         log.info("Making Response with ProductId, Product Name & total sales");
-        return new ProductSalesResponse(productId, product.getName(), totalSales, product.getSku(), product.getImageUrl());
+        return productSalesResponse;
+    }
+    private BeetSalesResponse buildBeetSalesResponse(Long beetId, Double totalSales) {
+        BeetRespForOrderDto beetRespForOrderDto = new BeetRespForOrderDto();
+        beetRespForOrderDto.setId(beetId);
+        return new BeetSalesResponse(beetRespForOrderDto, totalSales);
+    }
+    private OutletSalesResponse buildOutletSalesResponse(Long outletId, Double totalSales) {
+        OutletRespForOrderDto outletRespForOrderDto = new OutletRespForOrderDto();
+        outletRespForOrderDto.setId(outletId);
+        return new OutletSalesResponse(outletRespForOrderDto, totalSales);
     }
 
     public List<MemberSalesResponse> totalSalesByDateAndSalesLevelAndReportingManagerIdWithGroupByMembers(ReportsRequest reportsRequest,Long reportingManagerId) {

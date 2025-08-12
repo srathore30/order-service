@@ -273,8 +273,42 @@ public class ReportController {
     @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<ProductSalesResponse>> totalSalesByDateAndSalesLevelAndProductWithGroupByProduct(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate, @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate, @RequestParam SalesLevel salesLevel, @RequestParam Long memberId) throws ParseException {
         ReportsRequest reportsRequest = new ReportsRequest(startDate, endDate, salesLevel);
-        List<ProductSalesResponse> reportsResponse = reportServices.  totalSalesByDateAndSalesLevelWithGroupByProduct(reportsRequest, memberId);
+        List<ProductSalesResponse> reportsResponse = reportServices.totalSalesByDateAndSalesLevelWithGroupByProduct(reportsRequest, memberId);
         return new ResponseEntity<>(reportsResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/totalSalesByDateWithGroupByBeetAndMemberId/{memberId}")
+    public ResponseEntity<List<BeetSalesResponse>> getSalesForMember(@PathVariable Long memberId, @RequestBody ReportsRequest reportsRequest) {
+        List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetAndMemberId(reportsRequest, memberId);
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/totalSalesByDateWithGroupByBeetForSuperAdmin")
+    public ResponseEntity<List<BeetSalesResponse>> getSalesForSuperAdmin(@RequestBody ReportsRequest reportsRequest) {
+        List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetForSuperAdmin(reportsRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/totalSalesByDateWithGroupByBeetForReportingManager/{managerId}")
+    public ResponseEntity<List<BeetSalesResponse>> getSalesForReportingManager(@PathVariable Long managerId, @RequestBody ReportsRequest reportsRequest) {
+        List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetForReportingManager(reportsRequest, managerId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/totalSalesByDateWithGroupByOutletAndMemberId/{memberId}")
+    public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletAndMemberId(@PathVariable Long memberId, @RequestBody ReportsRequest reportsRequest) {
+        List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletAndMemberId(reportsRequest, memberId);
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/totalSalesByDateWithGroupByOutletForSuperAdmin")
+    public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletForSuperAdmin(@RequestBody ReportsRequest reportsRequest) {
+        List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletForSuperAdmin(reportsRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/totalSalesByDateWithGroupByOutletForReportingManager/{managerId}")
+    public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletForReportingManager(@PathVariable Long managerId, @RequestBody ReportsRequest reportsRequest) {
+        List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletForReportingManager(reportsRequest, managerId);
+        return ResponseEntity.ok(response);
     }
 
 
