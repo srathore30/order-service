@@ -1134,8 +1134,21 @@ public class ReportServices {
         log.info("Group orders by productId and calculate total sales per product");
         Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getProductId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
         log.info(" Prepare the response list with sorted sales data");
-        return productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
-                .collect(Collectors.toList());
+        List<ProductSalesResponse> productSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        List<Long> productIds = new ArrayList<>();
+        for(ProductSalesResponse productSalesResponse : productSalesResponseList){
+            productIds.add(productSalesResponse.getProductId());
+        }
+        List<ProductRes> productResList = externalRestService.getAllProductByIds(productIds);
+        List<ProductSalesResponse> updatedProductSaleResponseList = new ArrayList<>();
+        for(ProductSalesResponse productSalesResponse : productSalesResponseList){
+            ProductRes productRes = fetchProductResFromList(productResList, productSalesResponse.getProductId());
+            productSalesResponse.setProductName(productRes.getName());
+            productSalesResponse.setSku(productRes.getSku());
+            productSalesResponse.setProductImageUrl(productRes.getImageUrl());
+            updatedProductSaleResponseList.add(productSalesResponse);
+        }
+        return updatedProductSaleResponseList;
     }
     public List<ProductSalesResponse> totalSalesByDateAndSalesLevelWithGroupByProduct(ReportsRequest reportsRequest) {
         log.info("Get sales by product filtered by member with date range: {} and sales level: {}", reportsRequest.getStartDate(), reportsRequest.getEndDate());
@@ -1146,7 +1159,20 @@ public class ReportServices {
         log.info("Group orders by productId and calculate total sales per product");
         Map<Long, Double> productSalesMap = orderEntityList.stream().collect(Collectors.groupingBy(OrderEntity::getProductId, Collectors.summingDouble(order -> order.getPriceAfterDiscount() != null ? order.getPriceAfterDiscount() : order.getPrice())));
         log.info(" Prepare the response list with sorted sales data");
-        return productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()) // Sort by total sales DESC
-                .collect(Collectors.toList());
+        List<ProductSalesResponse> productSalesResponseList = productSalesMap.entrySet().stream().map(entry -> buildProductSalesResponse(entry.getKey(), entry.getValue())).sorted(Comparator.comparingDouble(ProductSalesResponse::getTotalSales).reversed()).toList(); // Sort by total sales DESC.toList();
+        List<Long> productIds = new ArrayList<>();
+        for(ProductSalesResponse productSalesResponse : productSalesResponseList){
+            productIds.add(productSalesResponse.getProductId());
+        }
+        List<ProductRes> productResList = externalRestService.getAllProductByIds(productIds);
+        List<ProductSalesResponse> updatedProductSaleResponseList = new ArrayList<>();
+        for(ProductSalesResponse productSalesResponse : productSalesResponseList){
+            ProductRes productRes = fetchProductResFromList(productResList, productSalesResponse.getProductId());
+            productSalesResponse.setProductName(productRes.getName());
+            productSalesResponse.setSku(productRes.getSku());
+            productSalesResponse.setProductImageUrl(productRes.getImageUrl());
+            updatedProductSaleResponseList.add(productSalesResponse);
+        }
+        return updatedProductSaleResponseList;
     }
 }
