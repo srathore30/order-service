@@ -278,34 +278,40 @@ public class ReportController {
     }
 
     @PostMapping("/totalSalesByDateWithGroupByBeetAndMemberId/{memberId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<BeetSalesResponse>> getSalesForMember(@PathVariable Long memberId, @RequestBody ReportsRequest reportsRequest) {
         List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetAndMemberId(reportsRequest, memberId);
         return ResponseEntity.ok(response);
     }
     @PostMapping("/totalSalesByDateWithGroupByBeetForSuperAdmin")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<BeetSalesResponse>> getSalesForSuperAdmin(@RequestBody ReportsRequest reportsRequest) {
         List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetForSuperAdmin(reportsRequest);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/totalSalesByDateWithGroupByBeetForReportingManager/{managerId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<BeetSalesResponse>> getSalesForReportingManager(@PathVariable Long managerId, @RequestBody ReportsRequest reportsRequest) {
         List<BeetSalesResponse> response = reportServices.totalSalesByDateWithGroupByBeetForReportingManager(reportsRequest, managerId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/totalSalesByDateWithGroupByOutletAndMemberId/{memberId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletAndMemberId(@PathVariable Long memberId, @RequestBody ReportsRequest reportsRequest) {
         List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletAndMemberId(reportsRequest, memberId);
         return ResponseEntity.ok(response);
     }
     @PostMapping("/totalSalesByDateWithGroupByOutletForSuperAdmin")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletForSuperAdmin(@RequestBody ReportsRequest reportsRequest) {
         List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletForSuperAdmin(reportsRequest);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/totalSalesByDateWithGroupByOutletForReportingManager/{managerId}")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
     public ResponseEntity<List<OutletSalesResponse>> totalSalesByDateWithGroupByOutletForReportingManager(@PathVariable Long managerId, @RequestBody ReportsRequest reportsRequest) {
         List<OutletSalesResponse> response = reportServices.totalSalesByDateWithGroupByOutletForReportingManager(reportsRequest, managerId);
         return ResponseEntity.ok(response);
