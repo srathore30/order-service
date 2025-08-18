@@ -220,7 +220,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -234,6 +234,13 @@ public class ReportServices {
         return monthlySalesMap.entrySet().stream().map(entry -> new SalesResForGraph(entry.getKey(), entry.getValue())).collect(Collectors.toList());
     }
 
+    public OrderResponse mapToCustomOrderResponse1(OrderEntity orderEntity) {
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setTotalPriceWithGst(orderEntity.getPrice());
+        orderResponse.setOrderCreatedDate(orderEntity.getOrderCreatedDate());
+        return orderResponse;
+    }
+
     public List<SalesResForGraph> findOverallSalesByDateAndSalesLevelForGraphForState(ReportsRequest reportsRequest, Long stateId) {
         List<OrderEntity> orderEntityList = orderRepository.findAllByOrderCreatedDateBetweenAndSalesLevelAndStateId(reportsRequest.getStartDate(), reportsRequest.getEndDate(), reportsRequest.getSalesLevelConstant(), stateId);
 
@@ -242,7 +249,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -264,7 +271,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -286,7 +293,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -309,7 +316,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -331,7 +338,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -354,7 +361,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
@@ -377,7 +384,7 @@ public class ReportServices {
         }
         List<OrderResponse> orderResponseList = new ArrayList<>();
         for (OrderEntity orderEntity : orderEntityList) {
-            OrderResponse orderResponse = mapToOrderResponse(orderEntity);
+            OrderResponse orderResponse = mapToCustomOrderResponse1(orderEntity);
             orderResponseList.add(orderResponse);
         }
         Map<YearMonth, Double> monthlySalesMap = new HashMap<>();
