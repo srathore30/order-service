@@ -1,7 +1,5 @@
 package sfa.order_service.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -165,13 +163,8 @@ public class ExternalRestService {
         try{
             String url = getLocationBulkResUrl;
             HttpEntity<List<Long>> requestEntity = new HttpEntity<>(clientFmcgIds, createHeaders());
-            ResponseEntity<String> response =
-                    restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            return mapper.readValue(response.getBody(), LocationBulkRes.class);
+            ResponseEntity<LocationBulkRes> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, LocationBulkRes.class);
+            return response.getBody();
         }catch (Exception e){
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }

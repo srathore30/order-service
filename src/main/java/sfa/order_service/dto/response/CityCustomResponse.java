@@ -17,6 +17,5 @@ public class CityCustomResponse {
     private String cityCode;
     private String cityClass;
     private String stateName;
-    private Status cityStatus;
     private CityType cityType;
 }
