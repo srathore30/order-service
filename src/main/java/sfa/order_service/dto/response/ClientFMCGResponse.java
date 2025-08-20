@@ -1,5 +1,6 @@
 package sfa.order_service.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import sfa.order_service.constant.UserRole;
@@ -7,6 +8,7 @@ import sfa.order_service.constant.UserRole;
 import java.util.List;
 
 @Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Setter
 public class ClientFMCGResponse {
     private String clientCode;
