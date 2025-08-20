@@ -163,7 +163,8 @@ public class ExternalRestService {
         try{
             String url = getLocationBulkResUrl;
             HttpEntity<List<Long>> requestEntity = new HttpEntity<>(clientFmcgIds, createHeaders());
-            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, LocationBulkRes.class).getBody();
+            ResponseEntity<LocationBulkRes> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, LocationBulkRes.class);
+            return response.getBody();
         }catch (Exception e){
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
