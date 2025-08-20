@@ -1,6 +1,5 @@
 package sfa.order_service.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,9 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-
-public class StateResponse {
+public class RegionCustomResponse {
     private Long id;
-    private String stateName;
-    private RegionResponse regionEntity;
+    private String regionName;
 }

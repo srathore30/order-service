@@ -158,29 +158,29 @@ public class ReportServices {
         return new ClientFMCGResponse();
     }
 
-    private CityResponse getCityNameResFromListById(Long id, List<CityResponse> cityResponseList){
-        for(CityResponse resp : cityResponseList){
+    private CityCustomResponse getCityNameResFromListById(Long id, List<CityCustomResponse> cityResponseList){
+        for(CityCustomResponse resp : cityResponseList){
             if(Objects.equals(resp.getId(), id)){
                 return resp;
             }
         }
-        return new CityResponse();
+        return new CityCustomResponse();
     }
-    private StateResponse getStateNameResFromListById(Long id, List<StateResponse> stateResponseList){
-        for(StateResponse resp : stateResponseList){
+    private StateCustomResponse getStateNameResFromListById(Long id, List<StateCustomResponse> stateResponseList){
+        for(StateCustomResponse resp : stateResponseList){
             if(Objects.equals(resp.getId(), id)){
                 return resp;
             }
         }
-        return new StateResponse();
+        return new StateCustomResponse();
     }
-    private RegionResponse getRegionNameResFromListById(Long id, List<RegionResponse> regionResponseList){
-        for(RegionResponse resp : regionResponseList){
+    private RegionCustomResponse getRegionNameResFromListById(Long id, List<RegionCustomResponse> regionResponseList){
+        for(RegionCustomResponse resp : regionResponseList){
             if(Objects.equals(resp.getId(), id)){
                 return resp;
             }
         }
-        return new RegionResponse();
+        return new RegionCustomResponse();
     }
     private BeetRespForOrderDto getBeetResFromListById(Long id, List<BeetRespForOrderDto> beetRespForOrderDtoList){
         for(BeetRespForOrderDto resp : beetRespForOrderDtoList){

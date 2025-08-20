@@ -11,8 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LocationBulkRes {
-    List<CityResponse> cityList;
-    List<StateResponse> stateList;
-    List<RegionResponse> regionList;
+    List<CityCustomResponse> cityList;
+    List<StateCustomResponse> stateList;
+    List<RegionCustomResponse> regionList;
     List<ClientFMCGResponse> clientFMCGResponseList;
 }

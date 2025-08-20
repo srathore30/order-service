@@ -10,7 +10,7 @@ import sfa.order_service.constant.Status;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-public class CityResponse {
+public class CityCustomResponse {
     private Long id;
     private String cityName;
     private Long stateId;
