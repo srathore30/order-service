@@ -75,6 +75,8 @@ outlets:
     url: http://localhost:9090/getOutletForReportById
 
 combineTourPlan:
+  getLocationBulkResUrl:
+    url: http://localhost:9090/combine-tour-plan/getLocationBulkRes
   updateBjpAndCjpOrderValue:
     url: http://localhost:9090/combine-tour-plan/updateBjpAndCjpOrderValue
 

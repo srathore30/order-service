@@ -62,6 +62,9 @@ public class ExternalRestService {
     @Value("${combineTourPlan.updateBjpAndCjpOrderValue.url}")
     private String updateBjpAndCjpOrderValueUrl;
 
+    @Value("${combineTourPlan.getLocationBulkResUrl.url}")
+    private String getLocationBulkResUrl;
+
     private HttpHeaders createHeaders() {
         log.info("Helper method to create HTTP headers with the token");
         log.info("Token: {}", TokenContext.getToken());
@@ -152,6 +155,16 @@ public class ExternalRestService {
             }).getBody();
         }catch (Exception e){
             log.info("Error occurred: " + e.getMessage());
+            throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
+        }
+    }
+
+    public LocationBulkRes getLocationBulkRes(List<Long> clientFmcgIds) {
+        try{
+            String url = getLocationBulkResUrl;
+            HttpEntity<List<Long>> requestEntity = new HttpEntity<>(clientFmcgIds, createHeaders());
+            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, LocationBulkRes.class).getBody();
+        }catch (Exception e){
             throw new BusinessServiceException(ApiErrorCodes.CLIENT_NOT_FOUND.getErrorCode(), e.getMessage());
         }
     }

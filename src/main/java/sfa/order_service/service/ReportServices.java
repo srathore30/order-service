@@ -45,16 +45,28 @@ public class ReportServices {
         Double totalSales = 0D;
         int totalOrder = 0;
         ReportsResponse reportsResponse = new ReportsResponse();
+        List<Long> productIds = new ArrayList<>();
+        List<Long> clientFmcgIds = new ArrayList<>();
+        for (OrderEntity orderEntity : orderEntityList) {
+            if(!productIds.contains(orderEntity.getProductId())) {
+                productIds.add(orderEntity.getProductId());
+            }
+            if(!clientFmcgIds.contains(orderEntity.getClientFmcgId())) {
+                clientFmcgIds.add(orderEntity.getClientFmcgId());
+            }
+        }
+        List<ProductRes> productResList = externalRestService.getAllProductByIds(productIds);
+        LocationBulkRes locationBulkRes = externalRestService.getLocationBulkRes(clientFmcgIds);
         List<TopSellingProductRes> topSellingProductRes = new ArrayList<>();
         if (reportsRequest.getSalesLevelConstant() == SalesLevel.WAREHOUSE) {
             for (OrderEntity orderEntity : orderEntityList) {
-                ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
+                ProductRes productRes = getProductResFromListById(orderEntity.getProductId(), productResList);
                 ProductPriceRes productPriceRes = productRes.getProductPriceRes();
                 if (productPriceRes != null) {
-                    ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
-                    String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
-                    String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
+                    ClientFMCGResponse clientFMCGResponse = getClientFmcgResFromListById(orderEntity.getClientFmcgId(), locationBulkRes.getClientFMCGResponseList());
+                    String stateName = getStateNameResFromListById(clientFMCGResponse.getState(), locationBulkRes.getStateList()).getStateName();
+                    String cityName = getCityNameResFromListById(clientFMCGResponse.getCity(), locationBulkRes.getCityList()).getCityName();
+                    String regionName = getRegionNameResFromListById(clientFMCGResponse.getRegion(), locationBulkRes.getRegionList()).getRegionName();
                     totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                     totalSales += orderEntity.getPrice();
                     totalOrder += orderEntity.getQuantity();
@@ -76,17 +88,28 @@ public class ReportServices {
                     topSellingProductRes.add(resp);
                 }
             }
-        } else if (reportsRequest.getSalesLevelConstant() == SalesLevel.STOCKIST || reportsRequest.getSalesLevelConstant() == SalesLevel.RETAILER) {
+        }
+        else if (reportsRequest.getSalesLevelConstant() == SalesLevel.STOCKIST || reportsRequest.getSalesLevelConstant() == SalesLevel.RETAILER) {
+            List<BeetRespForOrderDto> beetRespForOrderDtoList;
+            List<OutletRespForOrderDto> outletRespForOrderDtoList;
+            Set<Long> outletIds = new HashSet<>();
+            Set<Long> beetIds = new HashSet<>();
             for (OrderEntity orderEntity : orderEntityList) {
-                ProductRes productRes = productServiceClient.getProduct(orderEntity.getProductId());
+                outletIds.add(orderEntity.getOutletId());
+                beetIds.add(orderEntity.getBeetId());
+            }
+            beetRespForOrderDtoList = productServiceClient.getBeets(beetIds);
+            outletRespForOrderDtoList = productServiceClient.getOutlets(outletIds);
+            for (OrderEntity orderEntity : orderEntityList) {
+                ProductRes productRes = getProductResFromListById(orderEntity.getProductId(), productResList);
                 ProductPriceRes productPriceRes = productRes.getProductPriceRes();
                 if (productPriceRes != null) {
-                    ClientFMCGResponse clientFMCGResponse = externalRestService.getClient(orderEntity.getClientFmcgId());
-                    String stateName = productServiceClient.getStateNameById(clientFMCGResponse.getState());
-                    String cityName = productServiceClient.getCityNameById(clientFMCGResponse.getCity());
-                    String regionName = productServiceClient.getRegionNameById(clientFMCGResponse.getRegion());
-                    BeetRespForOrderDto beetRespForOrderDto = productServiceClient.getBeetForReport(orderEntity.getBeetId());
-                    OutletRespForOrderDto outletRespForOrderDto = productServiceClient.getOutletForReport(orderEntity.getOutletId());
+                    ClientFMCGResponse clientFMCGResponse = getClientFmcgResFromListById(orderEntity.getClientFmcgId(), locationBulkRes.getClientFMCGResponseList());
+                    String stateName = getStateNameResFromListById(clientFMCGResponse.getState(), locationBulkRes.getStateList()).getStateName();
+                    String cityName = getCityNameResFromListById(clientFMCGResponse.getCity(), locationBulkRes.getCityList()).getCityName();
+                    String regionName = getRegionNameResFromListById(clientFMCGResponse.getRegion(), locationBulkRes.getRegionList()).getRegionName();
+                    BeetRespForOrderDto beetRespForOrderDto = getBeetResFromListById(orderEntity.getBeetId(), beetRespForOrderDtoList);
+                    OutletRespForOrderDto outletRespForOrderDto = getOutletResFromListById(orderEntity.getOutletId(), outletRespForOrderDtoList);
                     totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                     totalSales += orderEntity.getPrice();
                     totalOrder += orderEntity.getQuantity();
@@ -116,6 +139,64 @@ public class ReportServices {
         reportsResponse.setTotalGstCollected(totalGst);
         reportsResponse.setTopSellingProductList(topSellingProductRes);
         return reportsResponse;
+    }
+
+    private ProductRes getProductResFromListById(Long id, List<ProductRes> productResList){
+        for(ProductRes productRes : productResList){
+            if(Objects.equals(productRes.getProductId(), id)){
+                return productRes;
+            }
+        }
+        return new ProductRes();
+    }
+    private ClientFMCGResponse getClientFmcgResFromListById(Long id, List<ClientFMCGResponse> clientFMCGResponseList){
+        for(ClientFMCGResponse clientFMCGResponse : clientFMCGResponseList){
+            if(Objects.equals(clientFMCGResponse.getId(), id)){
+                return clientFMCGResponse;
+            }
+        }
+        return new ClientFMCGResponse();
+    }
+
+    private CityResponse getCityNameResFromListById(Long id, List<CityResponse> cityResponseList){
+        for(CityResponse resp : cityResponseList){
+            if(Objects.equals(resp.getId(), id)){
+                return resp;
+            }
+        }
+        return new CityResponse();
+    }
+    private StateResponse getStateNameResFromListById(Long id, List<StateResponse> stateResponseList){
+        for(StateResponse resp : stateResponseList){
+            if(Objects.equals(resp.getId(), id)){
+                return resp;
+            }
+        }
+        return new StateResponse();
+    }
+    private RegionResponse getRegionNameResFromListById(Long id, List<RegionResponse> regionResponseList){
+        for(RegionResponse resp : regionResponseList){
+            if(Objects.equals(resp.getId(), id)){
+                return resp;
+            }
+        }
+        return new RegionResponse();
+    }
+    private BeetRespForOrderDto getBeetResFromListById(Long id, List<BeetRespForOrderDto> beetRespForOrderDtoList){
+        for(BeetRespForOrderDto resp : beetRespForOrderDtoList){
+            if(Objects.equals(resp.getId(), id)){
+                return resp;
+            }
+        }
+        return new BeetRespForOrderDto();
+    }
+    private OutletRespForOrderDto getOutletResFromListById(Long id, List<OutletRespForOrderDto> outletRespForOrderDtoList){
+        for(OutletRespForOrderDto resp : outletRespForOrderDtoList){
+            if(Objects.equals(resp.getId(), id)){
+                return resp;
+            }
+        }
+        return new OutletRespForOrderDto();
     }
 
     public TenDayReportRes getLastTenDaysOrderByOutletIdAndMemberId(Long memberId, Long outletId, SalesLevel salesLevel) {
