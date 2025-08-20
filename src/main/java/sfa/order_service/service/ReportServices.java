@@ -69,7 +69,7 @@ public class ReportServices {
                     String regionName = getRegionNameResFromListById(clientFMCGResponse.getRegion(), locationBulkRes.getRegionList()).getRegionName();
                     totalGst += CalculateGst.calculateGstAmountFromTotal(orderEntity.getPrice(), productPriceRes.getGstPercentage());
                     totalSales += orderEntity.getPrice();
-                    totalOrder += orderEntity.getQuantity();
+                    totalOrder += 1
                     Double totalSaleByProduct = 0D;
                     List<OrderEntity> orderListByProductId = orderRepository.findByProductId(orderEntity.getProductId());
                     for (OrderEntity order : orderListByProductId) {
