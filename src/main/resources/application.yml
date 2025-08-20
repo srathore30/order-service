@@ -50,7 +50,7 @@ doctor:
     url: http://localhost:9090/doctors
 products:
   getAllProductByIds:
-    url: http://localhost:9093/product-service/products/getAllProductByIds
+    url: http://localhost:9093/product-service/products/getAllProductByIdList
   service:
     url: http://localhost:9093/product-service
 
