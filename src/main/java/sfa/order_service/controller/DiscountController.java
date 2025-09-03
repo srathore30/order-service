@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sfa.order_service.constant.DiscountType;
 import sfa.order_service.constant.UserRole;
 import sfa.order_service.dto.request.DiscountBulkReq;
 import sfa.order_service.dto.request.DiscountRequest;
@@ -58,6 +59,13 @@ public class DiscountController {
     public ResponseEntity<DiscountResponse> updateDiscountById(@PathVariable Long discountId,
                                                                @RequestBody DiscountRequest discountRequest) {
         return ResponseEntity.ok(discountService.updateDiscountById(discountId, discountRequest));
+    }
+
+    @GetMapping("/getAllDiscountByStateAndCityAndDiscountType")
+    //@UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<PaginatedResp<DiscountResponse>> getAllDiscountByStateAndCityAndDiscountType(@RequestParam (required = false) DiscountType discountType, @RequestParam(required = false) String state, @RequestParam(required = false)String city, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createdDate") String sortBy, @RequestParam(defaultValue = "desc") String sortDirection){
+
+        return new ResponseEntity<>(discountService.getAllDiscountByStateAndCityAndDiscountType(state, city, discountType, page, pageSize, sortBy, sortDirection),HttpStatus.OK);
     }
 
 }
