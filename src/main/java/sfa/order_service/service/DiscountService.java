@@ -367,7 +367,7 @@ public class DiscountService {
 
     public PaginatedResp<DiscountResponse> getAllDiscountByStateAndCityAndDiscountType( String state, String city,DiscountType discountType, int page, int pageSize, String sortBy, String sortDirection) {
         if (state == null)
-            throw new NoSuchElementFoundException(ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorCode(), ApiErrorCodes.DISCOUNT_NOT_FOUND.getErrorMessage());
+            throw new NoSuchElementFoundException(ApiErrorCodes.STATE_NOT_FOUND.getErrorCode(), ApiErrorCodes.STATE_NOT_FOUND.getErrorMessage());
 
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, pageSize, sort);
