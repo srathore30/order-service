@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.DiscountType;
+import sfa.order_service.constant.Status;
 import sfa.order_service.dto.request.DiscountBulkReq;
 import sfa.order_service.dto.request.DiscountRequest;
 import sfa.order_service.dto.response.DiscountResponse;
@@ -17,6 +18,7 @@ import sfa.order_service.dto.response.PaginatedResp;
 import sfa.order_service.dto.response.ProductRes;
 import sfa.order_service.entity.DiscountEntity;
 import sfa.order_service.exception.InvalidInputException;
+import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.DiscountRepo;
 
 import java.util.ArrayList;
@@ -362,5 +364,17 @@ public class DiscountService {
         return entityToDto(existingDiscount);
     }
 
+
+    public PaginatedResp<DiscountResponse> getAllDiscountByStateAndCityAndDiscountType( String state, String city,DiscountType discountType, int page, int pageSize, String sortBy, String sortDirection) {
+        if (state == null)
+            throw new NoSuchElementFoundException(ApiErrorCodes.STATE_NOT_FOUND.getErrorCode(), ApiErrorCodes.STATE_NOT_FOUND.getErrorMessage());
+
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+        Page<DiscountEntity> discountEntityPage = discountRepo.findByStateAndCityAndDiscountType(state, city, discountType, pageable);
+        List<DiscountResponse> discountResponseList = discountEntityPage.getContent().stream().filter(m -> m.getStatus() != Status.Inactive).map(this::entityToDto).toList();
+        return new PaginatedResp<>(discountEntityPage.getTotalElements(), discountEntityPage.getTotalPages(), page, discountResponseList);
+
+    }
 }
 

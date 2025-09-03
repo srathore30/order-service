@@ -28,7 +28,8 @@ public enum ApiErrorCodes implements Error {
     COLLECTION_NOT_FOUND(1017, "Collection not found" ),
     COLLECTION_ORDER_MAP_NOT_FOUND(1018,"Collection order map not found" ),
     COMPETITOR_ACTIVITY_NOT_FOUND(1019,"competitor activity not found"),
-    COMPETITOR_ACTIVITY_COMPETITOR_NOT_FOUND(1020, "competitor activity competitor not found");
+    COMPETITOR_ACTIVITY_COMPETITOR_NOT_FOUND(1020, "competitor activity competitor not found"),
+    STATE_NOT_FOUND(1021,"state is not found ");
 
     private int errorCode;
     private String errorMessage;
