@@ -159,4 +159,15 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping("/bulk/tally")
+    @UserAuthorization(allowedRoles = {UserRole.ClientFMCG,UserRole.Create_Manager, UserRole.Edit_Manager, UserRole.Delete_Manager, UserRole.View_Manager, UserRole.Manager, UserRole.Reporting_Manager, UserRole.Super_Admin})
+    public ResponseEntity<List<OrderResponse>> createBulkOrderWithTally(
+            @RequestBody OrderBulkReq request,
+            @RequestParam String salesType) {
+
+        List<OrderResponse> responses = orderService.createOrderInBulkTally(request, salesType);
+
+        return ResponseEntity.ok(responses);
+    }
+
 }

@@ -49,4 +49,6 @@ public class OrderResponse {
     private Double priceAfterDiscount;
     private Long beetLogId;
     private Long doctorLogId;
-    private Long clientLogId;}
+    private Long clientLogId;
+    private String tallyResponse;
+}
