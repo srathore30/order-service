@@ -1,6 +1,5 @@
 package sfa.order_service.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sfa.order_service.Configs.PreOrPost;
 import sfa.order_service.constant.ApiErrorCodes;
 import sfa.order_service.constant.OrderCallStatus;
@@ -18,13 +18,11 @@ import sfa.order_service.entity.*;
 import sfa.order_service.enums.OrderStatus;
 import sfa.order_service.enums.SalesLevel;
 import sfa.order_service.enums.TransactionType;
-import sfa.order_service.exception.BusinessServiceException;
 import sfa.order_service.exception.InvalidInputException;
 import sfa.order_service.exception.NoSuchElementFoundException;
 import sfa.order_service.repo.*;
 import sfa.order_service.utill.CalculateGst;
 import sfa.order_service.utill.DiscountUtil;
-import sfa.order_service.utill.UniqueIdGenerator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -44,6 +42,7 @@ public class OrderService {
     private final TransactionRepository transactionRepository;
     private final OrderInvoicesRepo orderInvoicesRepo;
     private final DiscountRepo discountRepository;
+    private final TallyService tallyService;
 
     public String getPriceType(SalesLevel salesLevel) {
         log.info("Get price type for sales level: {}", salesLevel);
@@ -782,5 +781,71 @@ public Double getProductPriceType2(ProductRes productRes, String priceType) {
         }
         return sampleRes;
     }
+
+    @Transactional
+    public List<OrderResponse> createOrderInBulkTally(OrderBulkReq request, String salesType) {
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+        List<InvoiceMaster> invoiceMastersList = invoiceMasterRepo.findAll();
+        if(invoiceMastersList.isEmpty()){
+            throw new NoSuchElementFoundException(ApiErrorCodes.NOT_FOUND.getErrorCode(), "Invoice master not created");
+        }
+
+        String invoiceNumber;
+        InvoiceMaster invoiceMaster = invoiceMastersList.get(0);
+        int currentSerialNumber = invoiceMaster.getCurrentSerialNumber() + 1;
+        invoiceMaster.setCurrentSerialNumber(currentSerialNumber);
+        invoiceMasterRepo.save(invoiceMaster);
+
+        int currentYear = LocalDate.now().getYear();
+        if (invoiceMaster.getPreOrPost() == PreOrPost.Pre) {
+            invoiceNumber = invoiceMaster.getCode() + currentSerialNumber + currentYear;
+        } else {
+            String unFormattedInvoiceNumber = currentYear + invoiceMaster.getCode();
+            invoiceNumber = currentSerialNumber + unFormattedInvoiceNumber;
+        }
+
+        OrderInvoice orderInvoice = new OrderInvoice();
+        orderInvoice.setInvoiceDate(new Date());
+        orderInvoice.setOutletId(request.getOrderRequestList().get(0).getOutletId());
+        orderInvoice.setBeetId(request.getOrderRequestList().get(0).getBeetId());
+        orderInvoice.setSalesLevel(request.getOrderRequestList().get(0).getSalesLevel());
+        orderInvoice.setMemberId(request.getOrderRequestList().get(0).getMemberId());
+        orderInvoice.setClientFmcgId(request.getOrderRequestList().get(0).getClientId());
+        orderInvoice.setInvoiceNumber(invoiceNumber);
+        OrderInvoice generatedInvoice = orderInvoicesRepo.save(orderInvoice);
+
+        log.info("Creating order in bulk");
+        List<OrderEntity> savedOrders = new ArrayList<>();
+
+        for (OrderRequest orderRequest : request.getOrderRequestList()) {
+            log.info("Creating order: {}", request);
+            OrderEntity orderEntity = dtoToEntity(orderRequest, salesType);
+            orderEntity.setOrderInvoice(generatedInvoice);
+            orderEntity.setInvoiceNumber(invoiceNumber);
+            OrderEntity entity = orderRepository.save(orderEntity);
+            savedOrders.add(entity);
+
+            TransactionRequest transactionRequest = new TransactionRequest();
+            transactionRequest.setClientId(orderRequest.getClientId());
+            transactionRequest.setTransactionAmount(finalPrice(orderRequest));
+            transactionRequest.setTransactionType(TransactionType.DEBIT);
+            transactionRequest.setOrderId(entity.getId());
+            transactionRequest.setMemberId(entity.getMemberId());
+            transactionController.createTransaction(transactionRequest);
+
+            orderResponseList.add(entityToDto(entity));
+        }
+
+        // ✅ Send invoice + orders to Tally
+        String tallyXml = tallyService.buildOrderVoucherXml(generatedInvoice, savedOrders);
+        String tallyResponse = tallyService.sendRequestToTally(tallyXml);
+        log.info("Tally Response for bulk order: {}", tallyResponse);
+
+        orderResponseList.forEach(r -> r.setTallyResponse(tallyResponse));
+
+
+        return orderResponseList;
+    }
+
 
 }
